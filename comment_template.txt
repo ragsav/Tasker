@@ -1,0 +1,25 @@
+// ref
+
+// variables
+
+// states
+
+// effects
+
+// callbacks
+
+// render functions
+
+// handle functions
+
+// navigation functions
+
+// misc functions
+const _init = () =>{
+
+  }
+  const _onDestroy = () =>{
+    
+  }
+
+// return 
