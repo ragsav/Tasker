@@ -30,6 +30,7 @@ import {EnhancedNoteItem} from '../components/NoteItem';
 import {database} from '../db/db';
 import Label from '../db/models/Label';
 import {deleteLabel, resetDeleteLabelState} from '../redux/actions';
+import Note from '../db/models/Note';
 // import CreateNewLabelBottomSheet from './CreateNewLabelScreen';
 const BOTTOM_APPBAR_HEIGHT = 64;
 
@@ -38,6 +39,7 @@ const BOTTOM_APPBAR_HEIGHT = 64;
  *
  * @param {object} param0
  * @param {Array<Label>} param0.labels
+ * @param {Array<Note>} param0.notes
  * @returns
  */
 const Home = ({navigation, dispatch, labels, notes}) => {
@@ -128,14 +130,16 @@ const Home = ({navigation, dispatch, labels, notes}) => {
           />
         </View>
       </TouchableRipple>
-      <Text
-        style={{
-          backgroundColor: theme.colors.onSecondary,
-          padding: 12,
-          paddingVertical: 6,
-        }}>
-        Labels
-      </Text>
+      {labels && labels.length > 0 && (
+        <Text
+          style={{
+            backgroundColor: theme.colors.onSecondary,
+            padding: 12,
+            paddingVertical: 6,
+          }}>
+          Labels
+        </Text>
+      )}
       <List.AccordionGroup>
         {labels.map((label, index) => {
           return (
@@ -147,14 +151,16 @@ const Home = ({navigation, dispatch, labels, notes}) => {
           );
         })}
       </List.AccordionGroup>
-      <Text
-        style={{
-          backgroundColor: theme.colors.onSecondary,
-          padding: 12,
-          paddingVertical: 6,
-        }}>
-        Unlabeled Notes
-      </Text>
+      {notes && notes.length > 0 && (
+        <Text
+          style={{
+            backgroundColor: theme.colors.onSecondary,
+            padding: 12,
+            paddingVertical: 6,
+          }}>
+          Unlabeled Notes
+        </Text>
+      )}
       {notes.map((note, index) => {
         return <EnhancedNoteItem note={note} key={index} />;
       })}
