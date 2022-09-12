@@ -25,6 +25,7 @@ const TaskItem = ({
       }}>
       <Card.Title
         title={task.title}
+        titleStyle={task.isDone ? {textDecorationLine: 'line-through'} : null}
         left={props => (
           <IconButton
             icon={task.isDone ? 'radiobox-marked' : 'radiobox-blank'}

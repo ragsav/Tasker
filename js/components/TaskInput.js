@@ -20,7 +20,7 @@ import BottomSheet, {
 import {StyleSheet, View} from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import moment from 'moment/moment';
-import {createTask} from '../redux/actions/task';
+import {createTask, resetCreateTaskState} from '../redux/actions/task';
 const TaskInput = ({
   createTaskSuccess,
   dispatch,
@@ -67,6 +67,20 @@ const TaskInput = ({
       _handleOpenSheet(0);
     }
   }, [visible, sheetRef]);
+
+  useEffect(() => {
+    if (createTaskSuccess) {
+      setTaskData({
+        title: '',
+        startTimestamp: null,
+        endTimestamp: null,
+        reminderTimeStamp: null,
+      });
+      setDueDateString('Set due');
+      setReminderDateString('Set reminder');
+      dispatch(resetCreateTaskState());
+    }
+  }, [createTaskSuccess]);
 
   // callbacks
   const _handleSheetChange = useCallback(index => {}, []);
