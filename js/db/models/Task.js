@@ -20,6 +20,7 @@ export default class Task extends Model {
   @text('note_id') noteID;
   @field('is_bookmarked') isBookmarked;
   @field('is_done') isDone;
+  @date('done_timestamp') doneTimestamp;
 
   @field('priority') priority;
   @date('start_timestamp') startTimestamp;

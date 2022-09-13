@@ -247,6 +247,9 @@ export const editTaskIsDone =
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.isDone = isDone;
+          if (isDone) {
+            task.doneTimestamp = Date.now();
+          }
         });
       });
 

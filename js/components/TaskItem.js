@@ -1,7 +1,8 @@
 import Task from '../db/models/Task';
 import React from 'react';
-import {Card, IconButton} from 'react-native-paper';
+import {Card, IconButton, Paragraph} from 'react-native-paper';
 import withObservables from '@nozbe/with-observables';
+import moment from 'moment';
 /**
  *
  * @param {object} param0
@@ -43,6 +44,11 @@ const TaskItem = ({
           />
         )}
       />
+      {task.isDone && (
+        <Card.Content>
+          <Paragraph>{moment(task.doneTimestamp).calendar()}</Paragraph>
+        </Card.Content>
+      )}
     </Card>
   );
 };

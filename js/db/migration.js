@@ -14,5 +14,14 @@ export const xpenseDBMigration = schemaMigrations({
       // ⚠️ Set this to a number one larger than the current schema version
       toVersion: 12,
     },
+    {
+      toVersion: 13,
+      steps: [
+        addColumns({
+          table: 'tasks',
+          columns: [{name: 'done_timestamp', type: 'number', isOptional: true}],
+        }),
+      ],
+    },
   ],
 });
