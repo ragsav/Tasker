@@ -53,10 +53,13 @@ export const CONSTANTS = Object.freeze({
     ADD_NOTE: 'ADD_NOTE',
     EDIT_NOTE: 'EDIT_NOTE',
 
+    TASK: 'TASK',
+
     NOTE: 'NOTE',
 
     FILTER: 'FILTER',
     MY_DAY: 'MY_DAY',
+    CALENDAR: 'CALENDAR',
   },
   BOTTOM_TAB_BAR_ICONS: {
     Transactions: 'receipt-long',

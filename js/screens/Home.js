@@ -81,6 +81,12 @@ const Home = ({navigation, dispatch, labels, notes}) => {
   const _navigateToDayScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.MY_DAY);
   };
+  const _navigateToBookmarkScreen = () => {
+    navigation?.navigate(CONSTANTS.ROUTES.BOOKMARKS);
+  };
+  const _navigateToCalendarScreen = () => {
+    navigation?.navigate(CONSTANTS.ROUTES.CALENDAR);
+  };
   const _navigateToCreateNoteScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE);
   };
@@ -122,6 +128,68 @@ const Home = ({navigation, dispatch, labels, notes}) => {
               color={theme.colors.onSurface}
             />
             <Text style={{marginLeft: 12}}>My day</Text>
+          </View>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={24}
+            color={theme.colors.onSurface}
+          />
+        </View>
+      </TouchableRipple>
+      <Divider />
+      <TouchableRipple onPress={_navigateToBookmarkScreen}>
+        <View
+          style={{
+            flexDirection: 'row',
+            width: '100%',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              padding: 12,
+              backgroundColor: 'transparent',
+            }}>
+            <MaterialCommunityIcons
+              name="bookmark"
+              size={24}
+              color={theme.colors.onSurface}
+            />
+            <Text style={{marginLeft: 12}}>Bookmarks</Text>
+          </View>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={24}
+            color={theme.colors.onSurface}
+          />
+        </View>
+      </TouchableRipple>
+      <Divider />
+      <TouchableRipple onPress={_navigateToCalendarScreen}>
+        <View
+          style={{
+            flexDirection: 'row',
+            width: '100%',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              padding: 12,
+              backgroundColor: 'transparent',
+            }}>
+            <MaterialCommunityIcons
+              name="calendar"
+              size={24}
+              color={theme.colors.onSurface}
+            />
+            <Text style={{marginLeft: 12}}>My calendar</Text>
           </View>
           <MaterialCommunityIcons
             name="chevron-right"

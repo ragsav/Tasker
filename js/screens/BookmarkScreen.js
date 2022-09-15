@@ -44,7 +44,7 @@ import moment from 'moment';
  * @param {Array<Task>} param0.tasks
  * @returns
  */
-const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
+const BookmarkScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
   // ref
 
   // variables
@@ -52,6 +52,8 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
 
   // states
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isTaskInputOpen, setIsTaskInputOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // effects
   useFocusEffect(
@@ -101,7 +103,7 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
       style={[styles.main, {backgroundColor: theme.colors.secondaryContainer}]}>
       <Appbar.Header style={{backgroundColor: theme.colors.secondaryContainer}}>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title={'My day'} />
+        <Appbar.Content title={'Bookmarks'} />
 
         <Menu
           visible={isMenuOpen}
@@ -123,23 +125,19 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
     </SafeAreaView>
   );
 };
-const s = new Date();
-const e = new Date();
-s.setHours(0, 0, 0, 0);
-e.setHours(23, 59, 59, 999);
 
-const enhanceDayScreen = withObservables([], ({}) => ({
+const enhanceBookmarkScreen = withObservables([], ({}) => ({
   tasks: database.collections
     .get('tasks')
-    .query(Q.where('end_timestamp', Q.between(s.getTime(), e.getTime()))),
+    .query(Q.where('is_bookmarked', true)),
 }));
-const EnhancedDayScreen = enhanceDayScreen(DayScreen);
+const EnhancedBookmarkScreen = enhanceBookmarkScreen(BookmarkScreen);
 
 const mapStateToProps = state => {
   return {};
 };
 
-export default connect(mapStateToProps)(EnhancedDayScreen);
+export default connect(mapStateToProps)(EnhancedBookmarkScreen);
 
 const styles = new StyleSheet.create({
   main: {

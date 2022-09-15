@@ -18,10 +18,12 @@ export const DeleteConfirmationDialog = ({
   return (
     <Portal>
       <Dialog dismissable={false} visible={visible}>
-        <Dialog.Title>Label Delete</Dialog.Title>
+        <Dialog.Title>{message} Delete</Dialog.Title>
         <Dialog.Content>
           <Paragraph>
-            {`Do you want to delete ${message}? You cannot undo this action.`}
+            {`Do you want to delete ${String(
+              message,
+            ).toLowerCase()}? You cannot undo this action.`}
           </Paragraph>
         </Dialog.Content>
         <Dialog.Actions>

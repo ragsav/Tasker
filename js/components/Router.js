@@ -18,6 +18,9 @@ import EditLabelScreen from '../screens/EditLabelScreen';
 import EditNoteScreen from '../screens/EditNoteScreen';
 import NoteScreen from '../screens/NoteScreen';
 import DayScreen from '../screens/DayScreen';
+import BookmarkScreen from '../screens/BookmarkScreen';
+import TaskScreen from '../screens/TaskScreen';
+import CalendarScreen from '../screens/CalendarScreen';
 
 const Stack = createStackNavigator();
 
@@ -82,6 +85,21 @@ const Router = () => {
         <Stack.Screen
           name={CONSTANTS.ROUTES.MY_DAY}
           component={DayScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name={CONSTANTS.ROUTES.BOOKMARKS}
+          component={BookmarkScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name={CONSTANTS.ROUTES.TASK}
+          component={TaskScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name={CONSTANTS.ROUTES.CALENDAR}
+          component={CalendarScreen}
           options={{headerShown: false}}
         />
       </Stack.Navigator>

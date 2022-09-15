@@ -90,9 +90,8 @@ const NoteScreen = ({
         <TaskItem
           task={item}
           disabled={isActive}
-          handleMarkIsDone={_handleMarkIsDone}
-          handleBookmark={_handleBookmark}
           onLongPress={drag}
+          noteColor={note.colorString}
         />
       </ScaleDecorator>
     );
@@ -118,12 +117,7 @@ const NoteScreen = ({
   const _handleCloseTaskInput = () => {
     setIsTaskInputOpen(false);
   };
-  const _handleMarkIsDone = ({id, isDone}) => {
-    dispatch(editTaskIsDone({id, isDone}));
-  };
-  const _handleBookmark = ({id, isBookmarked}) => {
-    dispatch(editTaskIsBookmark({id, isBookmarked}));
-  };
+
   // navigation functions
   const _navigateBack = () => {
     navigation?.pop();

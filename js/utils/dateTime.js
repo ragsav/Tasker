@@ -79,3 +79,17 @@ export const currentEndDate = inputTime => {
   n.setMonth(d.getMonth() + 1);
   return n;
 };
+export const datesArray = (start, end) => {
+  let result = [],
+    current = new Date(start);
+
+  while (current <= end)
+    result.push(
+      `${String(current.getMonth() + 1).padStart(2, '0')}/${String(
+        current.getDate(),
+      ).padStart(2, '0')}/${String(current.getFullYear())}`,
+    ) &&
+      (current = new Date(current)) &&
+      current.setDate(current.getDate() + 1);
+  return result;
+};
