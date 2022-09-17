@@ -8,6 +8,8 @@ import {
 
 export const CHECK_CONTACTS_PERMISSION_STATE_CHANGE =
   'CHECK_CONTACTS_PERMISSION_STATE_CHANGE';
+export const CHECK_CALENDAR_PERMISSION_STATE_CHANGE =
+  'CHECK_CALENDAR_PERMISSION_STATE_CHANGE';
 
 const checkContactsPermissionState = (
   isCheckingContactsPermission,
@@ -24,17 +26,49 @@ const checkContactsPermissionState = (
   };
 };
 
+const checkCalendarPermissionState = (
+  isCheckingCalendarPermission,
+  calendarPermissionState,
+) => {
+  return {
+    type: CHECK_CALENDAR_PERMISSION_STATE_CHANGE,
+    isCheckingCalendarPermission,
+    calendarPermissionState,
+  };
+};
+
 const checkContactsPermission = async () => {
   let result;
   let permission;
   if (Platform.OS === 'ios') {
     result = await checkMultiple([PERMISSIONS.IOS.CONTACTS]);
-    Logger.pageLogger('checkLocationPermission', {result});
+
     permission = result['ios.permission.CONTACTS'] === RESULTS.GRANTED;
   } else if (Platform.OS === 'android') {
     result = await checkMultiple([PERMISSIONS.ANDROID.READ_CONTACTS]);
-    Logger.pageLogger('checkLocationPermission', {result});
+
     permission = result['android.permission.READ_CONTACTS'] === RESULTS.GRANTED;
+  }
+
+  return permission;
+};
+
+const checkCalendarPermission = async () => {
+  let result;
+  let permission;
+  if (Platform.OS === 'ios') {
+    result = await checkMultiple([PERMISSIONS.IOS.CALENDARS]);
+
+    permission = result['ios.permission.CALENDARS'] === RESULTS.GRANTED;
+  } else if (Platform.OS === 'android') {
+    result = await checkMultiple([
+      PERMISSIONS.ANDROID.WRITE_CALENDAR,
+      PERMISSIONS.ANDROID.READ_CALENDAR,
+    ]);
+
+    permission =
+      result['android.permission.READ_CALENDAR'] === RESULTS.GRANTED &&
+      result['android.permission.WRITE_CALENDAR'] === RESULTS.GRANTED;
   }
 
   return permission;
@@ -60,4 +94,27 @@ export const handleContactsPermissionUsingLibrary = () => async dispatch => {
     }
   }
   dispatch(checkContactsPermissionState(false, permission));
+};
+
+export const handleCalendarPermissionUsingLibrary = () => async dispatch => {
+  dispatch(checkCalendarPermissionState(true, null));
+  let permission = await checkCalendarPermission();
+
+  if (!permission) {
+    if (Platform.OS === 'ios') {
+      requestMultiple([PERMISSIONS.IOS.CALENDARS]).then(async result => {
+        permission = await checkCalendarPermission();
+        dispatch(checkCalendarPermissionState(false, permission));
+      });
+    } else if (Platform.OS === 'android') {
+      requestMultiple([
+        PERMISSIONS.ANDROID.WRITE_CALENDAR,
+        PERMISSIONS.ANDROID.READ_CALENDAR,
+      ]).then(async result => {
+        permission = await checkCalendarPermission();
+        dispatch(checkCalendarPermissionState(false, permission));
+      });
+    }
+  }
+  dispatch(checkCalendarPermissionState(false, permission));
 };

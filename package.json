@@ -22,6 +22,7 @@
     "react": "18.0.0",
     "react-native": "0.69.5",
     "react-native-bootsplash": "^4.3.2",
+    "react-native-calendar-events": "^2.2.0",
     "react-native-collapsible": "^1.6.0",
     "react-native-date-picker": "^4.2.5",
     "react-native-draggable-flatlist": "^3.1.2",

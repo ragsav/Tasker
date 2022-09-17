@@ -8,7 +8,7 @@ import {
   Chip,
 } from 'react-native-paper';
 import {connect} from 'react-redux';
-
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -200,6 +200,7 @@ const TaskInput = ({
           onCancel={_handleCloseReminderDateTimePicker}
         />
         <BottomSheetScrollView
+          keyboardShouldPersistTaps="always"
           contentContainerStyle={{
             flexDirection: 'row',
             justifyContent: 'flex-start',
@@ -208,15 +209,29 @@ const TaskInput = ({
             marginBottom: 12,
           }}>
           <Chip
-            icon={'calendar-range'}
+            icon={() => (
+              <MaterialCommunityIcons
+                name="calendar-range"
+                size={20}
+                color={theme.colors.onPrimary}
+              />
+            )}
             onPress={_handleOpenDueDateTimePicker}
-            style={{marginRight: 12}}>
+            textStyle={{color: theme.colors.onPrimary}}
+            style={{marginRight: 12, backgroundColor: theme.colors.primary}}>
             {dueDateString}
           </Chip>
           <Chip
-            icon={'bell'}
+            icon={() => (
+              <MaterialCommunityIcons
+                name="bell"
+                size={20}
+                color={theme.colors.onPrimary}
+              />
+            )}
             onPress={_handleOpenReminderDateTimePicker}
-            style={{marginRight: 12}}>
+            textStyle={{color: theme.colors.onPrimary}}
+            style={{marginRight: 12, backgroundColor: theme.colors.primary}}>
             {reminderDateString}
           </Chip>
         </BottomSheetScrollView>

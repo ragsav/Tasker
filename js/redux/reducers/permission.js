@@ -1,9 +1,15 @@
-import {CHECK_CONTACTS_PERMISSION_STATE_CHANGE} from '../actions';
+import {
+  CHECK_CONTACTS_PERMISSION_STATE_CHANGE,
+  CHECK_CALENDAR_PERMISSION_STATE_CHANGE,
+} from '../actions';
 
 export default (
   state = {
     isCheckingContactsPermission: false,
     contactsPermissionState: null,
+
+    isCheckingCalendarPermission: false,
+    calendarPermissionState: null,
   },
   action,
 ) => {
@@ -13,6 +19,13 @@ export default (
         ...state,
         isCheckingContactsPermission: action.isCheckingContactsPermission,
         contactsPermissionState: action.contactsPermissionState,
+      };
+
+    case CHECK_CALENDAR_PERMISSION_STATE_CHANGE:
+      return {
+        ...state,
+        isCheckingCalendarPermission: action.isCheckingCalendarPermission,
+        calendarPermissionState: action.calendarPermissionState,
       };
     default:
       return state;

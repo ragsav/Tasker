@@ -1,7 +1,15 @@
 import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  ToastAndroid,
+  View,
+} from 'react-native';
 import moment from 'moment';
 import {
   Appbar,
@@ -21,6 +29,7 @@ import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
 import {database} from '../db/db';
 import Task from '../db/models/Task';
 import {
+  addTaskToCalendar,
   deleteTask,
   editTaskEndTimestamp,
   editTaskIsBookmark,
@@ -30,6 +39,9 @@ import {
   resetDeleteTaskState,
 } from '../redux/actions';
 import DatePicker from 'react-native-date-picker';
+import ReactNativeCalendarEvents from 'react-native-calendar-events';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+const BOTTOM_APPBAR_HEIGHT = 64;
 /**
  *
  * @param {object} param0
@@ -41,6 +53,7 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
 
   // variables
   const theme = useTheme();
+  const {bottom} = useSafeAreaInsets();
 
   // states
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -67,6 +80,14 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
       _navigateBack();
     }
   }, [deleteTaskSuccess]);
+
+  useEffect(() => {
+    if (_isDue()) {
+      StatusBar.setBackgroundColor(theme.colors.errorContainer);
+    } else {
+      StatusBar.setBackgroundColor(theme.colors.surface);
+    }
+  }, [task, task.isDone]);
 
   useEffect(() => {
     if (task) {
@@ -143,6 +164,25 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   const _handleCloseReminderDateTimePicker = () => {
     setIsReminderDateTimePickerVisible(false);
   };
+  const _handleAddToCalendar = () => {
+    const startDate = new Date(task.createdAt).getMilliseconds();
+    const endDate = new Date(task.endTimestamp).getMilliseconds();
+    console.log({startDate, endDate});
+    ReactNativeCalendarEvents.saveEvent(task.title, {
+      calendarId: '1',
+      startDate,
+      endDate,
+    })
+      .then(result => {
+        ToastAndroid.show('Event added');
+      })
+      .catch(error => {
+        ToastAndroid.show('Event cannot be added');
+      });
+    //   addTaskToCalendar({calendarID: 1, taskID: task.id})
+
+    // };
+  };
 
   // navigation functions
   const _navigateBack = () => {
@@ -152,12 +192,21 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   // misc functions
   const _init = () => {};
   const _onDestroy = () => {
+    StatusBar.setBackgroundColor(theme.colors.surface);
     dispatch(resetDeleteTaskState());
+  };
+  const _isDue = () => {
+    const _v =
+      task.endTimestamp &&
+      new Date(task.endTimestamp) < new Date() &&
+      !task.isDone;
+    return _v;
   };
 
   // return
   return (
-    <SafeAreaView style={[styles.main, {backgroundColor: task?.colorString}]}>
+    <SafeAreaView
+      style={[styles.main, {backgroundColor: theme.colors.onPrimary}]}>
       <DeleteConfirmationDialog
         visible={isDeleteDialogOpen}
         message="Task"
@@ -178,25 +227,45 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
         onConfirm={_handleOnReminderDateTimeChange}
         onCancel={_handleCloseReminderDateTimePicker}
       />
-      <Appbar.Header style={{backgroundColor: task?.colorString}}>
+      <Appbar.Header
+        style={{
+          backgroundColor: _isDue()
+            ? theme.colors.errorContainer
+            : theme.colors.surface,
+        }}>
         <Appbar.BackAction onPress={_navigateBack} />
         <Appbar.Content mode="medium" />
       </Appbar.Header>
       <ScrollView keyboardShouldPersistTaps="never">
-        <Surface style={{padding: 12}}>
+        <Surface
+          style={{
+            // padding: 12,
+            padding: 6,
+            justifyContent: 'center',
+            backgroundColor: _isDue()
+              ? theme.colors.errorContainer
+              : theme.colors.surface,
+          }}>
           <TextInput
             value={title}
             autoCorrect={false}
-            dense
             multiline
             underlineColor="transparent"
+            activeOutlineColor="transparent"
             onChangeText={_handleTitleChange}
-            style={{
-              borderWidth: 0,
-
-              backgroundColor: 'transparent',
-            }}
+            style={[
+              {
+                borderWidth: 0,
+                fontSize: 22,
+                borderRadius: 0,
+                backgroundColor: 'transparent',
+                marginBottom: 6,
+              },
+            ]}
+            mode="outlined"
+            outlineColor="transparent"
             onBlur={_handleOnTitleInputBlur}
+            right={<TextInput.Icon icon="pencil" />}
           />
         </Surface>
         {/* <Divider /> */}
@@ -269,7 +338,7 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
           </View>
         </TouchableRipple>
 
-        <TouchableRipple
+        {/* <TouchableRipple
           onPress={_handleOpenReminderDateTimePicker}
           style={{paddingHorizontal: 8}}>
           <View
@@ -297,16 +366,75 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
               </Text>
             </View>
           </View>
+        </TouchableRipple> */}
+        <TouchableRipple
+          onPress={_handleAddToCalendar}
+          style={{paddingHorizontal: 8}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                padding: 12,
+                backgroundColor: 'transparent',
+              }}>
+              <MaterialCommunityIcons
+                name="calendar-plus"
+                size={24}
+                color={theme.colors.onSurface}
+              />
+              <Text style={{marginLeft: 12}}>Add to device calendar</Text>
+            </View>
+          </View>
         </TouchableRipple>
       </ScrollView>
-      <Surface
+      <Appbar
+        style={[
+          styles.bottom,
+          {
+            height: BOTTOM_APPBAR_HEIGHT + bottom,
+            backgroundColor: theme.colors.primary,
+          },
+        ]}
+        safeAreaInsets={{bottom}}>
+        <Appbar.Content
+          title={`Created ${moment(task.createdAt).calendar().toLowerCase()}`}
+          titleStyle={{
+            fontSize: 14,
+            fontWeight: '600',
+            color: theme.colors.onPrimary,
+          }}
+        />
+        <Appbar.Action
+          isLeading={false}
+          icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
+          iconColor={theme.colors.onSecondary}
+          onPress={_handleBookmark}
+        />
+        <Appbar.Action
+          isLeading={false}
+          icon={'delete'}
+          iconColor={theme.colors.onSecondary}
+          onPress={_handleOpenDeleteTaskDialog}
+        />
+      </Appbar>
+
+      {/* <Surface
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: 12,
+          backgroundColor: theme.colors.primary,
         }}>
-        <Text>Created {moment(task.createdAt).calendar()}</Text>
+        <Text>Created {moment(task.createdAt).calendar().toLowerCase()}</Text>
         <View
           style={{
             flexDirection: 'row',
@@ -320,7 +448,7 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
           />
           <IconButton icon={'delete'} onPress={_handleOpenDeleteTaskDialog} />
         </View>
-      </Surface>
+      </Surface> */}
     </SafeAreaView>
   );
 };
@@ -342,6 +470,14 @@ export default connect(mapStateToProps)(EnhancedTaskScreen);
 const styles = new StyleSheet.create({
   main: {
     ...StyleSheet.absoluteFillObject,
+  },
+  bottom: {
+    backgroundColor: 'aquamarine',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'space-between',
   },
   container: {
     width: '100%',

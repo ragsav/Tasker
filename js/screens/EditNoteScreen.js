@@ -1,6 +1,6 @@
 import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   FlatList,
   Pressable,
@@ -32,6 +32,8 @@ const EditNoteScreen = ({
   route,
 }) => {
   // ref
+  const titleRef = useRef();
+  const labelSelectRef = useRef();
 
   // variables
   const theme = useTheme();
@@ -149,19 +151,35 @@ const EditNoteScreen = ({
 
   // return
   return (
-    <SafeAreaView style={styles.main}>
+    <SafeAreaView
+      style={{
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: theme.colors.surface,
+      }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title="Edit note" />
+        <Appbar.Content title="Edit note" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
-      <Surface style={styles.container}>
+      <Surface
+        style={{
+          height: '100%',
+          width: '100%',
+          padding: 12,
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'stretch',
+          backgroundColor: theme.colors.surface,
+        }}>
         <TextInput
+          ref={titleRef}
           mode="outlined"
           label="Title"
           value={noteState.title}
           onChangeText={_handleTitleChange}
+          outlineColor={theme.colors.primary}
         />
         <TextInput
+          ref={labelSelectRef}
           mode="outlined"
           focusable={false}
           label="Note"
@@ -169,6 +187,8 @@ const EditNoteScreen = ({
           showSoftInputOnFocus={false}
           style={{marginTop: 12}}
           onPressIn={_handleOpenLabelSelection}
+          outlineColor={theme.colors.primary}
+          caretHidden
         />
         <FlatList
           data={CONSTANTS.NOTE_COLORS}

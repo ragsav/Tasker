@@ -1,6 +1,6 @@
 import Task from '../db/models/Task';
 import React from 'react';
-import {Card, IconButton, Paragraph} from 'react-native-paper';
+import {Card, IconButton, Paragraph, useTheme} from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import withObservables from '@nozbe/with-observables';
 import moment from 'moment';
@@ -19,6 +19,7 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
 
   // variables
   const navigation = useNavigation();
+  const theme = useTheme();
 
   // states
 
@@ -48,13 +49,31 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
   // misc functions
   const _init = () => {};
   const _onDestroy = () => {};
+  const _isDue = () => {
+    return (
+      task.endTimestamp &&
+      new Date(task.endTimestamp) < new Date() &&
+      !task.isDone
+    );
+  };
 
   // return
 
   return (
     <Card
-      elevation={2}
-      style={{marginBottom: 6}}
+      elevation={1}
+      style={{
+        marginBottom: 6,
+        borderLeftColor: _isDue()
+          ? theme.colors.error
+          : noteColor
+          ? noteColor
+          : theme.colors.onSurface,
+        borderLeftWidth: 4,
+        backgroundColor: _isDue()
+          ? theme.colors.errorContainer
+          : theme.colors.tertiaryContainer,
+      }}
       onPress={_navigateToTaskScreen}
       onLongPress={() => {
         console.log('long pressed');
@@ -62,7 +81,10 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
       }}>
       <Card.Title
         title={task.title}
-        titleStyle={task.isDone ? {textDecorationLine: 'line-through'} : null}
+        titleStyle={[
+          task.isDone ? {textDecorationLine: 'line-through'} : null,
+          {fontWeight: '700', marginBottom: -4},
+        ]}
         left={props => (
           <IconButton
             icon={task.isDone ? 'radiobox-marked' : 'radiobox-blank'}
@@ -76,12 +98,24 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
           />
         )}
       />
-      {task.isDone && (
+
+      {task.isDone ? (
         <Card.Content>
           <Paragraph>{`Marked done ${moment(task.doneTimestamp)
             .calendar()
             .toLowerCase()}`}</Paragraph>
         </Card.Content>
+      ) : (
+        _isDue() && (
+          <Card.Content>
+            <Paragraph
+              style={{
+                color: theme.colors.onErrorContainer,
+              }}>{`Due on ${moment(task.endTimestamp)
+              .calendar()
+              .toLowerCase()}`}</Paragraph>
+          </Card.Content>
+        )
       )}
     </Card>
   );

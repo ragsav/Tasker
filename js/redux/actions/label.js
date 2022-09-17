@@ -103,6 +103,31 @@ export const editLabel =
       dispatch(editLabelState({loading: false, success: true, error}));
     }
   };
+export const unGroupLabel =
+  ({id}) =>
+  async dispatch => {
+    dispatch(editLabelState({loading: true, success: false, error: null}));
+    try {
+      const notesToBeDetached = await database
+        .get('notes')
+        .query(Q.where('label_id', id))
+        .fetch();
+      const batchUpdateRecords = notesToBeDetached.map(note => {
+        return note.prepareUpdate(n => {
+          n.labelID = '';
+        });
+      });
+      database.write(async () => {
+        database.batch(...batchUpdateRecords);
+      });
+
+      dispatch(editLabelState({loading: false, success: true, error: null}));
+      Logger.pageLogger('unGroupLabel : success');
+    } catch (error) {
+      Logger.pageLogger('unGroupLabel : error', error);
+      dispatch(editLabelState({loading: false, success: true, error}));
+    }
+  };
 
 export const deleteLabel =
   ({id}) =>

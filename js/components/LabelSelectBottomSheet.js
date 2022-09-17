@@ -11,10 +11,10 @@ import {
   Surface,
   TouchableRipple,
   Text,
+  useTheme,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CONSTANTS} from '../../constants';
-import {CustomLightTheme} from '../../themes';
 import {database} from '../db/db';
 import Label from '../db/models/Label';
 
@@ -27,6 +27,7 @@ const LabelSelectBottomSheet = ({
 }) => {
   // hooks
   const sheetRef = useRef(null);
+  const theme = useTheme();
 
   const snapPoints = useMemo(() => ['100%'], []);
 
@@ -67,9 +68,8 @@ const LabelSelectBottomSheet = ({
   const _renderLabels = ({item, index}) => (
     <TouchableRipple
       key={index}
-      rippleColor={CustomLightTheme.colors.elevation.level5}
       style={{
-        backgroundColor: CustomLightTheme.colors.surface,
+        backgroundColor: theme.colors.surface,
       }}
       onPress={() => {
         setSelectedLabel(item);
@@ -90,8 +90,8 @@ const LabelSelectBottomSheet = ({
             {
               backgroundColor:
                 item === selectedLabel
-                  ? CustomLightTheme.colors.onPrimary
-                  : CustomLightTheme.colors.surfaceVariant,
+                  ? theme.colors.primary
+                  : theme.colors.surfaceVariant,
             },
           ]}>
           <MaterialCommunityIcons
@@ -99,13 +99,16 @@ const LabelSelectBottomSheet = ({
             size={32}
             color={
               item.id === selectedLabel?.id
-                ? CustomLightTheme.colors.inversePrimary
-                : CustomLightTheme.colors.onPrimary
+                ? theme.colors.onPrimary
+                : theme.colors.primary
             }
           />
         </View>
         <Text
-          style={[{marginLeft: 20, color: CustomLightTheme.colors.onSurface}]}>
+          variant="bodyMedium"
+          style={[
+            {marginLeft: 20, color: theme.colors.onSurface, fontWeight: '700'},
+          ]}>
           {item.title}
         </Text>
       </Surface>
@@ -114,12 +117,18 @@ const LabelSelectBottomSheet = ({
 
   return (
     <BottomSheet
+      // style={{
+      //   backgroundColor: theme.colors.surface,
+      // }}
+      // containerStyle={{
+      //   backgroundColor: theme.colors.surface,
+      // }}
       ref={sheetRef}
       index={-1}
       snapPoints={snapPoints}
       enablePanDownToClose={false}
       handleStyle={{display: 'none'}}
-      backdropComponent={_renderBackdrop}
+      // backdropComponent={_renderBackdrop}
       onClose={() => setVisible(false)}
       onChange={_handleSheetChange}>
       <Appbar.Header>
@@ -128,13 +137,17 @@ const LabelSelectBottomSheet = ({
             setVisible(false);
           }}
         />
-        <Appbar.Content titleStyle={{fontSize: 18}} title="Select label" />
+        <Appbar.Content titleStyle={{fontWeight: '700'}} title="Select label" />
       </Appbar.Header>
       <Divider />
       <BottomSheetFlatList
+        keyboardShouldPersistTaps={'always'}
         data={labels}
         renderItem={_renderLabels}
-        contentContainerStyle={styles.contentContainer}
+        style={{backgroundColor: theme.colors.surface}}
+        contentContainerStyle={{
+          backgroundColor: theme.colors.surface,
+        }}
         ItemSeparatorComponent={() => <Divider />}
       />
     </BottomSheet>
@@ -151,18 +164,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 200,
   },
-  contentContainer: {
-    backgroundColor: 'white',
-  },
-  transaction_category_item_container: {
-    padding: 6,
-    backgroundColor: CONSTANTS.COLORS.WHITE,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    borderTopColor: CONSTANTS.COLORS.LIGHT_FONT,
-    borderTopWidth: 1,
-  },
+
   transaction_category_filter_title: {
     width: '100%',
 
@@ -175,9 +177,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   transaction_category_avatar_icon: {
-    borderColor: CONSTANTS.COLORS.LIGHT_FONT,
-    backgroundColor: CONSTANTS.COLORS.LIGHT_100,
-
     borderRadius: 8,
     padding: 16,
   },

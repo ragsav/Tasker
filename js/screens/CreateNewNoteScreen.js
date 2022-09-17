@@ -1,5 +1,6 @@
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
+import {useRef} from 'react';
 import {
   FlatList,
   Pressable,
@@ -28,6 +29,8 @@ const CreateNewNoteScreen = ({
   createNoteFailure,
 }) => {
   // ref
+  const titleRef = useRef();
+  const labelSelectRef = useRef();
 
   // variables
   const theme = useTheme();
@@ -120,27 +123,44 @@ const CreateNewNoteScreen = ({
 
   // return
   return (
-    <SafeAreaView style={styles.main}>
+    <SafeAreaView
+      style={{
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: theme.colors.surface,
+      }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title="New note" />
+        <Appbar.Content title="New note" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
-      <Surface style={styles.container}>
+      <Surface
+        style={{
+          height: '100%',
+          width: '100%',
+          padding: 12,
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'stretch',
+          backgroundColor: theme.colors.surface,
+        }}>
         <TextInput
+          ref={titleRef}
           mode="outlined"
           label="Title"
           value={noteState.title}
           onChangeText={_handleTitleChange}
+          outlineColor={theme.colors.primary}
         />
         <TextInput
+          ref={labelSelectRef}
           mode="outlined"
           focusable={false}
           label="Note"
           value={noteState.label ? noteState.label.title : ''}
-          // onChangeText={_handleDescriptionChange}
           showSoftInputOnFocus={false}
           style={{marginTop: 12}}
           onPressIn={_handleOpenLabelSelection}
+          outlineColor={theme.colors.primary}
+          caretHidden
         />
         <FlatList
           data={CONSTANTS.NOTE_COLORS}

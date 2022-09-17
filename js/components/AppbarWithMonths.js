@@ -97,9 +97,9 @@ const AppbarWithMonths = ({dispatch, sDate, eDate}) => {
           alignItems: 'center',
         }}>
         <IconButton icon={'chevron-left'} onPress={_handleDecrementMonth} />
-        <Text>{`${moment(sDate).format('MMMM').substring(0, 3)} ${moment(
-          sDate,
-        ).year()}`}</Text>
+        <Text style={{fontWeight: '700'}}>{`${moment(sDate)
+          .format('MMMM')
+          .substring(0, 3)} ${moment(sDate).year()}`}</Text>
         <IconButton icon={'chevron-right'} onPress={_handleIncrementMonth} />
       </View>
     </Appbar.Header>

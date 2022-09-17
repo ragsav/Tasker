@@ -1,19 +1,18 @@
-import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
+import {useRef} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import {
   Appbar,
   Button,
+  IconButton,
   Surface,
   TextInput,
   useTheme,
-  IconButton,
 } from 'react-native-paper';
 import {connect} from 'react-redux';
 import {IconSelectBottomSheet} from '../components/IconSelectBottomSheet';
-import {database} from '../db/db';
-import {editLabel, reseteditLabelState} from '../redux/actions';
+import {editLabel, resetEditLabelState} from '../redux/actions';
 const EditLabelScreen = ({
   dispatch,
   navigation,
@@ -24,6 +23,7 @@ const EditLabelScreen = ({
   label,
 }) => {
   // ref
+  const titleRef = useRef();
 
   // variables
   const theme = useTheme();
@@ -58,7 +58,7 @@ const EditLabelScreen = ({
   // handle functions
   const _init = () => {};
   const _onDestroy = () => {
-    dispatch(reseteditLabelState());
+    dispatch(resetEditLabelState());
   };
 
   const _handleTitleChange = title => {
@@ -89,25 +89,40 @@ const EditLabelScreen = ({
 
   // return
   return (
-    <SafeAreaView style={styles.main}>
+    <SafeAreaView
+      style={{
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: theme.colors.surface,
+      }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title="Edit label" />
+        <Appbar.Content title="Edit label" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
-      <Surface style={styles.container}>
+      <Surface
+        style={{
+          height: '100%',
+          width: '100%',
+          padding: 12,
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'stretch',
+          backgroundColor: theme.colors.surface,
+        }}>
         <IconButton
-          style={{backgroundColor: theme.colors.onSecondary, margin: 0}}
+          style={{backgroundColor: theme.colors.surfaceVariant, margin: 0}}
           icon={labelState.iconString ? labelState.iconString : 'label'}
           size={42}
           onPress={_handleOpenIconSelection}
         />
         <TextInput
+          ref={titleRef}
           mode="outlined"
           label="Title"
           defaultValue={p_title}
           value={labelState.title}
           onChangeText={_handleTitleChange}
           style={{marginTop: 20}}
+          outlineColor={theme.colors.primary}
         />
         <Button mode="contained" style={{marginTop: 20}} onPress={_handleSave}>
           Save

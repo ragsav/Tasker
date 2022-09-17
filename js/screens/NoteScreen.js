@@ -1,41 +1,21 @@
-import withObservables from '@nozbe/with-observables';
 import {Q} from '@nozbe/watermelondb';
-import {useFocusEffect, useTheme} from '@react-navigation/native';
+import withObservables from '@nozbe/with-observables';
+import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {FlatList, SafeAreaView, StyleSheet} from 'react-native';
-// import Menu from 'react-native-material-menu';
-// import Menu, {MenuItem} from 'react-native-material-menu';
+import {SafeAreaView, StyleSheet} from 'react-native';
 import DraggableFlatList, {
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
-import {MenuDivider} from 'react-native-material-menu';
-import {
-  Appbar,
-  Surface,
-  Text,
-  Menu,
-  Divider,
-  Button,
-  FAB,
-  Card,
-  IconButton,
-  Avatar,
-  RadioButton,
-} from 'react-native-paper';
+import {Appbar, FAB, Menu, useTheme} from 'react-native-paper';
 import {connect} from 'react-redux';
+import {CONSTANTS} from '../../constants';
 import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
 import TaskInput from '../components/TaskInput';
+import TaskItem from '../components/TaskItem';
 import {database} from '../db/db';
 import Note from '../db/models/Note';
-import {
-  deleteNote,
-  editTaskIsBookmark,
-  editTaskIsDone,
-  resetDeleteNoteState,
-} from '../redux/actions';
 import Task from '../db/models/Task';
-import TaskItem from '../components/TaskItem';
-import {CONSTANTS} from '../../constants';
+import {deleteNote, resetDeleteNoteState} from '../redux/actions';
 
 /**
  *
@@ -140,14 +120,14 @@ const NoteScreen = ({
 
   // return
   return (
-    <SafeAreaView style={[styles.main, {backgroundColor: note?.colorString}]}>
+    <SafeAreaView style={[styles.main]}>
       <DeleteConfirmationDialog
         visible={isDeleteDialogOpen}
         message="note"
         handleCancel={_handleCloseDeleteNoteDialog}
         handleDelete={_handleDeleteNote}
       />
-      <Appbar.Header style={{backgroundColor: note?.colorString}}>
+      <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
         <Appbar.Content title={note?.title} />
 
@@ -191,8 +171,10 @@ const NoteScreen = ({
           margin: 16,
           right: 0,
           bottom: 0,
-          backgroundColor: theme.colors.surface,
+          // backgroundColor: theme.colors.surface,
+          backgroundColor: note?.colorString,
         }}
+        color={theme.colors.surface}
         onPress={_handleOpenTaskInput}
       />
       <TaskInput

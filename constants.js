@@ -60,6 +60,7 @@ export const CONSTANTS = Object.freeze({
     FILTER: 'FILTER',
     MY_DAY: 'MY_DAY',
     CALENDAR: 'CALENDAR',
+    SEARCH: 'SEARCH',
   },
   BOTTOM_TAB_BAR_ICONS: {
     Transactions: 'receipt-long',

@@ -11,13 +11,13 @@ import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import Collapsible from 'react-native-collapsible';
-import {Menu, MenuItem} from 'react-native-material-menu';
 import {
   Divider,
   IconButton,
   Text,
   TouchableRipple,
   useTheme,
+  Menu,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CONSTANTS} from '../../constants';
@@ -31,7 +31,7 @@ import {EnhancedNoteItem} from './NoteItem';
  * @param {Label} param0.label
  * @returns
  */
-const LabelItem = ({label, notes, handleDeleteLabel}) => {
+const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
   // ref
 
   // variables
@@ -55,17 +55,6 @@ const LabelItem = ({label, notes, handleDeleteLabel}) => {
   // callbacks
 
   // render functions
-  const _renderMenu = () => {
-    return (
-      <Menu visible={isMenuOpen} onRequestClose={_handleToggleMenu}>
-        <MenuItem onPress={_handleOpenDeleteLabelDialog}>Delete label</MenuItem>
-        <MenuItem onPress={_navigateToEditLabelScreen}>Edit label</MenuItem>
-        <MenuItem disabled onPress={_handleToggleMenu}>
-          Ungroup label
-        </MenuItem>
-      </Menu>
-    );
-  };
 
   // handle functions
   const _handleOpenDeleteLabelDialog = () => {
@@ -82,6 +71,10 @@ const LabelItem = ({label, notes, handleDeleteLabel}) => {
     handleDeleteLabel(label.id);
     setIsMenuOpen(false);
     setIsDeleteDialogOpen(false);
+  };
+  const _handleUnGroupLabel = () => {
+    handleUnGroupLabel(label.id);
+    setIsMenuOpen(false);
   };
   const _navigateToEditLabelScreen = () => {
     setIsMenuOpen(false);
@@ -139,7 +132,10 @@ const LabelItem = ({label, notes, handleDeleteLabel}) => {
                 color={theme.colors.onSurface}
               />
             }
-            <Text style={{marginLeft: 12}}>{label?.title}</Text>
+            <Text
+              style={{marginLeft: 12, fontWeight: collapsed ? '400' : '700'}}>
+              {label?.title}
+            </Text>
           </View>
           <View
             style={{
@@ -147,15 +143,35 @@ const LabelItem = ({label, notes, handleDeleteLabel}) => {
               justifyContent: 'flex-end',
               alignItems: 'center',
             }}>
-            {!collapsed && (
-              <IconButton
-                icon="dots-vertical"
-                size={24}
-                onPress={_handleToggleMenu}
-                // onPress={_navigateToEditLabelScreen}
+            <Menu
+              visible={isMenuOpen}
+              onDismiss={_handleToggleMenu}
+              anchor={
+                !collapsed && (
+                  <IconButton
+                    icon="dots-vertical"
+                    size={24}
+                    onPress={_handleToggleMenu}
+                  />
+                )
+              }>
+              <Menu.Item
+                title="Edit"
+                leadingIcon={'pencil'}
+                onPress={_navigateToEditLabelScreen}
               />
-            )}
-            {_renderMenu()}
+              <Menu.Item
+                onPress={_handleOpenDeleteLabelDialog}
+                title="Delete"
+                leadingIcon={'delete'}
+              />
+              <Menu.Item
+                title="Ungroup label"
+                leadingIcon={'ungroup'}
+                onPress={_handleUnGroupLabel}
+              />
+            </Menu>
+            {/* {_renderMenu()} */}
             <IconButton
               icon={collapsed ? 'chevron-down' : 'chevron-up'}
               size={24}
@@ -163,12 +179,14 @@ const LabelItem = ({label, notes, handleDeleteLabel}) => {
             />
           </View>
         </View>
+
         <Collapsible collapsed={collapsed} style={{paddingLeft: 20}}>
+          <Divider />
           {notes.map((note, index) => {
             return <EnhancedNoteItem note={note} key={index} />;
           })}
+          <Divider />
         </Collapsible>
-        <Divider />
       </View>
     </TouchableRipple>
   );

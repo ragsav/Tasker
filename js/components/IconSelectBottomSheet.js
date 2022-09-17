@@ -8,13 +8,13 @@ import {
   Appbar,
   Divider,
   Surface,
-  TouchableRipple,
   Text,
+  TouchableRipple,
+  useTheme,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CONSTANTS} from '../../constants';
 import {IconsData} from '../../icons';
-import {CustomLightTheme} from '../../themes';
 
 export const IconSelectBottomSheet = ({
   visible,
@@ -24,6 +24,7 @@ export const IconSelectBottomSheet = ({
 }) => {
   // hooks
   const sheetRef = useRef(null);
+  const theme = useTheme();
 
   const snapPoints = useMemo(() => ['100%'], []);
 
@@ -50,16 +51,15 @@ export const IconSelectBottomSheet = ({
         {...props}
         appearsOnIndex={0}
         disappearsOnIndex={-1}
-        opacity={0.4}
+        opacity={1}
       />
     ),
     [],
   );
   const _renderIcons = ({item}) => (
     <TouchableRipple
-      rippleColor={CustomLightTheme.colors.elevation.level5}
       style={{
-        backgroundColor: CustomLightTheme.colors.surface,
+        backgroundColor: theme.colors.surface,
       }}
       onPress={() => {
         setSelectedIcon(item);
@@ -72,7 +72,7 @@ export const IconSelectBottomSheet = ({
           justifyContent: 'flex-start',
           alignItems: 'center',
           padding: 12,
-          backgroundColor: '#00000000',
+          // backgroundColor: '#00000000',
         }}>
         <View
           style={[
@@ -80,8 +80,8 @@ export const IconSelectBottomSheet = ({
             {
               backgroundColor:
                 item === selectedIcon
-                  ? CustomLightTheme.colors.onPrimary
-                  : CustomLightTheme.colors.surfaceVariant,
+                  ? theme.colors.primary
+                  : theme.colors.surfaceVariant,
             },
           ]}>
           <MaterialCommunityIcons
@@ -89,13 +89,12 @@ export const IconSelectBottomSheet = ({
             size={32}
             color={
               item === selectedIcon
-                ? CustomLightTheme.colors.inversePrimary
-                : CustomLightTheme.colors.onPrimary
+                ? theme.colors.onPrimary
+                : theme.colors.primary
             }
           />
         </View>
-        <Text
-          style={[{marginLeft: 20, color: CustomLightTheme.colors.onSurface}]}>
+        <Text style={[{marginLeft: 20, color: theme.colors.onSurface}]}>
           {item}
         </Text>
       </Surface>
@@ -118,14 +117,20 @@ export const IconSelectBottomSheet = ({
             setVisible(false);
           }}
         />
-        <Appbar.Content titleStyle={{fontSize: 18}} title="Transaction Icons" />
+        <Appbar.Content
+          title="Transaction Icons"
+          titleStyle={{fontWeight: '700'}}
+        />
       </Appbar.Header>
       <Divider />
       <BottomSheetFlatList
         data={IconsData}
         keyExtractor={i => i}
         renderItem={_renderIcons}
-        contentContainerStyle={styles.contentContainer}
+        style={{backgroundColor: theme.colors.surface}}
+        contentContainerStyle={{
+          backgroundColor: theme.colors.surface,
+        }}
         ItemSeparatorComponent={() => <Divider />}
       />
     </BottomSheet>

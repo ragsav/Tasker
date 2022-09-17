@@ -6,32 +6,33 @@
  * @flow strict-local
  */
 import {Q} from '@nozbe/watermelondb';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
-import {SafeAreaView, StyleSheet, View} from 'react-native';
+import React, {useCallback} from 'react';
+import {SafeAreaView, StatusBar, StyleSheet, View} from 'react-native';
 import {
   Appbar,
   Button,
   Divider,
   List,
-  Searchbar,
-  Surface,
   Text,
   TouchableRipple,
   useTheme,
 } from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {EnhancedLabelItem} from '../components/LabelItem';
 import {EnhancedNoteItem} from '../components/NoteItem';
 import {database} from '../db/db';
 import Label from '../db/models/Label';
-import {deleteLabel, resetDeleteLabelState} from '../redux/actions';
 import Note from '../db/models/Note';
-// import CreateNewLabelBottomSheet from './CreateNewLabelScreen';
+import {
+  deleteLabel,
+  resetDeleteLabelState,
+  unGroupLabel,
+} from '../redux/actions';
 const BOTTOM_APPBAR_HEIGHT = 64;
 
 // const EnhancedLabelItem = enhanceLabelItem(LabelItem);
@@ -72,6 +73,9 @@ const Home = ({navigation, dispatch, labels, notes}) => {
   const _handleDeleteLabel = id => {
     dispatch(deleteLabel({id}));
   };
+  const _handleUnGroupLabel = id => {
+    dispatch(unGroupLabel({id}));
+  };
 
   // navigation functions
 
@@ -90,6 +94,9 @@ const Home = ({navigation, dispatch, labels, notes}) => {
   const _navigateToCreateNoteScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE);
   };
+  const _navigateToSearchScreen = () => {
+    navigation?.navigate(CONSTANTS.ROUTES.SEARCH);
+  };
 
   // misc functions
   const _init = () => {};
@@ -99,13 +106,19 @@ const Home = ({navigation, dispatch, labels, notes}) => {
 
   // return
   return (
-    <SafeAreaView style={styles.main}>
-      {/* <Surface style={styles.container}> */}
-      <Searchbar
-        placeholder="Search"
-        onChangeText={_handleSearchQueryChange}
-        value={searchQuery}
-      />
+    <SafeAreaView
+      style={{
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: theme.colors.surface,
+      }}>
+      <Appbar.Header>
+        <Appbar.Content
+          title="#Notes"
+          titleStyle={{fontWeight: '700', color: theme.colors.primary}}
+        />
+        <Appbar.Action icon={'magnify'} onPress={_navigateToSearchScreen} />
+      </Appbar.Header>
+
       <TouchableRipple onPress={_navigateToDayScreen}>
         <View
           style={{
@@ -201,9 +214,11 @@ const Home = ({navigation, dispatch, labels, notes}) => {
       {labels && labels.length > 0 && (
         <Text
           style={{
-            backgroundColor: theme.colors.onSecondary,
+            backgroundColor: theme.colors.surfaceVariant,
             padding: 12,
             paddingVertical: 6,
+            color: theme.colors.onSurfaceVariant,
+            fontWeight: '600',
           }}>
           Labels
         </Text>
@@ -214,6 +229,7 @@ const Home = ({navigation, dispatch, labels, notes}) => {
             <EnhancedLabelItem
               label={label}
               handleDeleteLabel={_handleDeleteLabel}
+              handleUnGroupLabel={_handleUnGroupLabel}
               key={index}
             />
           );
@@ -222,9 +238,11 @@ const Home = ({navigation, dispatch, labels, notes}) => {
       {notes && notes.length > 0 && (
         <Text
           style={{
-            backgroundColor: theme.colors.onSecondary,
+            backgroundColor: theme.colors.surfaceVariant,
             padding: 12,
             paddingVertical: 6,
+            color: theme.colors.onSurfaceVariant,
+            fontWeight: '600',
           }}>
           Unlabeled Notes
         </Text>
@@ -239,16 +257,20 @@ const Home = ({navigation, dispatch, labels, notes}) => {
           styles.bottom,
           {
             height: BOTTOM_APPBAR_HEIGHT + bottom,
-            backgroundColor: theme.colors.elevation.level2,
+            backgroundColor: theme.colors.primary,
           },
         ]}
         safeAreaInsets={{bottom}}>
-        <Button icon="plus" onPress={_navigateToCreateLabelScreen}>
+        <Button
+          icon="plus"
+          onPress={_navigateToCreateLabelScreen}
+          textColor={theme.colors.onSecondary}>
           Add label
         </Button>
         <Appbar.Action
           isLeading={false}
           icon="note-plus"
+          iconColor={theme.colors.onSecondary}
           onPress={_navigateToCreateNoteScreen}
         />
       </Appbar>

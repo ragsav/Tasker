@@ -8,21 +8,12 @@
 
 import withObservables from '@nozbe/with-observables';
 import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
-import {Pressable, StyleSheet, TouchableHighlight, View} from 'react-native';
-import Collapsible from 'react-native-collapsible';
-import {Menu, MenuItem} from 'react-native-material-menu';
-import {
-  Divider,
-  IconButton,
-  Text,
-  TouchableRipple,
-  useTheme,
-} from 'react-native-paper';
+import React from 'react';
+import {StyleSheet, View} from 'react-native';
+import {Text, TouchableRipple, useTheme} from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CONSTANTS} from '../../constants';
 import Note from '../db/models/Note';
-import {DeleteConfirmationDialog} from './DeleteConfirmationDialog';
 
 /**
  *
@@ -73,7 +64,7 @@ const NoteItem = ({note, tasksCount, handleDeleteNote}) => {
         paddingVertical: 14,
         borderLeftColor:
           note && note.colorString ? note.colorString : theme.colors.error,
-        borderLeftWidth: 3,
+        borderLeftWidth: 5,
       }}
       onPress={_navigateToNoteScreen}>
       <View

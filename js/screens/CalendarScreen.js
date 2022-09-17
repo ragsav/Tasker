@@ -1,84 +1,95 @@
-import React, {Component} from 'react';
 import {Q} from '@nozbe/watermelondb';
-import {useEffect} from 'react';
-import {useState} from 'react';
+import React, {useState} from 'react';
 import {
-  Alert,
+  Animated,
+  Pressable,
+  SafeAreaView,
   StyleSheet,
   View,
-  TouchableOpacity,
-  SafeAreaView,
-  Animated,
 } from 'react-native';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import {database} from '../db/db';
 import withObservables from '@nozbe/with-observables';
+import calendarize from 'calendarize';
+import moment from 'moment';
+import {useMemo, useRef} from 'react';
+import {
+  Divider,
+  Surface,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from 'react-native-paper';
+import {FlatGrid} from 'react-native-super-grid';
 import {connect} from 'react-redux';
 import AppbarWithMonths from '../components/AppbarWithMonths';
-import moment from 'moment';
-import Calendar from 'react-native-big-calendar';
-import calendarize from 'calendarize';
-import {FlatGrid} from 'react-native-super-grid';
-import {Surface, Text, useTheme} from 'react-native-paper';
+import {database} from '../db/db';
 import Task from '../db/models/Task';
-import {useRef} from 'react';
-import {datesArray, getDaysArray} from '../utils/dateTime';
-import {date} from '@nozbe/watermelondb/decorators';
-import {useMemo} from 'react';
-var today = new Date();
+import {datesArray} from '../utils/dateTime';
+import {EnhancedCalendarItemBottomSheet} from '../components/CalenderItemBottomSheet';
 
-today.setHours(0);
-today.setMinutes(0);
-today.setSeconds(0);
-today.setMilliseconds(0);
-const CalenderCellItem = ({date, tasks}) => {
+const CalenderCellItem = ({date, tasks, handleOpenCalenderItem}) => {
   const theme = useTheme();
-  const _s = new Date(date);
-  _s.setHours(0);
-  _s.setMinutes(0);
-  _s.setSeconds(0);
-  _s.setMilliseconds(0);
+
+  const _handleOpenCalenderItem = () => {
+    const taskIDs = tasks?.map(v => {
+      return v.id;
+    });
+
+    if (Array.isArray(taskIDs) && taskIDs.length > 0) {
+      handleOpenCalenderItem({date, taskIDs});
+    }
+  };
   return (
-    <Surface
+    <TouchableRipple
+      onPress={_handleOpenCalenderItem}
       style={{
-        flexDirection: 'column',
-        height: 100,
-        padding: 4,
+        borderWidth: StyleSheet.hairlineWidth,
+        borderColor: theme.colors.surfaceVariant,
         backgroundColor:
           new Date(date).toDateString() === new Date().toDateString()
-            ? theme.colors.onSecondary
+            ? theme.colors.surfaceVariant
             : theme.colors.surface,
       }}>
-      {!String(date).includes('null') && (
-        <Text variant="bodySmall">{moment(date).date()}</Text>
-      )}
-      {tasks && (
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            justifyContent: 'flex-start',
-            marginTop: 12,
-          }}>
-          {tasks.map(task => {
-            return (
-              <MaterialCommunityIcons
-                key={task.id}
-                name={
-                  task.isDone
-                    ? 'checkbox-blank-circle'
-                    : 'checkbox-blank-circle-outline'
-                }
-                size={10}
-                color={theme.colors.secondary}
-              />
-            );
-          })}
-        </View>
-      )}
-    </Surface>
+      <View
+        style={{
+          flexDirection: 'column',
+          height: 100,
+          padding: 4,
+          backgroundColor: 'transparent',
+        }}>
+        {!String(date).includes('null') && moment(date).isValid() && (
+          <Text variant="bodyMedium" style={{fontWeight: '600'}}>
+            {moment(date).date()}
+          </Text>
+        )}
+        {tasks && (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              justifyContent: 'flex-start',
+              marginTop: 12,
+            }}>
+            {tasks.map(task => {
+              return (
+                <MaterialCommunityIcons
+                  key={task.id}
+                  name={
+                    task.isDone
+                      ? 'checkbox-blank-circle'
+                      : 'checkbox-blank-circle-outline'
+                  }
+                  size={10}
+                  color={theme.colors.secondary}
+                />
+              );
+            })}
+          </View>
+        )}
+      </View>
+    </TouchableRipple>
   );
 };
 
@@ -89,9 +100,8 @@ const CalenderCellItem = ({date, tasks}) => {
  * @returns
  */
 const CalendarScreen = ({tasks, sDate, eDate}) => {
-  //   const [items, setItems] = useState([]);
-  const [dates, setDates] = useState({});
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const theme = useTheme();
+  const [selectedDateInfo, setSelectedDateInfo] = useState(false);
 
   const items = useMemo(() => {
     var datesOfMonth = calendarize(sDate).flat();
@@ -155,43 +165,58 @@ const CalendarScreen = ({tasks, sDate, eDate}) => {
     return items;
   }, [tasks, sDate]);
 
-  const _fadeIn = () => {
-    // Will change fadeAnim value to 1 in 5 seconds
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 2000,
-      useNativeDriver: true,
-    }).start();
+  const _handleOpenCalenderItem = ({date, taskIDs}) => {
+    setSelectedDateInfo({date, taskIDs});
   };
-  const _fadeOut = () => {
-    // Will change fadeAnim value to 0 in 3 seconds
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      useNativeDriver: true,
-      duration: 100,
-    }).start();
-  };
-
   return (
-    <SafeAreaView>
+    <SafeAreaView
+      style={{
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: theme.colors.surface,
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'stretch',
+      }}>
       <AppbarWithMonths />
-      <FlatGrid
-        itemDimension={1}
-        data={moment.weekdaysShort()}
-        renderItem={({item}) => <Text>{item}</Text>}
-        maxItemsPerRow={7}
-      />
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingVertical: 12,
+        }}>
+        {moment.weekdaysShort().map((day, index) => {
+          return (
+            <Text
+              style={{textAlign: 'center', flex: 1, fontWeight: '600'}}
+              key={index}>
+              {day}
+            </Text>
+          );
+        })}
+      </View>
 
       <FlatGrid
         itemDimension={1}
         adjustGridToStyles
-        style={{height: '100%'}}
-        spacing={1}
+        spacing={StyleSheet.hairlineWidth}
         data={items}
+        contentContainerStyle={{
+          backgroundColor: theme.colors.surfaceVariant,
+          paddingTop: StyleSheet.hairlineWidth,
+        }}
         renderItem={({item}) => (
-          <CalenderCellItem date={item.date} tasks={item.tasks} />
+          <CalenderCellItem
+            date={item.date}
+            tasks={item.tasks}
+            handleOpenCalenderItem={_handleOpenCalenderItem}
+          />
         )}
         maxItemsPerRow={7}
+      />
+      <EnhancedCalendarItemBottomSheet
+        selectedDateInfo={selectedDateInfo}
+        setSelectedDateInfo={setSelectedDateInfo}
       />
     </SafeAreaView>
   );

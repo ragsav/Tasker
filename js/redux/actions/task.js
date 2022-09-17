@@ -5,6 +5,7 @@ import {setEndDate, setStartDate} from './timeFrame';
 import {currentEndDate, currentStartDate, getWeek} from '../../utils/dateTime';
 import Task from '../../db/models/Task';
 import {CONSTANTS} from '../../../constants';
+import ReactNativeCalendarEvents from 'react-native-calendar-events';
 
 export const GET_TASKS = 'GET_TASKS';
 export const CREATE_TASK_STATE = 'CREATE_TASK_STATE';
@@ -114,6 +115,24 @@ export const getTasks = () => async dispatch => {
 export const getTaskByID = async id => {
   try {
     const t = await database.get('tasks').find(id);
+    return t;
+  } catch (error) {
+    console.log({error});
+    return null;
+  }
+};
+
+/**
+ *
+ * @param {string} id
+ * @returns {Promise<Array<Task>>}
+ */
+export const getTaskByQuery = async query => {
+  try {
+    const t = await database.collections
+      .get('tasks')
+      .query(Q.where('title', Q.like(`%${Q.sanitizeLikeString(query)}%`)))
+      .fetch();
     return t;
   } catch (error) {
     console.log({error});
@@ -431,3 +450,15 @@ export const deleteMultipleTasks =
       );
     }
   };
+
+export const addTaskToCalendar = async ({calendarID, taskID}) => {
+  const task = await database.collections.get('tasks').find(taskID);
+  const startDate = new Date(task.createdAt).toISOString();
+  const endDate = new Date(task.end_timestamp).toISOString();
+  console.log({startDate, endDate});
+  // return ReactNativeCalendarEvents.saveEvent(task.title, {
+  //   calendarId: calendarID,
+  //   startDate,
+  //   endDate,
+  // });
+};
