@@ -215,6 +215,36 @@ export const editTask =
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
+
+export const editTaskMarkBulkDone =
+  ({ids}) =>
+  async dispatch => {
+    if (Array.isArray(ids) && ids.length > 0) {
+      dispatch(editTaskState({loading: true, success: false, error: null}));
+      try {
+        const _d = Date.now();
+        const tasksToBeMarkedDone = await database
+          .get('tasks')
+          .query(Q.where('id', Q.oneOf(ids)))
+          .fetch();
+        const batchUpdateRecords = tasksToBeMarkedDone.map(task => {
+          return task.prepareUpdate(t => {
+            t.isDone = true;
+            task.doneTimestamp = _d;
+          });
+        });
+        database.write(async () => {
+          database.batch(...batchUpdateRecords);
+        });
+
+        dispatch(editTaskState({loading: false, success: true, error: null}));
+        Logger.pageLogger('editTaskMarkBulkDone : success');
+      } catch (error) {
+        Logger.pageLogger('editTaskMarkBulkDone : error', error);
+        dispatch(editTaskState({loading: false, success: true, error}));
+      }
+    }
+  };
 export const editTaskTitle =
   ({id, title}) =>
   async dispatch => {

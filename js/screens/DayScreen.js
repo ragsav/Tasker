@@ -8,7 +8,7 @@ import {connect} from 'react-redux';
 import TaskItem from '../components/TaskItem';
 import {database} from '../db/db';
 import Task from '../db/models/Task';
-import {resetDeleteNoteState} from '../redux/actions';
+import {editTaskMarkBulkDone, resetDeleteNoteState} from '../redux/actions';
 
 /**
  *
@@ -55,6 +55,10 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
   // handle functions
 
   const _handleToggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const _handleMarkAllDone = () => {
+    dispatch(editTaskMarkBulkDone({ids: tasks?.map(task => task.id)}));
+    setIsMenuOpen(false);
+  };
 
   // navigation functions
   const _navigateBack = () => {
@@ -84,7 +88,11 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
           anchor={
             <Appbar.Action icon={'dots-vertical'} onPress={_handleToggleMenu} />
           }>
-          <Menu.Item title="Mark all done" leadingIcon={'check-all'} />
+          <Menu.Item
+            title="Mark all done"
+            leadingIcon={'check-all'}
+            onPress={_handleMarkAllDone}
+          />
           <Menu.Item onPress={() => {}} title="Sort by" leadingIcon={'sort'} />
         </Menu>
       </Appbar.Header>
