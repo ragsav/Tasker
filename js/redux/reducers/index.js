@@ -4,12 +4,12 @@ import note from './note';
 import task from './task';
 import permission from './permission';
 import timeFrame from './timeFrame';
-import theme from './theme';
+import settings from './settings';
 export default combineReducers({
   permission,
   label,
   note,
   task,
   timeFrame,
-  theme,
+  settings,
 });

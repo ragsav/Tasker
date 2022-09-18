@@ -3,4 +3,4 @@ export * from './label';
 export * from './note';
 export * from './timeFrame';
 export * from './task';
-export * from './theme';
+export * from './settings';

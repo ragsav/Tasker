@@ -25,6 +25,8 @@ import {SearchScreen} from '../screens/SearchScreen';
 import {Provider as PaperProvider} from 'react-native-paper';
 import {StatusBar} from 'react-native';
 import Settings from '../screens/Settings';
+import AllTaskScreen from '../screens/AllTaskScreen';
+import CompletedScreen from '../screens/CompletedScreen';
 const Stack = createStackNavigator();
 
 const Router = ({theme}) => {
@@ -99,6 +101,16 @@ const Router = ({theme}) => {
               options={{headerShown: false}}
             />
             <Stack.Screen
+              name={CONSTANTS.ROUTES.ALL}
+              component={AllTaskScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.COMPLETED}
+              component={CompletedScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
               name={CONSTANTS.ROUTES.BOOKMARKS}
               component={BookmarkScreen}
               options={{headerShown: false}}
@@ -132,7 +144,7 @@ const Router = ({theme}) => {
 
 const mapStateToProps = state => {
   return {
-    theme: state.theme.theme,
+    theme: state.settings.theme,
   };
 };
 export default connect(mapStateToProps)(Router);

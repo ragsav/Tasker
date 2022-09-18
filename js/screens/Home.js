@@ -50,7 +50,7 @@ const BOTTOM_APPBAR_HEIGHT = 64;
  * @param {Array<Note>} param0.notes
  * @returns
  */
-const Home = ({navigation, dispatch, labels, notes}) => {
+const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
   // ref
 
   // variables
@@ -94,6 +94,12 @@ const Home = ({navigation, dispatch, labels, notes}) => {
   };
   const _navigateToBookmarkScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.BOOKMARKS);
+  };
+  const _navigateToCompletedScreen = () => {
+    navigation?.navigate(CONSTANTS.ROUTES.COMPLETED);
+  };
+  const _navigateToAllTaskScreen = () => {
+    navigation?.navigate(CONSTANTS.ROUTES.ALL);
   };
   const _navigateToCalendarScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.CALENDAR);
@@ -146,44 +152,80 @@ const Home = ({navigation, dispatch, labels, notes}) => {
           width: '100%',
           paddingBottom: BOTTOM_APPBAR_HEIGHT,
         }}>
-        <List.Item
-          title="My day"
-          left={props => (
-            <List.Icon
-              {...props}
-              icon="calendar-today"
-              color={theme.colors.onSurface}
-            />
-          )}
-          right={props => <List.Icon {...props} icon="chevron-right" />}
-          onPress={_navigateToDayScreen}
-        />
-        <Divider />
-        <List.Item
-          title="Bookmarks"
-          left={props => (
-            <List.Icon
-              {...props}
-              icon="bookmark"
-              color={theme.colors.onSurface}
-            />
-          )}
-          right={props => <List.Icon {...props} icon="chevron-right" />}
-          onPress={_navigateToBookmarkScreen}
-        />
-        <Divider />
-        <List.Item
-          title="My calendar"
-          left={props => (
-            <List.Icon
-              {...props}
-              icon="calendar"
-              color={theme.colors.onSurface}
-            />
-          )}
-          right={props => <List.Icon {...props} icon="chevron-right" />}
-          onPress={_navigateToCalendarScreen}
-        />
+        {quickListSettings?.myDay && (
+          <List.Item
+            title="My day"
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="calendar-today"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => <List.Icon {...props} icon="chevron-right" />}
+            onPress={_navigateToDayScreen}
+          />
+        )}
+        {quickListSettings?.myDay && <Divider />}
+        {quickListSettings?.all && (
+          <List.Item
+            title="All"
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="all-inclusive"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => <List.Icon {...props} icon="chevron-right" />}
+            onPress={_navigateToAllTaskScreen}
+          />
+        )}
+        {quickListSettings?.all && <Divider />}
+        {quickListSettings?.completed && (
+          <List.Item
+            title="Completed"
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="check-all"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => <List.Icon {...props} icon="chevron-right" />}
+            onPress={_navigateToCompletedScreen}
+          />
+        )}
+        {quickListSettings?.completed && <Divider />}
+        {quickListSettings?.bookmarks && (
+          <List.Item
+            title="Bookmarks"
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="bookmark"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => <List.Icon {...props} icon="chevron-right" />}
+            onPress={_navigateToBookmarkScreen}
+          />
+        )}
+        {quickListSettings?.bookmarks && <Divider />}
+        {quickListSettings?.myCalendar && (
+          <List.Item
+            title="My calendar"
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="calendar"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => <List.Icon {...props} icon="chevron-right" />}
+            onPress={_navigateToCalendarScreen}
+          />
+        )}
 
         {labels && labels.length > 0 && (
           <Text
@@ -259,6 +301,7 @@ const mapStateToProps = state => {
     isCreatingNote: state.note.isCreatingNote,
     createNoteSuccess: state.note.createNoteSuccess,
     createNoteFailure: state.note.createNoteFailure,
+    quickListSettings: state.settings.quickListSettings,
   };
 };
 

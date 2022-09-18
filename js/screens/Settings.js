@@ -12,7 +12,11 @@ import {
   useTheme,
 } from 'react-native-paper';
 import {connect} from 'react-redux';
-import {resetDeleteNoteState, setTheme} from '../redux/actions';
+import {
+  resetDeleteNoteState,
+  setQuickListSettings,
+  setTheme,
+} from '../redux/actions';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {_customDarkTheme, _customLightTheme} from '../../themes';
 import {useEffect} from 'react';
@@ -21,7 +25,7 @@ import {useEffect} from 'react';
  * @param {object} param0
  * @returns
  */
-const Settings = ({navigation, dispatch}) => {
+const Settings = ({navigation, dispatch, quickListSettings}) => {
   // ref
 
   // variables
@@ -49,6 +53,56 @@ const Settings = ({navigation, dispatch}) => {
       dispatch(setTheme({theme: _customDarkTheme}));
     }
   };
+  const _handleToggleMyDayList = () => {
+    dispatch(
+      setQuickListSettings({
+        quickListSettings: {
+          ...quickListSettings,
+          myDay: !quickListSettings.myDay,
+        },
+      }),
+    );
+  };
+  const _handleToggleAllTaskList = () => {
+    dispatch(
+      setQuickListSettings({
+        quickListSettings: {
+          ...quickListSettings,
+          all: !quickListSettings.all,
+        },
+      }),
+    );
+  };
+  const _handleToggleCompleted = () => {
+    dispatch(
+      setQuickListSettings({
+        quickListSettings: {
+          ...quickListSettings,
+          completed: !quickListSettings.completed,
+        },
+      }),
+    );
+  };
+  const _handleToggleBookmarks = () => {
+    dispatch(
+      setQuickListSettings({
+        quickListSettings: {
+          ...quickListSettings,
+          bookmarks: !quickListSettings.bookmarks,
+        },
+      }),
+    );
+  };
+  const _handleToggleMyCalendarList = () => {
+    dispatch(
+      setQuickListSettings({
+        quickListSettings: {
+          ...quickListSettings,
+          myCalendar: !quickListSettings.myCalendar,
+        },
+      }),
+    );
+  };
 
   // navigation functions
   const _navigateBack = () => {
@@ -65,7 +119,6 @@ const Settings = ({navigation, dispatch}) => {
       style={{
         ...StyleSheet.absoluteFillObject,
         backgroundColor: theme?.colors.surface,
-        height: 300,
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
@@ -73,7 +126,7 @@ const Settings = ({navigation, dispatch}) => {
       </Appbar.Header>
       <ScrollView>
         <List.Item
-          title="My calendar"
+          title={'Dark theme'}
           left={props => (
             <List.Icon
               {...props}
@@ -85,6 +138,91 @@ const Settings = ({navigation, dispatch}) => {
             <Switch value={theme.dark} onValueChange={_handleToggleTheme} />
           )}
         />
+        <Divider />
+        <List.Section>
+          <List.Subheader>Quick lists</List.Subheader>
+
+          <List.Item
+            title={'Show My day quick list'}
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="calendar-today"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => (
+              <Switch
+                value={quickListSettings?.myDay}
+                onValueChange={_handleToggleMyDayList}
+              />
+            )}
+          />
+          <List.Item
+            title={'Show All tasks quick list'}
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="all-inclusive"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => (
+              <Switch
+                value={quickListSettings?.all}
+                onValueChange={_handleToggleAllTaskList}
+              />
+            )}
+          />
+          <List.Item
+            title={'Show completed tasks quick list'}
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="check-all"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => (
+              <Switch
+                value={quickListSettings?.completed}
+                onValueChange={_handleToggleCompleted}
+              />
+            )}
+          />
+          <List.Item
+            title={'Show bookmarks quick list'}
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="bookmark"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => (
+              <Switch
+                value={quickListSettings?.bookmarks}
+                onValueChange={_handleToggleBookmarks}
+              />
+            )}
+          />
+          <List.Item
+            title={'Show my calendar quick list'}
+            left={props => (
+              <List.Icon
+                {...props}
+                icon="calendar"
+                color={theme.colors.onSurface}
+              />
+            )}
+            right={props => (
+              <Switch
+                value={quickListSettings?.myCalendar}
+                onValueChange={_handleToggleMyCalendarList}
+              />
+            )}
+          />
+        </List.Section>
 
         <Divider />
       </ScrollView>
@@ -96,7 +234,9 @@ const Settings = ({navigation, dispatch}) => {
 // const EnhancedSettings = enhanceSettings(Settings);
 
 const mapStateToProps = state => {
-  return {};
+  return {
+    quickListSettings: state.settings.quickListSettings,
+  };
 };
 
 export default connect(mapStateToProps)(Settings);
