@@ -5,6 +5,7 @@ import {SafeAreaView, StyleSheet, View} from 'react-native';
 import {
   Appbar,
   Button,
+  HelperText,
   IconButton,
   Surface,
   TextInput,
@@ -28,6 +29,7 @@ const CreateNewLabelScreen = ({
 
   // states
   const [labelState, setLabelState] = useState({title: '', iconString: null});
+  const [error, setError] = useState(null);
   const [isIconSelectionVisible, setIsIconSelectionVisible] = useState(false);
 
   // effects
@@ -63,9 +65,21 @@ const CreateNewLabelScreen = ({
   };
 
   const _handleSave = () => {
-    dispatch(
-      createLabel({title: labelState.title, iconString: labelState.iconString}),
-    );
+    if (
+      !labelState ||
+      !labelState.title ||
+      String(labelState.title).trim() === ''
+    ) {
+      setError('Title cannot be empty');
+    } else {
+      setError(null);
+      dispatch(
+        createLabel({
+          title: labelState.title,
+          iconString: labelState.iconString,
+        }),
+      );
+    }
   };
   // navigation functions
   const _navigateBack = () => {
@@ -79,7 +93,7 @@ const CreateNewLabelScreen = ({
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme?.colors.surface,
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
@@ -93,10 +107,10 @@ const CreateNewLabelScreen = ({
           flexDirection: 'column',
           justifyContent: 'flex-start',
           alignItems: 'stretch',
-          backgroundColor: theme.colors.surface,
+          backgroundColor: theme?.colors.surface,
         }}>
         <IconButton
-          style={{backgroundColor: theme.colors.surfaceVariant, margin: 0}}
+          style={{backgroundColor: theme?.colors.surfaceVariant, margin: 0}}
           icon={labelState.iconString ? labelState.iconString : 'label'}
           size={42}
           onPress={_handleOpenIconSelection}
@@ -108,8 +122,13 @@ const CreateNewLabelScreen = ({
           value={labelState.title}
           onChangeText={_handleTitleChange}
           style={{marginTop: 20}}
-          outlineColor={theme.colors.primary}
+          outlineColor={theme?.colors.primary}
         />
+        {error && (
+          <HelperText style={{marginTop: 4, paddingLeft: 2}} type="error">
+            {error}
+          </HelperText>
+        )}
         <Button mode="contained" style={{marginTop: 20}} onPress={_handleSave}>
           Save
         </Button>

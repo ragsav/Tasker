@@ -46,11 +46,11 @@ const CalenderCellItem = ({date, tasks, handleOpenCalenderItem}) => {
       onPress={_handleOpenCalenderItem}
       style={{
         borderWidth: StyleSheet.hairlineWidth,
-        borderColor: theme.colors.surfaceVariant,
+        borderColor: theme?.colors.surfaceVariant,
         backgroundColor:
           new Date(date).toDateString() === new Date().toDateString()
-            ? theme.colors.surfaceVariant
-            : theme.colors.surface,
+            ? theme?.colors.surfaceVariant
+            : theme?.colors.surface,
       }}>
       <View
         style={{
@@ -82,7 +82,7 @@ const CalenderCellItem = ({date, tasks, handleOpenCalenderItem}) => {
                       : 'checkbox-blank-circle-outline'
                   }
                   size={10}
-                  color={theme.colors.secondary}
+                  color={theme?.colors.secondary}
                 />
               );
             })}
@@ -172,7 +172,7 @@ const CalendarScreen = ({tasks, sDate, eDate}) => {
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme?.colors.surface,
         flexDirection: 'column',
         justifyContent: 'flex-start',
         alignItems: 'stretch',
@@ -202,7 +202,7 @@ const CalendarScreen = ({tasks, sDate, eDate}) => {
         spacing={StyleSheet.hairlineWidth}
         data={items}
         contentContainerStyle={{
-          backgroundColor: theme.colors.surfaceVariant,
+          backgroundColor: theme?.colors.surfaceVariant,
           paddingTop: StyleSheet.hairlineWidth,
         }}
         renderItem={({item}) => (

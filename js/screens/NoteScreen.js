@@ -15,7 +15,11 @@ import TaskItem from '../components/TaskItem';
 import {database} from '../db/db';
 import Note from '../db/models/Note';
 import Task from '../db/models/Task';
-import {deleteNote, resetDeleteNoteState} from '../redux/actions';
+import {
+  deleteNote,
+  duplicateNote,
+  resetDeleteNoteState,
+} from '../redux/actions';
 
 /**
  *
@@ -91,6 +95,10 @@ const NoteScreen = ({
     setIsMenuOpen(false);
     setIsDeleteDialogOpen(false);
   };
+  const _handleDuplicateNote = () => {
+    dispatch(duplicateNote({id: note.id}));
+    setIsMenuOpen(false);
+  };
   const _handleOpenTaskInput = () => {
     setIsTaskInputOpen(true);
   };
@@ -120,7 +128,11 @@ const NoteScreen = ({
 
   // return
   return (
-    <SafeAreaView style={[styles.main]}>
+    <SafeAreaView
+      style={{
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: theme?.colors.surface,
+      }}>
       <DeleteConfirmationDialog
         visible={isDeleteDialogOpen}
         message="note"
@@ -145,7 +157,7 @@ const NoteScreen = ({
           <Menu.Item onPress={() => {}} title="Sort by" leadingIcon={'sort'} />
 
           <Menu.Item
-            onPress={() => {}}
+            onPress={_handleDuplicateNote}
             title="Duplicate note"
             leadingIcon={'content-duplicate'}
           />
@@ -171,10 +183,10 @@ const NoteScreen = ({
           margin: 16,
           right: 0,
           bottom: 0,
-          // backgroundColor: theme.colors.surface,
+          // backgroundColor: theme?.colors.surface,
           backgroundColor: note?.colorString,
         }}
-        color={theme.colors.surface}
+        color={theme?.colors.surface}
         onPress={_handleOpenTaskInput}
       />
       <TaskInput

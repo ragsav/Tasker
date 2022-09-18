@@ -42,6 +42,7 @@ const TaskInput = ({
     endTimestamp: null,
     reminderTimeStamp: null,
   });
+  const [error, setError] = useState(null);
   const [dueDateString, setDueDateString] = useState('Set due');
   const [isDueDateTimePickerVisible, setIsDueDateTimePickerVisible] =
     useState(false);
@@ -111,6 +112,9 @@ const TaskInput = ({
 
   // handle functions
   const _handleOnTitleChange = title => {
+    if (error) {
+      setError(false);
+    }
     setTaskData({...taskData, title});
   };
   const _handleOpenDueDateTimePicker = () => {
@@ -137,15 +141,20 @@ const TaskInput = ({
     setIsReminderDateTimePickerVisible(false);
   };
   const _handleSave = () => {
-    dispatch(
-      createTask({
-        title: taskData.title,
-        noteID,
-        startTimestamp: taskData.startTimestamp,
-        endTimestamp: taskData.endTimestamp,
-        reminderTimestamp: taskData.reminderTimeStamp,
-      }),
-    );
+    if (!taskData || !taskData.title || String(taskData.title).trim() === '') {
+      setError(true);
+    } else {
+      setError(false);
+      dispatch(
+        createTask({
+          title: taskData.title,
+          noteID,
+          startTimestamp: taskData.startTimestamp,
+          endTimestamp: taskData.endTimestamp,
+          reminderTimestamp: taskData.reminderTimeStamp,
+        }),
+      );
+    }
   };
 
   // navigation functions
@@ -164,19 +173,24 @@ const TaskInput = ({
       contentHeight={animatedContentHeight}
       backdropComponent={_renderBackdrop}
       onClose={_handleOnCloseSheet}
-      style={{backgroundColor: theme.colors.surface}}
+      style={{backgroundColor: theme?.colors.surface}}
       overDragResistanceFactor={0}
       handleStyle={{display: 'none'}}>
       <BottomSheetView
         style={[
           styles.contentContainer,
-          {backgroundColor: theme.colors.surface},
+          {backgroundColor: theme?.colors.surface},
         ]}
         onLayout={handleContentLayout}>
         <TextInput
           ref={textInputRef}
           label="Add task"
-          style={styles.input}
+          style={{
+            width: '100%',
+            marginBottom: 12,
+            backgroundColor: 'transparent',
+          }}
+          activeUnderlineColor={error && theme.colors.error}
           value={taskData.title}
           onChangeText={_handleOnTitleChange}
           right={
@@ -213,12 +227,12 @@ const TaskInput = ({
               <MaterialCommunityIcons
                 name="calendar-range"
                 size={20}
-                color={theme.colors.onPrimary}
+                color={theme?.colors.onPrimary}
               />
             )}
             onPress={_handleOpenDueDateTimePicker}
-            textStyle={{color: theme.colors.onPrimary}}
-            style={{marginRight: 12, backgroundColor: theme.colors.primary}}>
+            textStyle={{color: theme?.colors.onPrimary}}
+            style={{marginRight: 12, backgroundColor: theme?.colors.primary}}>
             {dueDateString}
           </Chip>
           <Chip
@@ -226,12 +240,12 @@ const TaskInput = ({
               <MaterialCommunityIcons
                 name="bell"
                 size={20}
-                color={theme.colors.onPrimary}
+                color={theme?.colors.onPrimary}
               />
             )}
             onPress={_handleOpenReminderDateTimePicker}
-            textStyle={{color: theme.colors.onPrimary}}
-            style={{marginRight: 12, backgroundColor: theme.colors.primary}}>
+            textStyle={{color: theme?.colors.onPrimary}}
+            style={{marginRight: 12, backgroundColor: theme?.colors.primary}}>
             {reminderDateString}
           </Chip>
         </BottomSheetScrollView>
@@ -262,10 +276,5 @@ const styles = StyleSheet.create({
     padding: 12,
     flexDirection: 'column',
     alignItems: 'stretch',
-  },
-  input: {
-    width: '100%',
-    marginBottom: 12,
-    backgroundColor: 'rgba(151, 151, 151, 0)',
   },
 });

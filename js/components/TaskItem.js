@@ -65,14 +65,14 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
       style={{
         marginBottom: 6,
         borderLeftColor: _isDue()
-          ? theme.colors.error
+          ? theme?.colors.error
           : noteColor
           ? noteColor
-          : theme.colors.onSurface,
+          : theme?.colors.primary,
         borderLeftWidth: 4,
         backgroundColor: _isDue()
-          ? theme.colors.errorContainer
-          : theme.colors.tertiaryContainer,
+          ? theme?.colors.errorContainer
+          : theme?.colors.primaryContainer,
       }}
       onPress={_navigateToTaskScreen}
       onLongPress={() => {
@@ -98,10 +98,20 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
           />
         )}
       />
+      {String(task.description).trim() !== '' && (
+        <Card.Content>
+          <Paragraph numberOfLines={2} ellipsizeMode="tail">
+            {task.description}
+          </Paragraph>
+        </Card.Content>
+      )}
 
       {task.isDone ? (
         <Card.Content>
-          <Paragraph>{`Marked done ${moment(task.doneTimestamp)
+          <Paragraph
+            style={{
+              fontSize: 12,
+            }}>{`Marked done ${moment(task.doneTimestamp)
             .calendar()
             .toLowerCase()}`}</Paragraph>
         </Card.Content>
@@ -110,7 +120,8 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
           <Card.Content>
             <Paragraph
               style={{
-                color: theme.colors.onErrorContainer,
+                color: theme?.colors.onErrorContainer,
+                fontSize: 12,
               }}>{`Due on ${moment(task.endTimestamp)
               .calendar()
               .toLowerCase()}`}</Paragraph>

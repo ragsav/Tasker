@@ -75,7 +75,7 @@ export const SearchScreen = ({navigation}) => {
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme?.colors.surface,
       }}>
       <Appbar.Header>
         <Searchbar
@@ -84,10 +84,10 @@ export const SearchScreen = ({navigation}) => {
           autoFocus
           placeholder="Search"
           icon="arrow-left"
-          iconColor={theme.colors.onSurface}
+          iconColor={theme?.colors.onSurface}
           onIconPress={_navigateBack}
           elevation={1}
-          style={{margin: 8, backgroundColor: theme.colors.surface}}
+          style={{margin: 8, backgroundColor: theme?.colors.surface}}
         />
       </Appbar.Header>
       <FlatList

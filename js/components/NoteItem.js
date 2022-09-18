@@ -39,7 +39,6 @@ const NoteItem = ({note, tasksCount, handleDeleteNote}) => {
   // handle functions
 
   const _navigateToNoteScreen = () => {
-    console.log({note: note.colorString});
     navigation?.navigate(CONSTANTS.ROUTES.NOTE, {
       p_id: note.id,
       p_title: note.title,
@@ -63,7 +62,7 @@ const NoteItem = ({note, tasksCount, handleDeleteNote}) => {
         paddingHorizontal: 12,
         paddingVertical: 14,
         borderLeftColor:
-          note && note.colorString ? note.colorString : theme.colors.error,
+          note && note.colorString ? note.colorString : theme?.colors.error,
         borderLeftWidth: 5,
       }}
       onPress={_navigateToNoteScreen}>
@@ -83,7 +82,7 @@ const NoteItem = ({note, tasksCount, handleDeleteNote}) => {
             <MaterialCommunityIcons
               name={'format-list-bulleted'}
               size={24}
-              color={theme.colors.onSurface}
+              color={theme?.colors.onSurface}
             />
           }
           <Text style={{marginLeft: 12}}>{note?.title}</Text>

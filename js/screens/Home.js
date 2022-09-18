@@ -5,11 +5,18 @@
  * @format
  * @flow strict-local
  */
+import {synchronize} from '@nozbe/watermelondb/sync';
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback} from 'react';
-import {SafeAreaView, StatusBar, StyleSheet, View} from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {
   Appbar,
   Button,
@@ -97,6 +104,21 @@ const Home = ({navigation, dispatch, labels, notes}) => {
   const _navigateToSearchScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.SEARCH);
   };
+  const _navigateToSettings = () => {
+    navigation?.navigate(CONSTANTS.ROUTES.SETTINGS);
+  };
+  const _demo = async () => {
+    await synchronize({
+      database,
+      pullChanges: async ({lastPulledAt, schemaVersion, migration}) => {
+        return {changes: [], timestamp: Date.now()};
+      },
+
+      pushChanges: async ({changes, lastPulledAt}) => {
+        console.log({changes, lastPulledAt});
+      },
+    });
+  };
 
   // misc functions
   const _init = () => {};
@@ -109,147 +131,101 @@ const Home = ({navigation, dispatch, labels, notes}) => {
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme?.colors.surface,
       }}>
       <Appbar.Header>
         <Appbar.Content
           title="#Notes"
-          titleStyle={{fontWeight: '700', color: theme.colors.primary}}
+          titleStyle={{fontWeight: '700', color: theme?.colors.primary}}
         />
         <Appbar.Action icon={'magnify'} onPress={_navigateToSearchScreen} />
+        <Appbar.Action icon={'cog'} onPress={_navigateToSettings} />
       </Appbar.Header>
+      <ScrollView
+        contentContainerStyle={{
+          width: '100%',
+          paddingBottom: BOTTOM_APPBAR_HEIGHT,
+        }}>
+        <List.Item
+          title="My day"
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="calendar-today"
+              color={theme.colors.onSurface}
+            />
+          )}
+          right={props => <List.Icon {...props} icon="chevron-right" />}
+          onPress={_navigateToDayScreen}
+        />
+        <Divider />
+        <List.Item
+          title="Bookmarks"
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="bookmark"
+              color={theme.colors.onSurface}
+            />
+          )}
+          right={props => <List.Icon {...props} icon="chevron-right" />}
+          onPress={_navigateToBookmarkScreen}
+        />
+        <Divider />
+        <List.Item
+          title="My calendar"
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="calendar"
+              color={theme.colors.onSurface}
+            />
+          )}
+          right={props => <List.Icon {...props} icon="chevron-right" />}
+          onPress={_navigateToCalendarScreen}
+        />
 
-      <TouchableRipple onPress={_navigateToDayScreen}>
-        <View
-          style={{
-            flexDirection: 'row',
-            width: '100%',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <View
+        {labels && labels.length > 0 && (
+          <Text
             style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
+              backgroundColor: theme?.colors.surfaceVariant,
               padding: 12,
-              backgroundColor: 'transparent',
+              paddingVertical: 6,
+              color: theme?.colors.onSurfaceVariant,
+              fontWeight: '600',
             }}>
-            <MaterialCommunityIcons
-              name="calendar-today"
-              size={24}
-              color={theme.colors.onSurface}
-            />
-            <Text style={{marginLeft: 12}}>My day</Text>
-          </View>
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={24}
-            color={theme.colors.onSurface}
-          />
-        </View>
-      </TouchableRipple>
-      <Divider />
-      <TouchableRipple onPress={_navigateToBookmarkScreen}>
-        <View
-          style={{
-            flexDirection: 'row',
-            width: '100%',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <View
+            Labels
+          </Text>
+        )}
+        <List.AccordionGroup>
+          {labels.map((label, index) => {
+            return (
+              <EnhancedLabelItem
+                label={label}
+                handleDeleteLabel={_handleDeleteLabel}
+                handleUnGroupLabel={_handleUnGroupLabel}
+                key={index}
+              />
+            );
+          })}
+        </List.AccordionGroup>
+        {notes && notes.length > 0 && (
+          <Text
             style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
+              backgroundColor: theme?.colors.surfaceVariant,
               padding: 12,
-              backgroundColor: 'transparent',
+              paddingVertical: 6,
+              color: theme?.colors.onSurfaceVariant,
+              fontWeight: '600',
             }}>
-            <MaterialCommunityIcons
-              name="bookmark"
-              size={24}
-              color={theme.colors.onSurface}
-            />
-            <Text style={{marginLeft: 12}}>Bookmarks</Text>
-          </View>
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={24}
-            color={theme.colors.onSurface}
-          />
-        </View>
-      </TouchableRipple>
-      <Divider />
-      <TouchableRipple onPress={_navigateToCalendarScreen}>
-        <View
-          style={{
-            flexDirection: 'row',
-            width: '100%',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              padding: 12,
-              backgroundColor: 'transparent',
-            }}>
-            <MaterialCommunityIcons
-              name="calendar"
-              size={24}
-              color={theme.colors.onSurface}
-            />
-            <Text style={{marginLeft: 12}}>My calendar</Text>
-          </View>
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={24}
-            color={theme.colors.onSurface}
-          />
-        </View>
-      </TouchableRipple>
-      {labels && labels.length > 0 && (
-        <Text
-          style={{
-            backgroundColor: theme.colors.surfaceVariant,
-            padding: 12,
-            paddingVertical: 6,
-            color: theme.colors.onSurfaceVariant,
-            fontWeight: '600',
-          }}>
-          Labels
-        </Text>
-      )}
-      <List.AccordionGroup>
-        {labels.map((label, index) => {
-          return (
-            <EnhancedLabelItem
-              label={label}
-              handleDeleteLabel={_handleDeleteLabel}
-              handleUnGroupLabel={_handleUnGroupLabel}
-              key={index}
-            />
-          );
+            Unlabeled Notes
+          </Text>
+        )}
+        {notes.map((note, index) => {
+          return <EnhancedNoteItem note={note} key={index} />;
         })}
-      </List.AccordionGroup>
-      {notes && notes.length > 0 && (
-        <Text
-          style={{
-            backgroundColor: theme.colors.surfaceVariant,
-            padding: 12,
-            paddingVertical: 6,
-            color: theme.colors.onSurfaceVariant,
-            fontWeight: '600',
-          }}>
-          Unlabeled Notes
-        </Text>
-      )}
-      {notes.map((note, index) => {
-        return <EnhancedNoteItem note={note} key={index} />;
-      })}
+      </ScrollView>
+
       {/* </Surface> */}
 
       <Appbar
@@ -257,20 +233,20 @@ const Home = ({navigation, dispatch, labels, notes}) => {
           styles.bottom,
           {
             height: BOTTOM_APPBAR_HEIGHT + bottom,
-            backgroundColor: theme.colors.primary,
+            backgroundColor: theme?.colors.primary,
           },
         ]}
         safeAreaInsets={{bottom}}>
         <Button
           icon="plus"
           onPress={_navigateToCreateLabelScreen}
-          textColor={theme.colors.onSecondary}>
+          textColor={theme?.colors.onPrimary}>
           Add label
         </Button>
         <Appbar.Action
           isLeading={false}
           icon="note-plus"
-          iconColor={theme.colors.onSecondary}
+          iconColor={theme?.colors.onPrimary}
           onPress={_navigateToCreateNoteScreen}
         />
       </Appbar>

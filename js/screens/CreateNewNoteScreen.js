@@ -11,6 +11,7 @@ import {
 import {
   Appbar,
   Button,
+  HelperText,
   Surface,
   TextInput,
   TouchableRipple,
@@ -41,6 +42,7 @@ const CreateNewNoteScreen = ({
     description: '',
     label: null,
   });
+  const [error, setError] = useState(null);
   const [isLabelSelectionVisible, setIsLabelSelectionVisible] = useState(false);
 
   // effects
@@ -74,7 +76,7 @@ const CreateNewNoteScreen = ({
           borderWidth: 2,
           borderColor:
             noteState.colorString === item
-              ? `${theme.colors.onSurface}`
+              ? `${theme?.colors.onSurface}`
               : '#00000000',
         }}></Pressable>
     );
@@ -106,13 +108,22 @@ const CreateNewNoteScreen = ({
   };
 
   const _handleSave = () => {
-    dispatch(
-      createNote({
-        title: noteState.title,
-        labelID: noteState.label ? noteState.label.id : '',
-        colorString: noteState.colorString,
-      }),
-    );
+    if (
+      !noteState ||
+      !noteState.title ||
+      String(noteState.title).trim() === ''
+    ) {
+      setError('Title cannot be empty');
+    } else {
+      setError(null);
+      dispatch(
+        createNote({
+          title: noteState.title,
+          labelID: noteState.label ? noteState.label.id : '',
+          colorString: noteState.colorString,
+        }),
+      );
+    }
   };
   // navigation functions
   const _navigateBack = () => {
@@ -126,7 +137,7 @@ const CreateNewNoteScreen = ({
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme?.colors.surface,
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
@@ -140,7 +151,7 @@ const CreateNewNoteScreen = ({
           flexDirection: 'column',
           justifyContent: 'flex-start',
           alignItems: 'stretch',
-          backgroundColor: theme.colors.surface,
+          backgroundColor: theme?.colors.surface,
         }}>
         <TextInput
           ref={titleRef}
@@ -148,8 +159,13 @@ const CreateNewNoteScreen = ({
           label="Title"
           value={noteState.title}
           onChangeText={_handleTitleChange}
-          outlineColor={theme.colors.primary}
+          outlineColor={theme?.colors.primary}
         />
+        {error && (
+          <HelperText style={{marginTop: 4, paddingLeft: 2}} type="error">
+            {error}
+          </HelperText>
+        )}
         <TextInput
           ref={labelSelectRef}
           mode="outlined"
@@ -159,7 +175,7 @@ const CreateNewNoteScreen = ({
           showSoftInputOnFocus={false}
           style={{marginTop: 12}}
           onPressIn={_handleOpenLabelSelection}
-          outlineColor={theme.colors.primary}
+          outlineColor={theme?.colors.primary}
           caretHidden
         />
         <FlatList

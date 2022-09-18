@@ -101,7 +101,7 @@ const EditNoteScreen = ({
           borderWidth: 2,
           borderColor:
             noteState.colorString === item
-              ? `${theme.colors.onSurface}`
+              ? `${theme?.colors.onSurface}`
               : '#00000000',
         }}></Pressable>
     );
@@ -154,7 +154,7 @@ const EditNoteScreen = ({
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme?.colors.surface,
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
@@ -168,7 +168,7 @@ const EditNoteScreen = ({
           flexDirection: 'column',
           justifyContent: 'flex-start',
           alignItems: 'stretch',
-          backgroundColor: theme.colors.surface,
+          backgroundColor: theme?.colors.surface,
         }}>
         <TextInput
           ref={titleRef}
@@ -176,7 +176,7 @@ const EditNoteScreen = ({
           label="Title"
           value={noteState.title}
           onChangeText={_handleTitleChange}
-          outlineColor={theme.colors.primary}
+          outlineColor={theme?.colors.primary}
         />
         <TextInput
           ref={labelSelectRef}
@@ -187,7 +187,7 @@ const EditNoteScreen = ({
           showSoftInputOnFocus={false}
           style={{marginTop: 12}}
           onPressIn={_handleOpenLabelSelection}
-          outlineColor={theme.colors.primary}
+          outlineColor={theme?.colors.primary}
           caretHidden
         />
         <FlatList

@@ -1,8 +1,10 @@
 import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
+import extractUrls from 'extract-urls';
+import moment from 'moment';
 import React, {useCallback, useEffect, useState} from 'react';
+import {useRef} from 'react';
 import {
-  Alert,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -10,27 +12,31 @@ import {
   ToastAndroid,
   View,
 } from 'react-native';
-import moment from 'moment';
+import ReactNativeCalendarEvents from 'react-native-calendar-events';
+import DatePicker from 'react-native-date-picker';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
   Appbar,
-  Card,
-  Divider,
-  IconButton,
-  Paragraph,
+  HelperText,
+  List,
   Surface,
   Text,
   TextInput,
   TouchableRipple,
   useTheme,
 } from 'react-native-paper';
-import {connect} from 'react-redux';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {connect} from 'react-redux';
 import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
+import {LinkPreview} from '../components/URLPreview';
+
 import {database} from '../db/db';
 import Task from '../db/models/Task';
+import {useDebounce} from '../hooks/useDebounce';
 import {
-  addTaskToCalendar,
   deleteTask,
+  editTaskDescription,
   editTaskEndTimestamp,
   editTaskIsBookmark,
   editTaskIsDone,
@@ -38,9 +44,6 @@ import {
   editTaskTitle,
   resetDeleteTaskState,
 } from '../redux/actions';
-import DatePicker from 'react-native-date-picker';
-import ReactNativeCalendarEvents from 'react-native-calendar-events';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 const BOTTOM_APPBAR_HEIGHT = 64;
 /**
  *
@@ -56,8 +59,11 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   const {bottom} = useSafeAreaInsets();
 
   // states
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [appBarTitleOpacity, setAppbarTitleOpacity] = useState(0);
+  const [error, setError] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [dueDateString, setDueDateString] = useState('date');
   const [isDueDateTimePickerVisible, setIsDueDateTimePickerVisible] =
@@ -66,6 +72,10 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   const [reminderDateString, setReminderDateString] = useState('time');
   const [isReminderDateTimePickerVisible, setIsReminderDateTimePickerVisible] =
     useState(false);
+  const [urls, setURLs] = useState([]);
+
+  const debouncedTitle = useDebounce(title, 500);
+  const debouncedDescription = useDebounce(description, 500);
 
   // effects
   useFocusEffect(
@@ -76,6 +86,21 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   );
 
   useEffect(() => {
+    if (String(debouncedTitle).trim() === '') {
+      setError('Title cannot be empty');
+    } else {
+      setError(null);
+      dispatch(editTaskTitle({id: task.id, title: debouncedTitle}));
+    }
+  }, [debouncedTitle]);
+
+  useEffect(() => {
+    dispatch(
+      editTaskDescription({id: task.id, description: debouncedDescription}),
+    );
+  }, [debouncedDescription]);
+
+  useEffect(() => {
     if (deleteTaskSuccess) {
       _navigateBack();
     }
@@ -83,15 +108,18 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
 
   useEffect(() => {
     if (_isDue()) {
-      StatusBar.setBackgroundColor(theme.colors.errorContainer);
+      StatusBar.setBackgroundColor(theme?.colors.errorContainer);
     } else {
-      StatusBar.setBackgroundColor(theme.colors.surface);
+      StatusBar.setBackgroundColor(theme?.colors.surface);
     }
   }, [task, task.isDone]);
 
   useEffect(() => {
     if (task) {
       setTitle(task.title);
+      setDescription(task.description);
+      const _s = extractUrls(`${task.title}   ${task.description}`);
+      setURLs(_s);
 
       task.endTimestamp &&
         setDueDateString(moment(task.endTimestamp).calendar());
@@ -103,25 +131,22 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   // callbacks
 
   // render functions
-  const _renderTitleInput = () => {
-    return <TextInput value={task.title} onChangeText={_handleTitleChange} />;
-  };
 
   // handle functions
   const _handleTitleChange = title => {
     setTitle(title);
   };
-  const _handleOnTitleInputBlur = () => {
-    dispatch(editTaskTitle({id: task.id, title}));
+  const _handleDescriptionChange = description => {
+    setDescription(description);
   };
+
   const _handleOpenDeleteTaskDialog = () => {
-    setIsMenuOpen(false);
     setIsDeleteDialogOpen(true);
   };
   const _handleCloseDeleteTaskDialog = () => {
     setIsDeleteDialogOpen(false);
   };
-  const _handleToggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
   const _handleDeleteTask = () => {
     dispatch(deleteTask({id: task.id}));
     setIsDeleteDialogOpen(false);
@@ -192,7 +217,7 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   // misc functions
   const _init = () => {};
   const _onDestroy = () => {
-    StatusBar.setBackgroundColor(theme.colors.surface);
+    StatusBar.setBackgroundColor(theme?.colors.surface);
     dispatch(resetDeleteTaskState());
   };
   const _isDue = () => {
@@ -206,7 +231,7 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   // return
   return (
     <SafeAreaView
-      style={[styles.main, {backgroundColor: theme.colors.onPrimary}]}>
+      style={[styles.main, {backgroundColor: theme?.colors.primaryContainer}]}>
       <DeleteConfirmationDialog
         visible={isDeleteDialogOpen}
         message="Task"
@@ -230,21 +255,45 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
       <Appbar.Header
         style={{
           backgroundColor: _isDue()
-            ? theme.colors.errorContainer
-            : theme.colors.surface,
+            ? theme?.colors.errorContainer
+            : theme?.colors.surface,
         }}>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content mode="medium" />
+        <Appbar.Content
+          title={<Text ellipsizeMode="tail">{task.title}</Text>}
+          titleStyle={{
+            opacity: appBarTitleOpacity,
+            fontWeight: '700',
+            flexWrap: 'wrap',
+          }}
+        />
+        <Appbar.Action
+          isLeading={false}
+          icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
+          // iconColor={theme?.colors.onPrimary}
+          onPress={_handleBookmark}
+        />
+        <Appbar.Action
+          isLeading={false}
+          icon={'delete'}
+          // iconColor={theme?.colors.onPrimary}
+          onPress={_handleOpenDeleteTaskDialog}
+        />
       </Appbar.Header>
-      <ScrollView keyboardShouldPersistTaps="never">
+      <KeyboardAwareScrollView
+        keyboardShouldPersistTaps="never"
+        onScroll={event => {
+          setAppbarTitleOpacity(event.nativeEvent.contentOffset.y / 90);
+        }}
+        contentContainerStyle={{paddingBottom: BOTTOM_APPBAR_HEIGHT + 20}}>
         <Surface
           style={{
             // padding: 12,
             padding: 6,
             justifyContent: 'center',
             backgroundColor: _isDue()
-              ? theme.colors.errorContainer
-              : theme.colors.surface,
+              ? theme?.colors.errorContainer
+              : theme?.colors.surface,
           }}>
           <TextInput
             value={title}
@@ -260,195 +309,93 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
                 borderRadius: 0,
                 backgroundColor: 'transparent',
                 marginBottom: 6,
+                paddingHorizontal: 0,
               },
             ]}
             mode="outlined"
             outlineColor="transparent"
-            onBlur={_handleOnTitleInputBlur}
-            right={<TextInput.Icon icon="pencil" />}
           />
+          {error && <HelperText type="error">{error}</HelperText>}
+          <Text
+            variant="bodySmall"
+            style={{paddingHorizontal: 14}}>{`Created ${moment(task.createdAt)
+            .calendar()
+            .toLowerCase()}`}</Text>
         </Surface>
         {/* <Divider /> */}
 
-        <TouchableRipple
+        <List.Item
+          title={
+            task.isDone
+              ? `Marked done ${moment(task.doneTimestamp)
+                  .calendar()
+                  .toLowerCase()}`
+              : 'Mark as done'
+          }
+          titleStyle={{fontSize: 14}}
           onPress={_handleMarkIsDone}
-          style={{
-            marginTop: 20,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '100%',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 8,
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                padding: 12,
-                backgroundColor: 'transparent',
-              }}>
-              <MaterialCommunityIcons
-                name={
-                  task.isDone ? 'checkbox-marked' : 'checkbox-blank-outline'
-                }
-                size={24}
-                color={theme.colors.onSurface}
-              />
-              <Text style={{marginLeft: 12}}>
-                {task.isDone
-                  ? `Marked done ${moment(task.doneTimestamp)
-                      .calendar()
-                      .toLowerCase()}`
-                  : 'Mark as done'}
-              </Text>
-            </View>
-          </View>
-        </TouchableRipple>
+          left={props => (
+            <List.Icon
+              {...props}
+              icon={task.isDone ? 'checkbox-marked' : 'checkbox-blank-outline'}
+              color={theme.colors.onSurface}
+            />
+          )}
+        />
 
-        <TouchableRipple onPress={_handleOpenDueDateTimePicker}>
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '100%',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 8,
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                padding: 12,
-                backgroundColor: 'transparent',
-              }}>
-              <MaterialCommunityIcons
-                name="calendar-range"
-                size={24}
-                color={theme.colors.onSurface}
-              />
-              <Text style={{marginLeft: 12}}>
-                Due {String(dueDateString).toLowerCase()}
-              </Text>
-            </View>
-          </View>
-        </TouchableRipple>
-
-        {/* <TouchableRipple
+        <List.Item
+          title={`Due ${String(dueDateString).toLowerCase()}`}
+          titleStyle={{fontSize: 14}}
+          onPress={_handleOpenDueDateTimePicker}
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="calendar-range"
+              color={theme.colors.onSurface}
+            />
+          )}
+        />
+        <List.Item
+          title={`Reminder ${String(reminderDateString).toLowerCase()}`}
+          titleStyle={{fontSize: 14}}
           onPress={_handleOpenReminderDateTimePicker}
-          style={{paddingHorizontal: 8}}>
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '100%',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                padding: 12,
-                backgroundColor: 'transparent',
-              }}>
-              <MaterialCommunityIcons
-                name="bell"
-                size={24}
-                color={theme.colors.onSurface}
-              />
-              <Text style={{marginLeft: 12}}>
-                Reminder {String(reminderDateString).toLowerCase()}
-              </Text>
-            </View>
-          </View>
-        </TouchableRipple> */}
-        <TouchableRipple
+          left={props => (
+            <List.Icon {...props} icon="bell" color={theme.colors.onSurface} />
+          )}
+        />
+        <List.Item
+          title="Add to device calendar"
           onPress={_handleAddToCalendar}
-          style={{paddingHorizontal: 8}}>
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '100%',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                padding: 12,
-                backgroundColor: 'transparent',
-              }}>
-              <MaterialCommunityIcons
-                name="calendar-plus"
-                size={24}
-                color={theme.colors.onSurface}
-              />
-              <Text style={{marginLeft: 12}}>Add to device calendar</Text>
-            </View>
-          </View>
-        </TouchableRipple>
-      </ScrollView>
-      <Appbar
-        style={[
-          styles.bottom,
-          {
-            height: BOTTOM_APPBAR_HEIGHT + bottom,
-            backgroundColor: theme.colors.primary,
-          },
-        ]}
-        safeAreaInsets={{bottom}}>
-        <Appbar.Content
-          title={`Created ${moment(task.createdAt).calendar().toLowerCase()}`}
-          titleStyle={{
-            fontSize: 14,
-            fontWeight: '600',
-            color: theme.colors.onPrimary,
-          }}
+          titleStyle={{fontSize: 14}}
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="calendar-plus"
+              color={theme.colors.onSurface}
+            />
+          )}
         />
-        <Appbar.Action
-          isLeading={false}
-          icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
-          iconColor={theme.colors.onSecondary}
-          onPress={_handleBookmark}
-        />
-        <Appbar.Action
-          isLeading={false}
-          icon={'delete'}
-          iconColor={theme.colors.onSecondary}
-          onPress={_handleOpenDeleteTaskDialog}
-        />
-      </Appbar>
 
-      {/* <Surface
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: 12,
-          backgroundColor: theme.colors.primary,
-        }}>
-        <Text>Created {moment(task.createdAt).calendar().toLowerCase()}</Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-          }}>
-          <IconButton
-            icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
-            onPress={_handleBookmark}
-            style={{}}
-          />
-          <IconButton icon={'delete'} onPress={_handleOpenDeleteTaskDialog} />
-        </View>
-      </Surface> */}
+        <TextInput
+          value={description}
+          autoCorrect={false}
+          multiline
+          underlineColor="transparent"
+          onChangeText={_handleDescriptionChange}
+          style={[
+            {
+              fontSize: 16,
+              margin: 12,
+            },
+          ]}
+          mode="outlined"
+          numberOfLines={5}
+          placeholder="Add description"
+        />
+        {urls?.map(url => {
+          return <LinkPreview text={url} />;
+        })}
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };

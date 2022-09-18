@@ -129,7 +129,7 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
               <MaterialCommunityIcons
                 name={label && label.iconString ? label.iconString : 'label'}
                 size={24}
-                color={theme.colors.onSurface}
+                color={theme?.colors.onSurface}
               />
             }
             <Text

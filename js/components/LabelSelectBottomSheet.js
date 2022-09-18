@@ -69,7 +69,7 @@ const LabelSelectBottomSheet = ({
     <TouchableRipple
       key={index}
       style={{
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme?.colors.surface,
       }}
       onPress={() => {
         setSelectedLabel(item);
@@ -90,8 +90,8 @@ const LabelSelectBottomSheet = ({
             {
               backgroundColor:
                 item === selectedLabel
-                  ? theme.colors.primary
-                  : theme.colors.surfaceVariant,
+                  ? theme?.colors.primary
+                  : theme?.colors.surfaceVariant,
             },
           ]}>
           <MaterialCommunityIcons
@@ -99,15 +99,15 @@ const LabelSelectBottomSheet = ({
             size={32}
             color={
               item.id === selectedLabel?.id
-                ? theme.colors.onPrimary
-                : theme.colors.primary
+                ? theme?.colors.onPrimary
+                : theme?.colors.primary
             }
           />
         </View>
         <Text
           variant="bodyMedium"
           style={[
-            {marginLeft: 20, color: theme.colors.onSurface, fontWeight: '700'},
+            {marginLeft: 20, color: theme?.colors.onSurface, fontWeight: '700'},
           ]}>
           {item.title}
         </Text>
@@ -118,10 +118,10 @@ const LabelSelectBottomSheet = ({
   return (
     <BottomSheet
       // style={{
-      //   backgroundColor: theme.colors.surface,
+      //   backgroundColor: theme?.colors.surface,
       // }}
       // containerStyle={{
-      //   backgroundColor: theme.colors.surface,
+      //   backgroundColor: theme?.colors.surface,
       // }}
       ref={sheetRef}
       index={-1}
@@ -144,9 +144,9 @@ const LabelSelectBottomSheet = ({
         keyboardShouldPersistTaps={'always'}
         data={labels}
         renderItem={_renderLabels}
-        style={{backgroundColor: theme.colors.surface}}
+        style={{backgroundColor: theme?.colors.surface}}
         contentContainerStyle={{
-          backgroundColor: theme.colors.surface,
+          backgroundColor: theme?.colors.surface,
         }}
         ItemSeparatorComponent={() => <Divider />}
       />

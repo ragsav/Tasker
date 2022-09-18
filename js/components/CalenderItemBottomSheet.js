@@ -66,10 +66,10 @@ const CalendarItemBottomSheet = ({
   return (
     <BottomSheet
       style={{
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme?.colors.surface,
       }}
       // containerStyle={{
-      //   backgroundColor: theme.colors.surface,
+      //   backgroundColor: theme?.colors.surface,
       // }}
       ref={sheetRef}
       index={-1}
@@ -94,9 +94,9 @@ const CalendarItemBottomSheet = ({
       <BottomSheetFlatList
         data={tasks}
         renderItem={_renderTaskItem}
-        style={{backgroundColor: theme.colors.surface}}
+        style={{backgroundColor: theme?.colors.surface}}
         contentContainerStyle={{
-          backgroundColor: theme.colors.surface,
+          backgroundColor: theme?.colors.surface,
           padding: 12,
         }}
         ItemSeparatorComponent={() => <Divider />}

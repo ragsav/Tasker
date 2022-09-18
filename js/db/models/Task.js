@@ -17,6 +17,7 @@ export default class Task extends Model {
   };
 
   @text('title') title;
+  @text('description') description;
   @text('note_id') noteID;
   @field('is_bookmarked') isBookmarked;
   @field('is_done') isDone;
@@ -27,6 +28,7 @@ export default class Task extends Model {
   @date('end_timestamp') endTimestamp;
   @date('reminder_timestamp') reminderTimestamp;
   @field('is_repeating') isRepeating;
+  @text('repeat_cron') repeatCron;
 
   @readonly @date('created_at') createdAt;
   @readonly @date('updated_at') updatedAt;

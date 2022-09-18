@@ -2,6 +2,7 @@ import {database} from '../../db/db';
 import Note from '../../db/models/Note';
 import {Logger} from '../../utils/logger';
 import {Q} from '@nozbe/watermelondb';
+import Toast from 'react-native-toast-message';
 export const CREATE_NOTE_STATE = 'CREATE_NOTE_STATE';
 export const EDIT_NOTE_STATE = 'EDIT_NOTE_STATE';
 export const DELETE_NOTE_STATE = 'DELETE_NOTE_STATE';
@@ -129,6 +130,49 @@ export const editNote =
     }
   };
 
+export const duplicateNote =
+  ({id}) =>
+  async dispatch => {
+    dispatch(createNoteState({loading: true, success: false, error: null}));
+    try {
+      const noteToBeDuplicated = await database.get('notes').find(id);
+      const dNote = await database.write(async () => {
+        return await database.get('notes').create(note => {
+          note.title = `${noteToBeDuplicated.title}-copy`;
+          note.colorString = noteToBeDuplicated.colorString;
+          note.labelID = noteToBeDuplicated.labelID;
+        });
+      });
+      const tasksToBeDuplicated = await database
+        .get('tasks')
+        .query(Q.where('note_id', id))
+        .fetch();
+
+      const batchTaskCreateRecords = tasksToBeDuplicated.map(dTask => {
+        return database.get('tasks').prepareCreate(task => {
+          task.title = dTask.title;
+          task.noteID = dNote.id;
+          task.isBookmarked = dTask.isBookmarked;
+          task.isDone = dTask.isDone;
+          task.priority = dTask.priority;
+          task.startTimestamp = dTask.startTimestamp;
+          task.endTimestamp = dTask.endTimestamp;
+          task.reminderTimestamp = dTask.reminderTimestamp;
+          task.isRepeating = dTask.isRepeating;
+          task.doneTimestamp = dTask.doneTimestamp;
+        });
+      });
+      database.write(async () => {
+        database.batch(...batchTaskCreateRecords);
+      });
+
+      dispatch(createNoteState({loading: false, success: true, error: null}));
+      Logger.pageLogger('duplicateNote : success');
+    } catch (error) {
+      Logger.pageLogger('duplicateNote : error', error);
+      dispatch(createNoteState({loading: false, success: true, error}));
+    }
+  };
 export const deleteNote =
   ({id}) =>
   async dispatch => {

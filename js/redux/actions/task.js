@@ -266,6 +266,27 @@ export const editTaskTitle =
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
+export const editTaskDescription =
+  ({id, description}) =>
+  async dispatch => {
+    dispatch(editTaskState({loading: true, success: false, error: null}));
+    try {
+      const taskToBeUpdated = await database.get('tasks').find(id);
+      database.write(async () => {
+        await taskToBeUpdated.update(task => {
+          task.description = description;
+        });
+      });
+
+      dispatch(editTaskState({loading: false, success: true, error: null}));
+
+      dispatch(getTasks());
+      Logger.pageLogger('editTask : success', taskToBeUpdated);
+    } catch (error) {
+      Logger.pageLogger('editTask : error', error);
+      dispatch(editTaskState({loading: false, success: true, error}));
+    }
+  };
 export const editTaskPriority =
   ({id, priority}) =>
   async dispatch => {

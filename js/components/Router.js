@@ -11,7 +11,6 @@ import {connect} from 'react-redux';
 import Home from '../screens/Home';
 import {CONSTANTS} from '../../constants';
 import CreateNewLabelScreen from '../screens/CreateNewLabelScreen';
-import {useTheme} from 'react-native-paper';
 import CreateNewNoteScreen from '../screens/CreateNewNoteScreen';
 import EditLabelScreen from '../screens/EditLabelScreen';
 import EditNoteScreen from '../screens/EditNoteScreen';
@@ -23,14 +22,16 @@ import CalendarScreen from '../screens/CalendarScreen';
 import {useEffect} from 'react';
 import PermissionsProvider from './PermissionsProvider';
 import {SearchScreen} from '../screens/SearchScreen';
-
+import {Provider as PaperProvider} from 'react-native-paper';
+import {StatusBar} from 'react-native';
+import Settings from '../screens/Settings';
 const Stack = createStackNavigator();
 
-const Router = () => {
+const Router = ({theme}) => {
   // ref
 
   // variables
-  const theme = useTheme();
+  // const theme = useTheme();
 
   // states
 
@@ -50,74 +51,88 @@ const Router = () => {
   // return
   return (
     <PermissionsProvider>
-      <NavigationContainer theme={theme} onReady={() => RNBootSplash.hide()}>
-        <Stack.Navigator
-          initialRouteName={CONSTANTS.ROUTES.HOME}
-          screenOptions={{...TransitionPresets.SlideFromRightIOS}}>
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.HOME}
-            component={Home}
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.ADD_LABEL}
-            component={CreateNewLabelScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.EDIT_LABEL}
-            component={EditLabelScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.ADD_NOTE}
-            component={CreateNewNoteScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.EDIT_NOTE}
-            component={EditNoteScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.NOTE}
-            component={NoteScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.MY_DAY}
-            component={DayScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.BOOKMARKS}
-            component={BookmarkScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.TASK}
-            component={TaskScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.CALENDAR}
-            component={CalendarScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name={CONSTANTS.ROUTES.SEARCH}
-            component={SearchScreen}
-            options={{headerShown: false}}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <PaperProvider theme={theme}>
+        <StatusBar
+          barStyle={theme?.statusBarStyle}
+          backgroundColor={theme?.colors.surface}
+          // translucent
+        />
+        <NavigationContainer theme={theme} onReady={() => RNBootSplash.hide()}>
+          <Stack.Navigator
+            initialRouteName={CONSTANTS.ROUTES.HOME}
+            screenOptions={{...TransitionPresets.SlideFromRightIOS}}>
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.HOME}
+              component={Home}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.ADD_LABEL}
+              component={CreateNewLabelScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.EDIT_LABEL}
+              component={EditLabelScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.ADD_NOTE}
+              component={CreateNewNoteScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.EDIT_NOTE}
+              component={EditNoteScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.NOTE}
+              component={NoteScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.MY_DAY}
+              component={DayScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.BOOKMARKS}
+              component={BookmarkScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.TASK}
+              component={TaskScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.CALENDAR}
+              component={CalendarScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.SEARCH}
+              component={SearchScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.SETTINGS}
+              component={Settings}
+              options={{headerShown: false}}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </PaperProvider>
     </PermissionsProvider>
   );
 };
 
 const mapStateToProps = state => {
-  return {};
+  return {
+    theme: state.theme.theme,
+  };
 };
 export default connect(mapStateToProps)(Router);

@@ -23,5 +23,17 @@ export const xpenseDBMigration = schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 14,
+      steps: [
+        addColumns({
+          table: 'tasks',
+          columns: [
+            {name: 'description', type: 'string', isOptional: true},
+            {name: 'repeat_cron', type: 'string', isOptional: true},
+          ],
+        }),
+      ],
+    },
   ],
 });

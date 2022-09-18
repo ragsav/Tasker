@@ -76,7 +76,7 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme?.colors.surface,
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
