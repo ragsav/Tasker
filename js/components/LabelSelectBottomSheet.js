@@ -4,17 +4,16 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import {
   Appbar,
   Divider,
   Surface,
-  TouchableRipple,
   Text,
+  TouchableRipple,
   useTheme,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {CONSTANTS} from '../../constants';
 import {database} from '../db/db';
 import Label from '../db/models/Label';
 
@@ -85,15 +84,14 @@ const LabelSelectBottomSheet = ({
           backgroundColor: '#00000000',
         }}>
         <View
-          style={[
-            styles.transaction_category_avatar_icon,
-            {
-              backgroundColor:
-                item === selectedLabel
-                  ? theme?.colors.primary
-                  : theme?.colors.surfaceVariant,
-            },
-          ]}>
+          style={{
+            backgroundColor:
+              item === selectedLabel
+                ? theme?.colors.primary
+                : theme?.colors.surfaceVariant,
+            borderRadius: 8,
+            padding: 16,
+          }}>
           <MaterialCommunityIcons
             name={item.iconString ? item.iconString : 'label'}
             size={32}
@@ -159,25 +157,3 @@ const enhanceSelectLabel = withObservables([], ({}) => ({
 export const EnhancedLabelSelectBottomSheet = enhanceSelectLabel(
   LabelSelectBottomSheet,
 );
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 200,
-  },
-
-  transaction_category_filter_title: {
-    width: '100%',
-
-    color: CONSTANTS.COLORS.DARK_FONT,
-    fontWeight: '500',
-    fontSize: 16,
-    padding: 6,
-    borderBottomColor: CONSTANTS.COLORS.LIGHT_FONT,
-    borderBottomWidth: 1,
-    paddingHorizontal: 12,
-  },
-  transaction_category_avatar_icon: {
-    borderRadius: 8,
-    padding: 16,
-  },
-});

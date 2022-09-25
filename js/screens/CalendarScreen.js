@@ -1,33 +1,22 @@
 import {Q} from '@nozbe/watermelondb';
 import React, {useState} from 'react';
-import {
-  Animated,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {SafeAreaView, StyleSheet, View} from 'react-native';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import withObservables from '@nozbe/with-observables';
 import calendarize from 'calendarize';
 import moment from 'moment';
-import {useMemo, useRef} from 'react';
-import {
-  Divider,
-  Surface,
-  Text,
-  TouchableRipple,
-  useTheme,
-} from 'react-native-paper';
+import {useMemo} from 'react';
+import {Text, TouchableRipple, useTheme} from 'react-native-paper';
 import {FlatGrid} from 'react-native-super-grid';
 import {connect} from 'react-redux';
 import AppbarWithMonths from '../components/AppbarWithMonths';
+import CalendarItemBottomSheet from '../components/CalenderItemBottomSheet';
 import {database} from '../db/db';
 import Task from '../db/models/Task';
 import {datesArray} from '../utils/dateTime';
-import {EnhancedCalendarItemBottomSheet} from '../components/CalenderItemBottomSheet';
+import {Logger} from '../utils/logger';
 
 const CalenderCellItem = ({date, tasks, handleOpenCalenderItem}) => {
   const theme = useTheme();
@@ -146,6 +135,8 @@ const CalendarScreen = ({tasks, sDate, eDate}) => {
         _e.setSeconds(0);
         _e.setMilliseconds(0);
 
+        Logger.pageLogger('CalendarScreen.js:useMemo:_s,_e', {_s, _e});
+
         const _dArray = datesArray(_s, _e);
         _dArray.forEach(_d => {
           if (_p[`${_d}`]) {
@@ -162,6 +153,7 @@ const CalendarScreen = ({tasks, sDate, eDate}) => {
     const items = Object.keys(_p).map(_d => {
       return {date: _d, tasks: _p[_d]};
     });
+    Logger.pageLogger('CalendarScreen.js:useMemo:items', {items});
     return items;
   }, [tasks, sDate]);
 
@@ -214,7 +206,7 @@ const CalendarScreen = ({tasks, sDate, eDate}) => {
         )}
         maxItemsPerRow={7}
       />
-      <EnhancedCalendarItemBottomSheet
+      <CalendarItemBottomSheet
         selectedDateInfo={selectedDateInfo}
         setSelectedDateInfo={setSelectedDateInfo}
       />
@@ -228,9 +220,15 @@ const enhanceCalendarScreen = withObservables(
     tasks: database.collections
       .get('tasks')
       .query(
-        Q.where(
-          'end_timestamp',
-          Q.between(new Date(sDate).getTime(), new Date(eDate).getTime()),
+        Q.or(
+          Q.where(
+            'created_at',
+            Q.between(new Date(sDate).getTime(), new Date(eDate).getTime()),
+          ),
+          Q.where(
+            'end_timestamp',
+            Q.between(new Date(sDate).getTime(), new Date(eDate).getTime()),
+          ),
         ),
       ),
   }),
@@ -245,19 +243,3 @@ const mapStateToProps = state => {
 };
 
 export default connect(mapStateToProps)(EnhancedCalendarScreen);
-
-const styles = StyleSheet.create({
-  item: {
-    backgroundColor: 'white',
-    flex: 1,
-    borderRadius: 5,
-    padding: 10,
-    marginRight: 10,
-    marginTop: 17,
-  },
-  emptyDate: {
-    height: 15,
-    flex: 1,
-    paddingTop: 30,
-  },
-});

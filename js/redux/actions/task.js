@@ -1,11 +1,9 @@
-import {database} from '../../db/db';
-import {Logger} from '../../utils/logger';
 import {Q} from '@nozbe/watermelondb';
-import {setEndDate, setStartDate} from './timeFrame';
-import {currentEndDate, currentStartDate, getWeek} from '../../utils/dateTime';
+import 'react-native-get-random-values';
+import {database} from '../../db/db';
 import Task from '../../db/models/Task';
-import {CONSTANTS} from '../../../constants';
-import ReactNativeCalendarEvents from 'react-native-calendar-events';
+import NotificationService from '../../services/notifications';
+import {Logger} from '../../utils/logger';
 
 export const GET_TASKS = 'GET_TASKS';
 export const CREATE_TASK_STATE = 'CREATE_TASK_STATE';
@@ -114,10 +112,11 @@ export const getTasks = () => async dispatch => {
  */
 export const getTaskByID = async id => {
   try {
-    const t = await database.get('tasks').find(id);
-    return t;
+    const task = await database.get('tasks').find(id);
+    Logger.pageLogger('task.js:getTaskByID:task', {task});
+    return task;
   } catch (error) {
-    console.log({error});
+    Logger.pageLogger('task.js:getTaskByID:catch', {error});
     return null;
   }
 };
@@ -129,13 +128,14 @@ export const getTaskByID = async id => {
  */
 export const getTaskByQuery = async query => {
   try {
-    const t = await database.collections
+    const task = await database.collections
       .get('tasks')
       .query(Q.where('title', Q.like(`%${Q.sanitizeLikeString(query)}%`)))
       .fetch();
-    return t;
+    Logger.pageLogger('task.js:getTaskByQuery:task', {task});
+    return task;
   } catch (error) {
-    console.log({error});
+    Logger.pageLogger('task.js:getTaskByQuery:catch', {error});
     return null;
   }
 };
@@ -152,6 +152,7 @@ export const createTask =
   async dispatch => {
     dispatch(createTaskState({loading: true, success: false, error: null}));
     try {
+      Logger.pageLogger('task.js:createTask:start');
       database.write(async () => {
         await database.get('tasks').create(task => {
           task.title = title;
@@ -168,9 +169,9 @@ export const createTask =
 
       dispatch(createTaskState({loading: false, success: true, error: null}));
       dispatch(getTasks());
-      Logger.pageLogger('createTask : success');
+      Logger.pageLogger('task.js:createTask:success');
     } catch (error) {
-      Logger.pageLogger('createTask : error', error);
+      Logger.pageLogger('task.js:createTask:catch', {error});
       dispatch(createTaskState({loading: false, success: true, error}));
     }
   };
@@ -192,6 +193,7 @@ export const editTask =
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTask:taskToBeUpdated', {taskToBeUpdated});
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.title = title;
@@ -209,9 +211,9 @@ export const editTask =
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTask:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTask:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
@@ -223,11 +225,14 @@ export const editTaskMarkBulkDone =
       dispatch(editTaskState({loading: true, success: false, error: null}));
       try {
         const _d = Date.now();
-        const tasksToBeMarkedDone = await database
+        const taskToBeUpdated = await database
           .get('tasks')
           .query(Q.where('id', Q.oneOf(ids)))
           .fetch();
-        const batchUpdateRecords = tasksToBeMarkedDone.map(task => {
+        Logger.pageLogger('task.js:editTaskMarkBulkDone:taskToBeUpdated', {
+          taskToBeUpdated,
+        });
+        const batchUpdateRecords = taskToBeUpdated.map(task => {
           return task.prepareUpdate(t => {
             t.isDone = true;
             task.doneTimestamp = _d;
@@ -238,9 +243,70 @@ export const editTaskMarkBulkDone =
         });
 
         dispatch(editTaskState({loading: false, success: true, error: null}));
-        Logger.pageLogger('editTaskMarkBulkDone : success');
+        Logger.pageLogger('task.js:editTaskMarkBulkDone:suucess');
       } catch (error) {
-        Logger.pageLogger('editTaskMarkBulkDone : error', error);
+        Logger.pageLogger('task.js:editTaskMarkBulkDone:catch', {error});
+        dispatch(editTaskState({loading: false, success: true, error}));
+      }
+    }
+  };
+
+export const editTaskBookmarkBulk =
+  ({ids}) =>
+  async dispatch => {
+    if (Array.isArray(ids) && ids.length > 0) {
+      dispatch(editTaskState({loading: true, success: false, error: null}));
+      try {
+        const taskToBeUpdated = await database
+          .get('tasks')
+          .query(Q.where('id', Q.oneOf(ids)))
+          .fetch();
+        Logger.pageLogger('task.js:editTaskBookmarkBulk:taskToBeUpdated', {
+          taskToBeUpdated,
+        });
+        const batchUpdateRecords = taskToBeUpdated.map(task => {
+          return task.prepareUpdate(t => {
+            t.isBookmarked = false;
+          });
+        });
+        database.write(async () => {
+          database.batch(...batchUpdateRecords);
+        });
+
+        dispatch(editTaskState({loading: false, success: true, error: null}));
+        Logger.pageLogger('task.js:editTaskBookmarkBulk:success');
+      } catch (error) {
+        Logger.pageLogger('task.js:editTaskBookmarkBulk:catch', {error});
+        dispatch(editTaskState({loading: false, success: true, error}));
+      }
+    }
+  };
+export const editTaskMarkBulkNotDone =
+  ({ids}) =>
+  async dispatch => {
+    if (Array.isArray(ids) && ids.length > 0) {
+      dispatch(editTaskState({loading: true, success: false, error: null}));
+      try {
+        const taskToBeUpdated = await database
+          .get('tasks')
+          .query(Q.where('id', Q.oneOf(ids)))
+          .fetch();
+        Logger.pageLogger('task.js:editTaskMarkBulkNotDone:taskToBeUpdated', {
+          taskToBeUpdated,
+        });
+        const batchUpdateRecords = taskToBeUpdated.map(task => {
+          return task.prepareUpdate(t => {
+            t.isDone = false;
+          });
+        });
+        database.write(async () => {
+          database.batch(...batchUpdateRecords);
+        });
+
+        dispatch(editTaskState({loading: false, success: true, error: null}));
+        Logger.pageLogger('task.js:editTaskMarkBulkNotDone:success');
+      } catch (error) {
+        Logger.pageLogger('task.js:editTaskMarkBulkNotDone:catch', {error});
         dispatch(editTaskState({loading: false, success: true, error}));
       }
     }
@@ -251,6 +317,9 @@ export const editTaskTitle =
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskTitle:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.title = title;
@@ -260,9 +329,9 @@ export const editTaskTitle =
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTaskTitle:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTaskTitle:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
@@ -272,6 +341,9 @@ export const editTaskDescription =
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskDescription:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.description = description;
@@ -281,9 +353,9 @@ export const editTaskDescription =
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTaskDescription:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTaskDescription:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
@@ -293,6 +365,9 @@ export const editTaskPriority =
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskPriority:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.priority = priority;
@@ -302,9 +377,9 @@ export const editTaskPriority =
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTaskPriority:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTaskPriority:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
@@ -314,6 +389,9 @@ export const editTaskIsDone =
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskIsDone:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.isDone = isDone;
@@ -326,9 +404,9 @@ export const editTaskIsDone =
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTaskIsDone:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTaskIsDone:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
@@ -338,6 +416,9 @@ export const editTaskEndTimestamp =
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskEndTimestamp:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.endTimestamp = endTimestamp;
@@ -347,9 +428,9 @@ export const editTaskEndTimestamp =
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTaskEndTimestamp:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTaskEndTimestamp:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
@@ -360,6 +441,9 @@ export const editTaskStartTimestamp =
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskStartTimestamp:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.startTimestamp = startTimestamp;
@@ -369,31 +453,123 @@ export const editTaskStartTimestamp =
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTaskStartTimestamp:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTaskStartTimestamp:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
 
-export const editTaskReminderTimestamp =
+export const editTaskAddReminder =
   ({id, reminderTimestamp}) =>
   async dispatch => {
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskAddReminder:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
+      Logger.pageLogger('task.js:editTaskAddReminder:reminderTimestamp', {
+        reminderTimestamp: new Date(reminderTimestamp),
+      });
+      if (reminderTimestamp > 0) {
+        if (taskToBeUpdated.reminderID) {
+          NotificationService.cancelNotification(taskToBeUpdated.reminderID);
+          Logger.pageLogger('task.js:editTaskAddReminder:cancel', {
+            reminderID: taskToBeUpdated.reminderID,
+          });
+        }
+        const notificationID = Math.floor(Math.random() * 1000) + 1;
+        NotificationService.scheduleTaskReminder({
+          notificationID,
+          timestamp: reminderTimestamp,
+          title: taskToBeUpdated.title,
+        });
+        Logger.pageLogger('task.js:editTaskAddReminder:notificationID', {
+          notificationID,
+        });
+        database.write(async () => {
+          await taskToBeUpdated.update(task => {
+            task.reminderTimestamp = reminderTimestamp;
+            task.reminderID = `${notificationID}`;
+          });
+        });
+      } else {
+        Logger.pageLogger('task.js:editTaskAddReminder:cancel', {
+          reminderID: taskToBeUpdated.reminderID,
+        });
+        if (taskToBeUpdated.reminderID) {
+          NotificationService.cancelNotification(taskToBeUpdated.reminderID);
+          database.write(async () => {
+            await taskToBeUpdated.update(task => {
+              task.reminderTimestamp = 0;
+              task.reminderID = '';
+            });
+          });
+        }
+      }
+
+      dispatch(editTaskState({loading: false, success: true, error: null}));
+
+      dispatch(getTasks());
+      Logger.pageLogger('task.js:editTaskAddReminder:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:editTaskAddReminder:catch', {error});
+      dispatch(editTaskState({loading: false, success: true, error}));
+    }
+  };
+
+export const editTaskRemoveReminder =
+  ({id}) =>
+  async dispatch => {
+    dispatch(editTaskState({loading: true, success: false, error: null}));
+    try {
+      const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskRemoveReminder:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
+      if (taskToBeUpdated.reminderID) {
+        Logger.pageLogger('task.js:editTaskRemoveReminder:cancel', {
+          reminderID: taskToBeUpdated.reminderID,
+        });
+        NotificationService.cancelNotification(taskToBeUpdated.reminderID);
+      }
       database.write(async () => {
         await taskToBeUpdated.update(task => {
-          task.reminderTimestamp = reminderTimestamp;
+          task.reminderTimestamp = 0;
+          task.reminderID = '';
         });
       });
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTaskRemoveReminder:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTaskRemoveReminder:catch', {error});
+      dispatch(editTaskState({loading: false, success: true, error}));
+    }
+  };
+
+export const editTaskRemoveDueDate =
+  ({id}) =>
+  async dispatch => {
+    dispatch(editTaskState({loading: true, success: false, error: null}));
+    try {
+      const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskRemoveDueDate:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
+      database.write(async () => {
+        await taskToBeUpdated.update(task => {
+          task.endTimestamp = 0;
+        });
+      });
+      dispatch(editTaskState({loading: false, success: true, error: null}));
+      dispatch(getTasks());
+      Logger.pageLogger('task.js:editTaskRemoveDueDate:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:editTaskRemoveDueDate:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
@@ -403,6 +579,9 @@ export const editTaskIsRepeating =
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskIsRepeating:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.isRepeating = isRepeating;
@@ -412,9 +591,9 @@ export const editTaskIsRepeating =
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTaskIsRepeating:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTaskIsRepeating:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
@@ -424,6 +603,9 @@ export const editTaskIsBookmark =
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskIsBookmark:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
       database.write(async () => {
         await taskToBeUpdated.update(task => {
           task.isBookmarked = isBookmarked;
@@ -433,30 +615,31 @@ export const editTaskIsBookmark =
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
       dispatch(getTasks());
-      Logger.pageLogger('editTask : success', taskToBeUpdated);
+      Logger.pageLogger('task.js:editTaskIsBookmark:success');
     } catch (error) {
-      Logger.pageLogger('editTask : error', error);
+      Logger.pageLogger('task.js:editTaskIsBookmark:catch', {error});
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
-// export const editTaskReorder = () =>{
-//   database
-// }
+
 export const deleteTask =
   ({id}) =>
   async dispatch => {
     dispatch(deleteTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeDeleted = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:deleteTask:taskToBeDeleted', {
+        taskToBeDeleted,
+      });
       await database.write(async () => {
         await taskToBeDeleted.destroyPermanently();
       });
 
       dispatch(deleteTaskState({loading: false, success: true, error: null}));
       dispatch(getTasks());
-      Logger.pageLogger('deleteTask : success', taskToBeDeleted);
+      Logger.pageLogger('task.js:deleteTask:success');
     } catch (error) {
-      Logger.pageLogger('deleteTask : error', error);
+      Logger.pageLogger('task.js:deleteTask:catch', {error});
       dispatch(deleteTaskState({loading: false, success: true, error}));
     }
   };
@@ -476,6 +659,9 @@ export const deleteMultipleTasks =
         .get('tasks')
         .query(Q.where('id', Q.oneOf(ids)))
         .fetch();
+      Logger.pageLogger('task.js:deleteMultipleTasks:tasksToBeDeleted', {
+        tasksToBeDeleted,
+      });
 
       const deletedTasks = tasksToBeDeleted.map(task =>
         task.prepareDestroyPermanently(),
@@ -493,9 +679,9 @@ export const deleteMultipleTasks =
         }),
       );
       dispatch(getTasks());
-      Logger.pageLogger('deleteTask : success', tasksToBeDeleted);
+      Logger.pageLogger('task.js:deleteMultipleTasks:success');
     } catch (error) {
-      Logger.pageLogger('deleteTask : error', error);
+      Logger.pageLogger('task.js:deleteMultipleTasks:catch', {error});
       dispatch(
         deleteMultipleTasksState({loading: false, success: true, error}),
       );
@@ -506,7 +692,10 @@ export const addTaskToCalendar = async ({calendarID, taskID}) => {
   const task = await database.collections.get('tasks').find(taskID);
   const startDate = new Date(task.createdAt).toISOString();
   const endDate = new Date(task.end_timestamp).toISOString();
-  console.log({startDate, endDate});
+  Logger.pageLogger('task.js:deleteMultipleTasks:startDate,endDate', {
+    startDate,
+    endDate,
+  });
   // return ReactNativeCalendarEvents.saveEvent(task.title, {
   //   calendarId: calendarID,
   //   startDate,

@@ -32,7 +32,6 @@ export default (
 ) => {
   switch (action.type) {
     case GET_TASKS:
-      console.log({s: action.state.processedBookmarks});
       return {
         ...state,
         isGettingTasks: action.state.loading,

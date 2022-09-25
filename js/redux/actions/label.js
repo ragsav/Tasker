@@ -53,10 +53,11 @@ export const resetDeleteLabelState = () => {
  */
 export const getLabelByID = async id => {
   try {
-    const a = await database.get('labels').find(id);
-    return a;
+    const label = await database.get('labels').find(id);
+    Logger.pageLogger('label.js:getLabelByID:label', {label});
+    return label;
   } catch (error) {
-    console.log({error});
+    Logger.pageLogger('label.js:getLabelByID:catch', {error});
     return null;
   }
 };
@@ -66,6 +67,7 @@ export const createLabel =
   async dispatch => {
     dispatch(createLabelState({loading: true, success: false, error: null}));
     try {
+      Logger.pageLogger('label.js:createLabel:start');
       database.write(async () => {
         await database.get('labels').create(label => {
           label.title = title;
@@ -75,9 +77,9 @@ export const createLabel =
       });
 
       dispatch(createLabelState({loading: false, success: true, error: null}));
-      Logger.pageLogger('createLabel : success');
+      Logger.pageLogger('label.js:createLabel:success');
     } catch (error) {
-      Logger.pageLogger('createLabel : error', error);
+      Logger.pageLogger('label.js:createLabel:catch', {error});
       dispatch(createLabelState({loading: false, success: true, error}));
     }
   };
@@ -87,6 +89,7 @@ export const editLabel =
   async dispatch => {
     dispatch(editLabelState({loading: true, success: false, error: null}));
     try {
+      Logger.pageLogger('label.js:editLabel:success');
       const labelToBeUpdated = await database.get('labels').find(id);
       database.write(async () => {
         await labelToBeUpdated.update(label => {
@@ -97,9 +100,9 @@ export const editLabel =
       });
 
       dispatch(editLabelState({loading: false, success: true, error: null}));
-      Logger.pageLogger('editLabel : success');
+      Logger.pageLogger('label.js:editLabel:success');
     } catch (error) {
-      Logger.pageLogger('editLabel : error', error);
+      Logger.pageLogger('label.js:editLabel:catch', {error});
       dispatch(editLabelState({loading: false, success: true, error}));
     }
   };
@@ -108,6 +111,7 @@ export const unGroupLabel =
   async dispatch => {
     dispatch(editLabelState({loading: true, success: false, error: null}));
     try {
+      Logger.pageLogger('label.js:deleteLabel:start');
       const notesToBeDetached = await database
         .get('notes')
         .query(Q.where('label_id', id))
@@ -117,14 +121,17 @@ export const unGroupLabel =
           n.labelID = '';
         });
       });
+      Logger.pageLogger('label.js:deleteLabel:batchUpdateRecords', {
+        batchUpdateRecords,
+      });
       database.write(async () => {
         database.batch(...batchUpdateRecords);
       });
 
       dispatch(editLabelState({loading: false, success: true, error: null}));
-      Logger.pageLogger('unGroupLabel : success');
+      Logger.pageLogger('label.js:deleteLabel:success');
     } catch (error) {
-      Logger.pageLogger('unGroupLabel : error', error);
+      Logger.pageLogger('label.js:unGroupLabel:catch', {error});
       dispatch(editLabelState({loading: false, success: true, error}));
     }
   };
@@ -134,16 +141,26 @@ export const deleteLabel =
   async dispatch => {
     dispatch(deleteLabelState({loading: true, success: false, error: null}));
     try {
+      Logger.pageLogger('label.js:deleteLabel:start');
       const labelToBeDeleted = await database.get('labels').find(id);
+      Logger.pageLogger('label.js:deleteLabel:labelToBeDeleted', {
+        labelToBeDeleted,
+      });
       const notesToBeDeleted = await database
         .get('notes')
         .query(Q.where('label_id', labelToBeDeleted.id))
         .fetch();
+      Logger.pageLogger('label.js:deleteLabel:notesToBeDeleted', {
+        notesToBeDeleted,
+      });
       const notesIDs = notesToBeDeleted.map(note => note.id);
       const tasksToBeDeleted = await database
         .get('tasks')
         .query(Q.where('note_id', Q.oneOf(notesIDs)))
         .fetch();
+      Logger.pageLogger('label.js:deleteLabel:tasksToBeDeleted', {
+        tasksToBeDeleted,
+      });
 
       const deletedTasks = tasksToBeDeleted.map(task =>
         task.prepareDestroyPermanently(),
@@ -158,9 +175,9 @@ export const deleteLabel =
       });
 
       dispatch(deleteLabelState({loading: false, success: true, error: null}));
-      Logger.pageLogger('deleteLabel : success', labelToBeDeleted);
+      Logger.pageLogger('label.js:deleteLabel:success', labelToBeDeleted);
     } catch (error) {
-      Logger.pageLogger('deleteLabel : error', error);
+      Logger.pageLogger('label.js:deleteLabel:catch', {error});
       dispatch(deleteLabelState({loading: false, success: true, error}));
     }
   };

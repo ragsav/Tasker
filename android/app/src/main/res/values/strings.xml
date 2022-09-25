@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Notes</string>
+    <string name="notification_channel_id">com-notes-alarm-reminders</string>
+    <string name="notification_channel_name">Alarm-Reminder</string>
+    <string name="notification_channel_desc">Alarm reminders for tasks</string>
 </resources>

@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import {Button, Dialog, Paragraph, Portal} from 'react-native-paper';
+import {Button, Dialog, Paragraph, Portal, useTheme} from 'react-native-paper';
 
 export const DeleteConfirmationDialog = ({
   visible,
@@ -15,10 +15,19 @@ export const DeleteConfirmationDialog = ({
   handleDelete,
   handleCancel,
 }) => {
+  const theme = useTheme();
   return (
     <Portal>
-      <Dialog dismissable={false} visible={visible}>
-        <Dialog.Title>{message} Delete</Dialog.Title>
+      <Dialog
+        dismissable={false}
+        visible={visible}
+        style={{backgroundColor: theme?.colors.surface, borderRadius: 4}}>
+        <Dialog.Title>
+          {`${String(message).substring(0, 1).toUpperCase()}${String(message)
+            .substring(1, String(message).length)
+            .toLowerCase()}`}{' '}
+          delete
+        </Dialog.Title>
         <Dialog.Content>
           <Paragraph>
             {`Do you want to delete ${String(

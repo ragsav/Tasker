@@ -1,20 +1,12 @@
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useEffect, useState} from 'react';
-import {useRef} from 'react';
-import {
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {FlatList, Pressable, SafeAreaView, StyleSheet} from 'react-native';
 import {
   Appbar,
   Button,
   HelperText,
   Surface,
   TextInput,
-  TouchableRipple,
   useTheme,
 } from 'react-native-paper';
 import {connect} from 'react-redux';
@@ -199,19 +191,6 @@ const CreateNewNoteScreen = ({
   );
 };
 
-const styles = new StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    height: '100%',
-    width: '100%',
-    padding: 12,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-  },
-});
 const mapStateToProps = state => {
   return {
     isCreatingNote: state.note.isCreatingNote,

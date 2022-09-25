@@ -1,7 +1,6 @@
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useEffect, useState} from 'react';
-import {useRef} from 'react';
-import {SafeAreaView, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {SafeAreaView, StyleSheet} from 'react-native';
 import {
   Appbar,
   Button,
@@ -143,16 +142,6 @@ const CreateNewLabelScreen = ({
   );
 };
 
-const styles = new StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    height: '100%',
-    width: '100%',
-    padding: 12,
-  },
-});
 const mapStateToProps = state => {
   return {
     isCreatingLabel: state.label.isCreatingLabel,

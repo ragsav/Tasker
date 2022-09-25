@@ -3,30 +3,20 @@ import {useFocusEffect} from '@react-navigation/native';
 import extractUrls from 'extract-urls';
 import moment from 'moment';
 import React, {useCallback, useEffect, useState} from 'react';
-import {useRef} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  ToastAndroid,
-  View,
-} from 'react-native';
-import ReactNativeCalendarEvents from 'react-native-calendar-events';
+import {Pressable, SafeAreaView, StyleSheet} from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
   Appbar,
+  Divider,
   HelperText,
   List,
   Surface,
   Text,
   TextInput,
-  TouchableRipple,
   useTheme,
 } from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {connect} from 'react-redux';
 import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
 import {LinkPreview} from '../components/URLPreview';
@@ -36,14 +26,18 @@ import Task from '../db/models/Task';
 import {useDebounce} from '../hooks/useDebounce';
 import {
   deleteTask,
+  editTaskAddReminder,
   editTaskDescription,
   editTaskEndTimestamp,
   editTaskIsBookmark,
   editTaskIsDone,
-  editTaskReminderTimestamp,
+  editTaskRemoveDueDate,
+  editTaskRemoveReminder,
   editTaskTitle,
   resetDeleteTaskState,
+  resetEditTaskState,
 } from '../redux/actions';
+
 const BOTTOM_APPBAR_HEIGHT = 64;
 /**
  *
@@ -51,7 +45,13 @@ const BOTTOM_APPBAR_HEIGHT = 64;
  * @param {Task} param0.task
  * @returns
  */
-const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
+const TaskScreen = ({
+  navigation,
+  task,
+  deleteTaskSuccess,
+  renderURLInTask,
+  dispatch,
+}) => {
   // ref
 
   // variables
@@ -74,7 +74,6 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
     useState(false);
   const [urls, setURLs] = useState([]);
 
-  const debouncedTitle = useDebounce(title, 500);
   const debouncedDescription = useDebounce(description, 500);
 
   // effects
@@ -84,15 +83,6 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
       return _onDestroy;
     }, []),
   );
-
-  useEffect(() => {
-    if (String(debouncedTitle).trim() === '') {
-      setError('Title cannot be empty');
-    } else {
-      setError(null);
-      dispatch(editTaskTitle({id: task.id, title: debouncedTitle}));
-    }
-  }, [debouncedTitle]);
 
   useEffect(() => {
     dispatch(
@@ -106,27 +96,51 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
     }
   }, [deleteTaskSuccess]);
 
+  // useEffect(() => {
+  //   if (_isDue()) {
+  //     StatusBar.setBackgroundColor(theme?.colors.errorContainer);
+  //   } else {
+  //     StatusBar.setBackgroundColor(theme?.colors.surface);
+  //   }
+  // }, [task, task.isDone]);
+
   useEffect(() => {
-    if (_isDue()) {
-      StatusBar.setBackgroundColor(theme?.colors.errorContainer);
-    } else {
-      StatusBar.setBackgroundColor(theme?.colors.surface);
+    if (task) {
+      if (String(task.reminderID).trim() != '') {
+        setReminderDateString(moment(task.reminderTimestamp).calendar());
+      } else {
+        setReminderDateString('time');
+      }
     }
-  }, [task, task.isDone]);
+  }, [task, task.reminderID, task.reminderTimestamp]);
+
+  useEffect(() => {
+    if (task) {
+      if (task.endTimestamp) {
+        setDueDateString(moment(task.endTimestamp).calendar());
+      } else {
+        setDueDateString('date');
+      }
+    }
+  }, [task, task.endTimestamp]);
 
   useEffect(() => {
     if (task) {
       setTitle(task.title);
       setDescription(task.description);
-      const _s = extractUrls(`${task.title}   ${task.description}`);
-      setURLs(_s);
-
-      task.endTimestamp &&
-        setDueDateString(moment(task.endTimestamp).calendar());
-      task.reminderTimestamp &&
-        setReminderDateString(moment(task.reminderTimestamp).calendar());
+      if (renderURLInTask) {
+        const _s = extractUrls(`${task.title}   ${task.description}`);
+        setURLs(_s);
+      }
     }
   }, [task]);
+
+  useEffect(() => {
+    if (renderURLInTask) {
+      const _s = extractUrls(`${task.title}   ${task.description}`);
+      setURLs(_s);
+    }
+  }, [renderURLInTask]);
 
   // callbacks
 
@@ -135,6 +149,15 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   // handle functions
   const _handleTitleChange = title => {
     setTitle(title);
+  };
+
+  const _handleOnTitleBlur = () => {
+    if (task && String(title).trim() === '') {
+      setError('Title cannot be empty');
+    } else {
+      setError(null);
+      dispatch(editTaskTitle({id: task.id, title}));
+    }
   };
   const _handleDescriptionChange = description => {
     setDescription(description);
@@ -176,9 +199,15 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   const _handleOpenReminderDateTimePicker = () => {
     setIsReminderDateTimePickerVisible(true);
   };
+  const _handleRemoveReminder = () => {
+    dispatch(editTaskRemoveReminder({id: task.id}));
+  };
+  const _handleRemoveDueDate = () => {
+    dispatch(editTaskRemoveDueDate({id: task.id}));
+  };
   const _handleOnReminderDateTimeChange = date => {
     dispatch(
-      editTaskReminderTimestamp({
+      editTaskAddReminder({
         id: task.id,
         reminderTimestamp: new Date(date),
       }),
@@ -189,25 +218,6 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   const _handleCloseReminderDateTimePicker = () => {
     setIsReminderDateTimePickerVisible(false);
   };
-  const _handleAddToCalendar = () => {
-    const startDate = new Date(task.createdAt).getMilliseconds();
-    const endDate = new Date(task.endTimestamp).getMilliseconds();
-    console.log({startDate, endDate});
-    ReactNativeCalendarEvents.saveEvent(task.title, {
-      calendarId: '1',
-      startDate,
-      endDate,
-    })
-      .then(result => {
-        ToastAndroid.show('Event added');
-      })
-      .catch(error => {
-        ToastAndroid.show('Event cannot be added');
-      });
-    //   addTaskToCalendar({calendarID: 1, taskID: task.id})
-
-    // };
-  };
 
   // navigation functions
   const _navigateBack = () => {
@@ -217,8 +227,8 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   // misc functions
   const _init = () => {};
   const _onDestroy = () => {
-    StatusBar.setBackgroundColor(theme?.colors.surface);
     dispatch(resetDeleteTaskState());
+    dispatch(resetEditTaskState());
   };
   const _isDue = () => {
     const _v =
@@ -231,7 +241,10 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
   // return
   return (
     <SafeAreaView
-      style={[styles.main, {backgroundColor: theme?.colors.primaryContainer}]}>
+      style={{
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: theme?.colors.surface,
+      }}>
       <DeleteConfirmationDialog
         visible={isDeleteDialogOpen}
         message="Task"
@@ -254,9 +267,7 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
       />
       <Appbar.Header
         style={{
-          backgroundColor: _isDue()
-            ? theme?.colors.errorContainer
-            : theme?.colors.surface,
+          backgroundColor: theme?.colors.surface,
         }}>
         <Appbar.BackAction onPress={_navigateBack} />
         <Appbar.Content
@@ -291,24 +302,23 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
             // padding: 12,
             padding: 6,
             justifyContent: 'center',
-            backgroundColor: _isDue()
-              ? theme?.colors.errorContainer
-              : theme?.colors.surface,
+            backgroundColor: theme?.colors.surface,
           }}>
           <TextInput
             value={title}
             autoCorrect={false}
             multiline
-            underlineColor="transparent"
+            // underlineColor="transparent"
             activeOutlineColor="transparent"
             onChangeText={_handleTitleChange}
+            onBlur={_handleOnTitleBlur}
             style={[
               {
                 borderWidth: 0,
                 fontSize: 22,
                 borderRadius: 0,
                 backgroundColor: 'transparent',
-                marginBottom: 6,
+
                 paddingHorizontal: 0,
               },
             ]}
@@ -322,7 +332,7 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
             .calendar()
             .toLowerCase()}`}</Text>
         </Surface>
-        {/* <Divider /> */}
+        <Divider />
 
         <List.Item
           title={
@@ -334,6 +344,11 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
           }
           titleStyle={{fontSize: 14}}
           onPress={_handleMarkIsDone}
+          style={{
+            backgroundColor: _isDue()
+              ? theme?.colors.errorContainer
+              : theme?.colors.surface,
+          }}
           left={props => (
             <List.Icon
               {...props}
@@ -354,26 +369,46 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
               color={theme.colors.onSurface}
             />
           )}
+          right={
+            task.endTimestamp
+              ? props => (
+                  <Pressable onPress={_handleRemoveDueDate}>
+                    <List.Icon
+                      {...props}
+                      icon="close"
+                      color={theme.colors.onSurface}
+                    />
+                  </Pressable>
+                )
+              : null
+          }
         />
         <List.Item
           title={`Reminder ${String(reminderDateString).toLowerCase()}`}
           titleStyle={{fontSize: 14}}
           onPress={_handleOpenReminderDateTimePicker}
           left={props => (
-            <List.Icon {...props} icon="bell" color={theme.colors.onSurface} />
-          )}
-        />
-        <List.Item
-          title="Add to device calendar"
-          onPress={_handleAddToCalendar}
-          titleStyle={{fontSize: 14}}
-          left={props => (
             <List.Icon
               {...props}
-              icon="calendar-plus"
+              icon={
+                String(task.reminderID).trim() === '' ? 'bell' : 'bell-ring'
+              }
               color={theme.colors.onSurface}
             />
           )}
+          right={
+            String(task.reminderID).trim() === ''
+              ? null
+              : props => (
+                  <Pressable onPress={_handleRemoveReminder}>
+                    <List.Icon
+                      {...props}
+                      icon="close"
+                      color={theme.colors.onSurface}
+                    />
+                  </Pressable>
+                )
+          }
         />
 
         <TextInput
@@ -392,9 +427,10 @@ const TaskScreen = ({navigation, task, deleteTaskSuccess, dispatch}) => {
           numberOfLines={5}
           placeholder="Add description"
         />
-        {urls?.map(url => {
-          return <LinkPreview text={url} />;
-        })}
+        {renderURLInTask &&
+          urls?.map((url, index) => {
+            return <LinkPreview text={url} key={index} />;
+          })}
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );
@@ -409,28 +445,8 @@ const mapStateToProps = state => {
     isDeletingTask: state.task.isDeletingTask,
     deleteTaskSuccess: state.task.deleteTaskSuccess,
     deleteTaskFailure: state.task.deleteTaskFailure,
+    renderURLInTask: state.settings.renderURLInTask,
   };
 };
 
 export default connect(mapStateToProps)(EnhancedTaskScreen);
-
-const styles = new StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  bottom: {
-    backgroundColor: 'aquamarine',
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'space-between',
-  },
-  container: {
-    width: '100%',
-    padding: 12,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-  },
-});

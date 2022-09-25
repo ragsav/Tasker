@@ -8,6 +8,7 @@ import moment from 'moment';
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {StyleSheet} from 'react-native';
 import {Appbar, Divider, useTheme} from 'react-native-paper';
+import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {database} from '../db/db';
 import Task from '../db/models/Task';
@@ -21,8 +22,6 @@ const CalendarItemBottomSheet = ({
   // hooks
   const sheetRef = useRef(null);
   const theme = useTheme();
-  // console.log({selectedDateInfo});
-
   const snapPoints = useMemo(() => ['100%'], []);
 
   useEffect(() => {
@@ -105,44 +104,53 @@ const CalendarItemBottomSheet = ({
   );
 };
 const enhanceSelectLabel = withObservables(
-  ['selectedDateInfo'],
-  ({selectedDateInfo}) => ({
+  ['selectedDateInfo', 'taskSortProperty', 'taskSortOrder'],
+  ({selectedDateInfo, taskSortProperty, taskSortOrder}) => ({
     tasks:
       selectedDateInfo &&
       selectedDateInfo.taskIDs &&
       Array.isArray(selectedDateInfo.taskIDs)
         ? database.collections
             .get('tasks')
-            .query(Q.where('id', Q.oneOf(selectedDateInfo.taskIDs)))
+            .query(
+              Q.where('id', Q.oneOf(selectedDateInfo.taskIDs)),
+              Q.sortBy(
+                String(taskSortProperty).trim() === ''
+                  ? CONSTANTS.TASK_SORT.DUE_DATE.code
+                  : String(taskSortProperty).trim(),
+                String(taskSortOrder) === Q.asc ||
+                  String(taskSortOrder) === Q.desc
+                  ? taskSortOrder
+                  : Q.asc,
+              ),
+            )
             .observe()
         : database.collections
             .get('tasks')
-            .query(Q.where('id', Q.oneOf([])))
+            .query(
+              Q.where('id', Q.oneOf([])),
+              Q.sortBy(
+                String(taskSortProperty).trim() === ''
+                  ? CONSTANTS.TASK_SORT.DUE_DATE.code
+                  : String(taskSortProperty).trim(),
+                String(taskSortOrder) === Q.asc ||
+                  String(taskSortOrder) === Q.desc
+                  ? taskSortOrder
+                  : Q.asc,
+              ),
+            )
             .observe(),
   }),
 );
-export const EnhancedCalendarItemBottomSheet = enhanceSelectLabel(
+const EnhancedCalendarItemBottomSheet = enhanceSelectLabel(
   CalendarItemBottomSheet,
 );
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 200,
-  },
 
-  transaction_category_filter_title: {
-    width: '100%',
+const mapStateToProps = state => {
+  return {
+    taskSortProperty: state.taskSort.taskSortProperty,
+    taskSortOrder: state.taskSort.taskSortOrder,
+  };
+};
 
-    color: CONSTANTS.COLORS.DARK_FONT,
-    fontWeight: '500',
-    fontSize: 16,
-    padding: 6,
-    borderBottomColor: CONSTANTS.COLORS.LIGHT_FONT,
-    borderBottomWidth: 1,
-    paddingHorizontal: 12,
-  },
-  transaction_category_avatar_icon: {
-    borderRadius: 8,
-    padding: 16,
-  },
-});
+export default connect(mapStateToProps)(EnhancedCalendarItemBottomSheet);

@@ -35,5 +35,14 @@ export const xpenseDBMigration = schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 15,
+      steps: [
+        addColumns({
+          table: 'tasks',
+          columns: [{name: 'reminder_id', type: 'string', isOptional: true}],
+        }),
+      ],
+    },
   ],
 });

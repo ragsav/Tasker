@@ -1,8 +1,7 @@
+import {Q} from '@nozbe/watermelondb';
 import {database} from '../../db/db';
 import Note from '../../db/models/Note';
 import {Logger} from '../../utils/logger';
-import {Q} from '@nozbe/watermelondb';
-import Toast from 'react-native-toast-message';
 export const CREATE_NOTE_STATE = 'CREATE_NOTE_STATE';
 export const EDIT_NOTE_STATE = 'EDIT_NOTE_STATE';
 export const DELETE_NOTE_STATE = 'DELETE_NOTE_STATE';
@@ -54,11 +53,11 @@ export const resetDeleteNoteState = () => {
  */
 export const getNoteByID = async id => {
   try {
-    const n = await database.get('notes').find(id);
-
-    return n;
+    const note = await database.get('notes').find(id);
+    Logger.pageLogger('note.js:getNoteByID:note', {note});
+    return note;
   } catch (error) {
-    console.log({error});
+    Logger.pageLogger('note.js:getNoteByID:catch', {error});
     return null;
   }
 };
@@ -74,6 +73,7 @@ export const createNote =
       }),
     );
     try {
+      Logger.pageLogger('note.js:createNoteState:start');
       await database.write(async () => {
         await database.get('notes').create(note => {
           note.title = title;
@@ -89,9 +89,9 @@ export const createNote =
           error: null,
         }),
       );
-      Logger.pageLogger('createNote : success');
+      Logger.pageLogger('note.js:createNoteState:success');
     } catch (error) {
-      Logger.pageLogger('createNote : error', error);
+      Logger.pageLogger('note.js:createNote:catch', {error});
       dispatch(createNoteState({loading: false, success: true, error}));
     }
   };
@@ -107,6 +107,7 @@ export const editNote =
       }),
     );
     try {
+      Logger.pageLogger('note.js:editNote:start');
       const noteToBeUpdated = await database.get('notes').find(id);
       database.write(async () => {
         await noteToBeUpdated.update(note => {
@@ -123,9 +124,9 @@ export const editNote =
           error: null,
         }),
       );
-      Logger.pageLogger('editNote : success', noteToBeUpdated);
+      Logger.pageLogger('note.js:editNote:success');
     } catch (error) {
-      Logger.pageLogger('editNote : error', error);
+      Logger.pageLogger('note.js:editNote:catch', {error});
       dispatch(editNoteState({loading: false, success: true, error}));
     }
   };
@@ -135,6 +136,7 @@ export const duplicateNote =
   async dispatch => {
     dispatch(createNoteState({loading: true, success: false, error: null}));
     try {
+      Logger.pageLogger('note.js:duplicateNote:start');
       const noteToBeDuplicated = await database.get('notes').find(id);
       const dNote = await database.write(async () => {
         return await database.get('notes').create(note => {
@@ -143,14 +145,19 @@ export const duplicateNote =
           note.labelID = noteToBeDuplicated.labelID;
         });
       });
+      Logger.pageLogger('note.js:duplicateNote:dNote', {dNote});
       const tasksToBeDuplicated = await database
         .get('tasks')
         .query(Q.where('note_id', id))
         .fetch();
+      Logger.pageLogger('note.js:duplicateNote:tasksToBeDuplicated', {
+        tasksToBeDuplicated,
+      });
 
       const batchTaskCreateRecords = tasksToBeDuplicated.map(dTask => {
         return database.get('tasks').prepareCreate(task => {
           task.title = dTask.title;
+          task.description = dTask.description;
           task.noteID = dNote.id;
           task.isBookmarked = dTask.isBookmarked;
           task.isDone = dTask.isDone;
@@ -167,9 +174,9 @@ export const duplicateNote =
       });
 
       dispatch(createNoteState({loading: false, success: true, error: null}));
-      Logger.pageLogger('duplicateNote : success');
+      Logger.pageLogger('note.js:duplicateNote:success');
     } catch (error) {
-      Logger.pageLogger('duplicateNote : error', error);
+      Logger.pageLogger('note.js:duplicateNote:catch', {error});
       dispatch(createNoteState({loading: false, success: true, error}));
     }
   };
@@ -184,12 +191,19 @@ export const deleteNote =
       }),
     );
     try {
+      Logger.pageLogger('note.js:deleteNote:success');
       const noteToBeDeleted = await database.get('notes').find(id);
+      Logger.pageLogger('note.js:deleteNote:noteToBeDeleted', {
+        noteToBeDeleted,
+      });
 
       const tasksToBeDeleted = await database
         .get('tasks')
         .query(Q.where('note_id', noteToBeDeleted.id))
         .fetch();
+      Logger.pageLogger('note.js:deleteNote:tasksToBeDeleted', {
+        tasksToBeDeleted,
+      });
 
       const deletedTasks = tasksToBeDeleted.map(task =>
         task.prepareDestroyPermanently(),
@@ -207,9 +221,9 @@ export const deleteNote =
           error: null,
         }),
       );
-      Logger.pageLogger('deleteNote : success', noteToBeDeleted);
+      Logger.pageLogger('note.js:deleteNote:success');
     } catch (error) {
-      Logger.pageLogger('deleteNote : error', error);
+      Logger.pageLogger('note.js:deleteNote:catch', {error});
       dispatch(deleteNoteState({loading: false, success: true, error}));
     }
   };

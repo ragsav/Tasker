@@ -1,26 +1,10 @@
-import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  View,
-} from 'react-native';
-import {
-  Appbar,
-  Button,
-  Surface,
-  TextInput,
-  TouchableRipple,
-  useTheme,
-} from 'react-native-paper';
+import {FlatList, Pressable, SafeAreaView, StyleSheet} from 'react-native';
+import {Appbar, Button, Surface, TextInput, useTheme} from 'react-native-paper';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {EnhancedLabelSelectBottomSheet} from '../components/LabelSelectBottomSheet';
-import {database} from '../db/db';
-import Label from '../db/models/Label';
 import {editNote, getLabelByID, resetEditNoteState} from '../redux/actions';
 
 const EditNoteScreen = ({
@@ -38,7 +22,6 @@ const EditNoteScreen = ({
   // variables
   const theme = useTheme();
   const {p_id, p_title, p_colorString, p_labelID} = route.params;
-  console.log({p_colorString});
 
   // states
   const [noteState, setNoteState] = useState({
@@ -210,24 +193,6 @@ const EditNoteScreen = ({
     </SafeAreaView>
   );
 };
-
-const styles = new StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    height: '100%',
-    width: '100%',
-    padding: 12,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-  },
-});
-// const enhanceNoteScreen = withObservables(['route'], ({route}) => ({
-//   note: database.collections.get('notes').findAndObserve(route.params.p_id),
-// }));
-// export const EnhancedNoteScreen = enhanceNoteScreen(EditNoteScreen);
 
 const mapStateToProps = state => {
   return {

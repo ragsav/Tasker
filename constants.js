@@ -1,4 +1,6 @@
 export const CONSTANTS = Object.freeze({
+  NOTIFICATION_CHANNEL_ID:
+    'Notes-Notifications-dc5ee189-65a6-48a7-9ae6-b0ec9d067825',
   CURRENCY: {
     RUPEE: {
       code: 'RUPEE',
@@ -65,11 +67,33 @@ export const CONSTANTS = Object.freeze({
     COMPLETED: 'COMPLETED',
     ALL: 'ALL',
   },
-  BOTTOM_TAB_BAR_ICONS: {
-    Transactions: 'receipt-long',
-    Statistics: 'analytics',
-    Accounts: 'account-box',
-    Settings: 'settings',
+  TASK_SORT: {
+    TITLE: {text: 'Title', code: 'title'},
+    START_DATE: {text: 'Start time', code: 'start_timestamp'},
+    DUE_DATE: {text: 'Due date', code: 'end_timestamp'},
+    MARK_DONE: {text: 'Marked done on', code: 'done_timestamp'},
+    UPDATE_AT: {text: 'Updated on', code: 'updated_at'},
+    CREATED_AT: {text: 'Created on', code: 'created_at'},
+  },
+  TASK_SORT_ORDER: {
+    ASC: {
+      text: 'Ascensing',
+      code: 'asc',
+    },
+    DESC: {
+      text: 'Descending',
+      code: 'desc',
+    },
+  },
+  TASK_FILTER: {
+    BOOKMARKS: {
+      text: 'Bookmarks',
+      field: 'is_bookmarked',
+    },
+    DONE: {
+      text: 'Done',
+      field: 'is_done',
+    },
   },
   COLORS: {
     PRIMARY: '#04D976',

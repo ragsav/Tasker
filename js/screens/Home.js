@@ -5,29 +5,20 @@
  * @format
  * @flow strict-local
  */
-import {synchronize} from '@nozbe/watermelondb/sync';
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {SafeAreaView, ScrollView, StyleSheet} from 'react-native';
 import {
   Appbar,
   Button,
   Divider,
   List,
   Text,
-  TouchableRipple,
   useTheme,
 } from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {EnhancedLabelItem} from '../components/LabelItem';
@@ -38,10 +29,10 @@ import Note from '../db/models/Note';
 import {
   deleteLabel,
   resetDeleteLabelState,
+  resetEditLabelState,
   unGroupLabel,
 } from '../redux/actions';
 const BOTTOM_APPBAR_HEIGHT = 64;
-
 // const EnhancedLabelItem = enhanceLabelItem(LabelItem);
 /**
  *
@@ -60,7 +51,6 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
   // const navigation = useNavigation();
 
   // state
-  const [searchQuery, setSearchQuery] = React.useState('');
 
   // effects
   useFocusEffect(
@@ -75,8 +65,6 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
   // render functions
 
   // handle functions
-
-  const _handleSearchQueryChange = query => setSearchQuery(query);
   const _handleDeleteLabel = id => {
     dispatch(deleteLabel({id}));
   };
@@ -113,23 +101,12 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
   const _navigateToSettings = () => {
     navigation?.navigate(CONSTANTS.ROUTES.SETTINGS);
   };
-  const _demo = async () => {
-    await synchronize({
-      database,
-      pullChanges: async ({lastPulledAt, schemaVersion, migration}) => {
-        return {changes: [], timestamp: Date.now()};
-      },
-
-      pushChanges: async ({changes, lastPulledAt}) => {
-        console.log({changes, lastPulledAt});
-      },
-    });
-  };
 
   // misc functions
   const _init = () => {};
   const _onDestroy = () => {
     dispatch(resetDeleteLabelState());
+    dispatch(resetEditLabelState());
   };
 
   // return
@@ -268,16 +245,12 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
         })}
       </ScrollView>
 
-      {/* </Surface> */}
-
       <Appbar
-        style={[
-          styles.bottom,
-          {
-            height: BOTTOM_APPBAR_HEIGHT + bottom,
-            backgroundColor: theme?.colors.primary,
-          },
-        ]}
+        style={{
+          height: BOTTOM_APPBAR_HEIGHT + bottom,
+          backgroundColor: theme?.colors.primary,
+          justifyContent: 'space-between',
+        }}
         safeAreaInsets={{bottom}}>
         <Button
           icon="plus"
@@ -315,26 +288,3 @@ const enhanceHome = withObservables([], ({}) => ({
 const EnhancedHome = enhanceHome(Home);
 
 export default connect(mapStateToProps)(EnhancedHome);
-
-const styles = StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    height: '100%',
-    width: '100%',
-  },
-  bottom: {
-    backgroundColor: 'aquamarine',
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'space-between',
-  },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    padding: 0,
-  },
-});

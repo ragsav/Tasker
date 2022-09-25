@@ -12,6 +12,7 @@ import {CONSTANTS} from '../../constants';
 import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
 import TaskInput from '../components/TaskInput';
 import TaskItem from '../components/TaskItem';
+import TaskSortBottomSheet from '../components/TaskSortBottomSheet';
 import {database} from '../db/db';
 import Note from '../db/models/Note';
 import Task from '../db/models/Task';
@@ -20,6 +21,7 @@ import {
   duplicateNote,
   resetDeleteNoteState,
 } from '../redux/actions';
+import {Logger} from '../utils/logger';
 
 /**
  *
@@ -44,6 +46,8 @@ const NoteScreen = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isTaskInputOpen, setIsTaskInputOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSortBottomSheetVisible, setIsSortBottomSheetVisible] =
+    useState(false);
 
   // effects
   useFocusEffect(
@@ -105,6 +109,10 @@ const NoteScreen = ({
   const _handleCloseTaskInput = () => {
     setIsTaskInputOpen(false);
   };
+  const _handleOpenSortTaskBottomSheet = () => {
+    setIsMenuOpen(false);
+    setIsSortBottomSheetVisible(true);
+  };
 
   // navigation functions
   const _navigateBack = () => {
@@ -124,6 +132,8 @@ const NoteScreen = ({
   const _init = () => {};
   const _onDestroy = () => {
     dispatch(resetDeleteNoteState());
+    setIsSortBottomSheetVisible(false);
+    setIsMenuOpen(false);
   };
 
   // return
@@ -141,7 +151,7 @@ const NoteScreen = ({
       />
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title={note?.title} />
+        <Appbar.Content title={note ? note.title : '#Note'} />
 
         <Menu
           visible={isMenuOpen}
@@ -154,7 +164,11 @@ const NoteScreen = ({
             title="Edit"
             leadingIcon={'pencil'}
           />
-          <Menu.Item onPress={() => {}} title="Sort by" leadingIcon={'sort'} />
+          <Menu.Item
+            onPress={_handleOpenSortTaskBottomSheet}
+            title="Sort by"
+            leadingIcon={'sort'}
+          />
 
           <Menu.Item
             onPress={_handleDuplicateNote}
@@ -172,7 +186,9 @@ const NoteScreen = ({
       <DraggableFlatList
         contentContainerStyle={{padding: 12}}
         data={tasks}
-        onDragEnd={value => console.log(value)}
+        onDragEnd={value =>
+          Logger.pageLogger('NoteScreen.js:DraggableFlatList:onDragEnd')
+        }
         keyExtractor={item => item.id}
         renderItem={_renderTaskItem}
       />
@@ -195,16 +211,32 @@ const NoteScreen = ({
         noteID={note.id}
       />
 
-      {/* <Surface style={styles.container}></Surface> */}
+      <TaskSortBottomSheet
+        visible={isSortBottomSheetVisible}
+        setVisible={setIsSortBottomSheetVisible}
+      />
     </SafeAreaView>
   );
 };
-const enhanceNoteScreen = withObservables(['route'], ({route}) => ({
-  note: database.collections.get('notes').findAndObserve(route.params.p_id),
-  tasks: database.collections
-    .get('tasks')
-    .query(Q.where('note_id', route.params.p_id), Q.sortBy('is_done', Q.asc)),
-}));
+const enhanceNoteScreen = withObservables(
+  ['route', 'taskSortProperty', 'taskSortOrder'],
+  ({route, taskSortProperty, taskSortOrder}) => ({
+    note: database.collections.get('notes').findAndObserve(route.params.p_id),
+    tasks: database.collections
+      .get('tasks')
+      .query(
+        Q.where('note_id', route.params.p_id),
+        Q.sortBy(
+          String(taskSortProperty).trim() === ''
+            ? CONSTANTS.TASK_SORT.DUE_DATE.code
+            : String(taskSortProperty).trim(),
+          String(taskSortOrder) === Q.asc || String(taskSortOrder) === Q.desc
+            ? taskSortOrder
+            : Q.asc,
+        ),
+      ),
+  }),
+);
 const EnhancedNoteScreen = enhanceNoteScreen(NoteScreen);
 
 const mapStateToProps = state => {
@@ -212,20 +244,9 @@ const mapStateToProps = state => {
     isDeletingNote: state.note.isDeletingNote,
     deleteNoteSuccess: state.note.deleteNoteSuccess,
     deleteNoteFailure: state.note.deleteNoteFailure,
+    taskSortProperty: state.taskSort.taskSortProperty,
+    taskSortOrder: state.taskSort.taskSortOrder,
   };
 };
 
 export default connect(mapStateToProps)(EnhancedNoteScreen);
-
-const styles = new StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    width: '100%',
-    padding: 12,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-  },
-});

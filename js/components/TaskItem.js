@@ -1,13 +1,20 @@
-import Task from '../db/models/Task';
-import React from 'react';
-import {Card, IconButton, Paragraph, useTheme} from 'react-native-paper';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import withObservables from '@nozbe/with-observables';
-import moment from 'moment';
-import {connect} from 'react-redux';
-import {editTaskIsBookmark, editTaskIsDone} from '../redux/actions';
 import {useNavigation} from '@react-navigation/native';
+import moment from 'moment';
+import React from 'react';
+import {View} from 'react-native';
+import {
+  IconButton,
+  Paragraph,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from 'react-native-paper';
+import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
+import Task from '../db/models/Task';
+import {editTaskIsBookmark, editTaskIsDone} from '../redux/actions';
+import {Logger} from '../utils/logger';
 /**
  *
  * @param {object} param0
@@ -60,8 +67,7 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
   // return
 
   return (
-    <Card
-      elevation={1}
+    <TouchableRipple
       style={{
         marginBottom: 6,
         borderLeftColor: _isDue()
@@ -73,62 +79,122 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
         backgroundColor: _isDue()
           ? theme?.colors.errorContainer
           : theme?.colors.primaryContainer,
+        borderRadius: 4,
+        paddingBottom: 6,
       }}
       onPress={_navigateToTaskScreen}
       onLongPress={() => {
-        console.log('long pressed');
-        onLongPress();
+        Logger.pageLogger('TaskItem.js:onLongPress');
+        onLongPress?.();
       }}>
-      <Card.Title
-        title={task.title}
-        titleStyle={[
-          task.isDone ? {textDecorationLine: 'line-through'} : null,
-          {fontWeight: '700', marginBottom: -4},
-        ]}
-        left={props => (
-          <IconButton
-            icon={task.isDone ? 'radiobox-marked' : 'radiobox-blank'}
-            onPress={_handleMarkIsDone}
-          />
-        )}
-        right={props => (
+      <View
+        style={{
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'flex-start',
+        }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              width: '100%',
+              flex: 4,
+            }}>
+            <IconButton
+              icon={task.isDone ? 'radiobox-marked' : 'radiobox-blank'}
+              onPress={_handleMarkIsDone}
+            />
+            <Text
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={{
+                fontWeight: '600',
+                color: theme.colors.onSurface,
+                fontSize: 16,
+                flexWrap: 'wrap',
+                flex: 1,
+              }}>
+              {task.title}
+            </Text>
+          </View>
           <IconButton
             icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
             onPress={_handleBookmark}
+            size={24}
           />
-        )}
-      />
-      {String(task.description).trim() !== '' && (
-        <Card.Content>
-          <Paragraph numberOfLines={2} ellipsizeMode="tail">
+        </View>
+
+        {!task.description || String(task.description).trim() === '' ? null : (
+          <Paragraph
+            numberOfLines={2}
+            ellipsizeMode="tail"
+            style={{
+              fontWeight: '400',
+              color: theme.colors.onSurface,
+              fontSize: 14,
+              flexWrap: 'wrap',
+              flex: 1,
+              paddingHorizontal: 12,
+            }}>
             {task.description}
           </Paragraph>
-        </Card.Content>
-      )}
+        )}
 
-      {task.isDone ? (
-        <Card.Content>
+        {task.isDone && task.endTimestamp ? (
           <Paragraph
             style={{
+              fontWeight: '400',
+              color: theme.colors.onSurface,
               fontSize: 12,
-            }}>{`Marked done ${moment(task.doneTimestamp)
+              flexWrap: 'wrap',
+              flex: 1,
+              paddingHorizontal: 12,
+            }}
+            numberOfLines={2}
+            ellipsizeMode="tail">{`Marked done ${moment(task.doneTimestamp)
             .calendar()
             .toLowerCase()}`}</Paragraph>
-        </Card.Content>
-      ) : (
-        _isDue() && (
-          <Card.Content>
+        ) : task.endTimestamp ? (
+          <Paragraph
+            style={{
+              fontWeight: '400',
+              color: theme.colors.onSurface,
+              fontSize: 12,
+              flexWrap: 'wrap',
+              flex: 1,
+              paddingHorizontal: 12,
+            }}
+            numberOfLines={2}
+            ellipsizeMode="tail">{`Due date ${moment(task.endTimestamp)
+            .calendar()
+            .toLowerCase()}`}</Paragraph>
+        ) : (
+          _isDue() && (
             <Paragraph
               style={{
+                fontWeight: '400',
                 color: theme?.colors.onErrorContainer,
                 fontSize: 12,
-              }}>{`Due on ${moment(task.endTimestamp)
+                flexWrap: 'wrap',
+                flex: 1,
+                paddingHorizontal: 12,
+              }}
+              numberOfLines={2}
+              ellipsizeMode="tail">{`Due on ${moment(task.endTimestamp)
               .calendar()
               .toLowerCase()}`}</Paragraph>
-          </Card.Content>
-        )
-      )}
-    </Card>
+          )
+        )}
+      </View>
+    </TouchableRipple>
   );
 };
 

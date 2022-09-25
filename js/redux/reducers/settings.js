@@ -1,7 +1,11 @@
 import {_customDarkTheme, _customLightTheme} from '../../../themes';
 import {database} from '../../db/db';
 import {Storage} from '../../utils/asyncStorage';
-import {CHANGE_QUICK_LIST_SETTINGS, CHANGE_THEME} from '../actions';
+import {
+  CHANGE_QUICK_LIST_SETTINGS,
+  CHANGE_RENDER_URL_IN_TASK_SETTINGS,
+  CHANGE_THEME,
+} from '../actions';
 
 export default (
   state = {
@@ -13,6 +17,7 @@ export default (
       bookmarks: true,
       myCalendar: true,
     },
+    renderURLInTask: true,
   },
   action,
 ) => {
@@ -32,6 +37,12 @@ export default (
       return {
         ...state,
         quickListSettings: action.quickListSettings,
+      };
+    case CHANGE_RENDER_URL_IN_TASK_SETTINGS:
+      Storage.storeData('render_url_in_task_settings', action.renderURLInTask);
+      return {
+        ...state,
+        renderURLInTask: action.renderURLInTask,
       };
     default:
       return state;

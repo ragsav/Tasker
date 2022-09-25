@@ -1,16 +1,12 @@
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback} from 'react';
-import {Q} from '@nozbe/watermelondb';
-import {useMemo} from 'react';
-import {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {FlatList, SafeAreaView, StyleSheet} from 'react-native';
 import {Appbar, Searchbar, useTheme} from 'react-native-paper';
 
-import TaskItem from '../components/TaskItem';
-import {database} from '../db/db';
-import Task from '../db/models/Task';
-import {getTaskByQuery, resetDeleteSearchState} from '../redux/actions';
 import {useEffect} from 'react';
+import TaskItem from '../components/TaskItem';
+import Task from '../db/models/Task';
+import {getTaskByQuery} from '../redux/actions';
 
 /**
  *
@@ -102,16 +98,3 @@ export const SearchScreen = ({navigation}) => {
     </SafeAreaView>
   );
 };
-
-const styles = new StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    width: '100%',
-    padding: 12,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-  },
-});

@@ -9,15 +9,15 @@
 import withObservables from '@nozbe/with-observables';
 import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import {
   Divider,
   IconButton,
+  Menu,
   Text,
   TouchableRipple,
   useTheme,
-  Menu,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CONSTANTS} from '../../constants';
@@ -197,26 +197,3 @@ const enhanceLabelItem = withObservables(['label'], ({label}) => ({
   notes: label.notes,
 }));
 export const EnhancedLabelItem = enhanceLabelItem(LabelItem);
-
-const styles = StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    height: '100%',
-    width: '100%',
-  },
-  bottom: {
-    backgroundColor: 'aquamarine',
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'space-between',
-  },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    padding: 0,
-  },
-});

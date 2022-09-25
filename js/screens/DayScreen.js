@@ -5,10 +5,16 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {FlatList, SafeAreaView, StyleSheet} from 'react-native';
 import {Appbar, Menu} from 'react-native-paper';
 import {connect} from 'react-redux';
+import {CONSTANTS} from '../../constants';
 import TaskItem from '../components/TaskItem';
+import TaskSortBottomSheet from '../components/TaskSortBottomSheet';
 import {database} from '../db/db';
 import Task from '../db/models/Task';
-import {editTaskMarkBulkDone, resetDeleteNoteState} from '../redux/actions';
+import {
+  editTaskMarkBulkDone,
+  resetDeleteNoteState,
+  resetEditTaskState,
+} from '../redux/actions';
 
 /**
  *
@@ -24,6 +30,8 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
 
   // states
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSortBottomSheetVisible, setIsSortBottomSheetVisible] =
+    useState(false);
 
   // effects
   useFocusEffect(
@@ -59,6 +67,10 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
     dispatch(editTaskMarkBulkDone({ids: tasks?.map(task => task.id)}));
     setIsMenuOpen(false);
   };
+  const _handleOpenSortTaskBottomSheet = () => {
+    setIsMenuOpen(false);
+    setIsSortBottomSheetVisible(true);
+  };
 
   // navigation functions
   const _navigateBack = () => {
@@ -69,6 +81,9 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
   const _init = () => {};
   const _onDestroy = () => {
     dispatch(resetDeleteNoteState());
+    dispatch(resetEditTaskState());
+    setIsMenuOpen(false);
+    setIsSortBottomSheetVisible(false);
   };
 
   // return
@@ -93,7 +108,11 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
             leadingIcon={'check-all'}
             onPress={_handleMarkAllDone}
           />
-          <Menu.Item onPress={() => {}} title="Sort by" leadingIcon={'sort'} />
+          <Menu.Item
+            onPress={_handleOpenSortTaskBottomSheet}
+            title="Sort by"
+            leadingIcon={'sort'}
+          />
         </Menu>
       </Appbar.Header>
 
@@ -103,6 +122,10 @@ const DayScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
         keyExtractor={item => item.id}
         renderItem={_renderTaskItem}
       />
+      <TaskSortBottomSheet
+        visible={isSortBottomSheetVisible}
+        setVisible={setIsSortBottomSheetVisible}
+      />
     </SafeAreaView>
   );
 };
@@ -111,28 +134,31 @@ const e = new Date();
 s.setHours(0, 0, 0, 0);
 e.setHours(23, 59, 59, 999);
 
-const enhanceDayScreen = withObservables([], ({}) => ({
-  tasks: database.collections
-    .get('tasks')
-    .query(Q.where('end_timestamp', Q.between(s.getTime(), e.getTime()))),
-}));
+const enhanceDayScreen = withObservables(
+  ['taskSortProperty', 'taskSortOrder'],
+  ({taskSortProperty, taskSortOrder}) => ({
+    tasks: database.collections
+      .get('tasks')
+      .query(
+        Q.where('end_timestamp', Q.between(s.getTime(), e.getTime())),
+        Q.sortBy(
+          String(taskSortProperty).trim() === ''
+            ? CONSTANTS.TASK_SORT.DUE_DATE.code
+            : String(taskSortProperty).trim(),
+          String(taskSortOrder) === Q.asc || String(taskSortOrder) === Q.desc
+            ? taskSortOrder
+            : Q.asc,
+        ),
+      ),
+  }),
+);
 const EnhancedDayScreen = enhanceDayScreen(DayScreen);
 
 const mapStateToProps = state => {
-  return {};
+  return {
+    taskSortProperty: state.taskSort.taskSortProperty,
+    taskSortOrder: state.taskSort.taskSortOrder,
+  };
 };
 
 export default connect(mapStateToProps)(EnhancedDayScreen);
-
-const styles = new StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    width: '100%',
-    padding: 12,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-  },
-});

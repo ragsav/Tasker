@@ -1,25 +1,15 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {
-  TextInput,
-  Text,
-  useTheme,
-  Portal,
-  Modal,
-  Chip,
-} from 'react-native-paper';
-import {connect} from 'react-redux';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomSheet, {
   BottomSheetBackdrop,
-  BottomSheetFlatList,
   BottomSheetScrollView,
-  BottomSheetTextInput,
   BottomSheetView,
   useBottomSheetDynamicSnapPoints,
 } from '@gorhom/bottom-sheet';
-import {StyleSheet, View} from 'react-native';
-import DatePicker from 'react-native-date-picker';
 import moment from 'moment/moment';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import DatePicker from 'react-native-date-picker';
+import {Chip, TextInput, useTheme} from 'react-native-paper';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {connect} from 'react-redux';
 import {createTask, resetCreateTaskState} from '../redux/actions/task';
 const TaskInput = ({
   createTaskSuccess,
@@ -177,10 +167,15 @@ const TaskInput = ({
       overDragResistanceFactor={0}
       handleStyle={{display: 'none'}}>
       <BottomSheetView
-        style={[
-          styles.contentContainer,
-          {backgroundColor: theme?.colors.surface},
-        ]}
+        style={{
+          backgroundColor: theme?.colors.surface,
+          flex: 1,
+          alignItems: 'center',
+          width: '100%',
+          padding: 12,
+          flexDirection: 'column',
+          alignItems: 'stretch',
+        }}
         onLayout={handleContentLayout}>
         <TextInput
           ref={textInputRef}
@@ -263,18 +258,3 @@ const mapStateToProps = state => {
 };
 
 export default connect(mapStateToProps)(TaskInput);
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    backgroundColor: 'grey',
-  },
-  contentContainer: {
-    flex: 1,
-    alignItems: 'center',
-    width: '100%',
-    padding: 12,
-    flexDirection: 'column',
-    alignItems: 'stretch',
-  },
-});

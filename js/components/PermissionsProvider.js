@@ -3,6 +3,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 
 import {useEffect} from 'react';
+import {Logger} from '../utils/logger';
 
 const PermissionStatusProvider = ({
   isCheckingContactsPermission,
@@ -10,7 +11,7 @@ const PermissionStatusProvider = ({
   children,
 }) => {
   useEffect(() => {
-    console.log('PermissionStatusProvider', {calendarPermissionState});
+    Logger.pageLogger('PermissionStatusProvider', {calendarPermissionState});
   }, [calendarPermissionState]);
   return (
     <View

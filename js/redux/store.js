@@ -2,6 +2,9 @@ import {applyMiddleware, compose, createStore} from 'redux';
 import {
   handleCalendarPermissionUsingLibrary,
   setQuickListSettings,
+  setRenderURLInTaskSettings,
+  setTaskSortOrder,
+  setTaskSortProperty,
   setTheme,
 } from './actions';
 
@@ -9,13 +12,15 @@ import rootReducer from './reducers';
 import thunkMiddleware from 'redux-thunk';
 import {Storage} from '../utils/asyncStorage';
 import {_customDarkTheme, _customLightTheme} from '../../themes';
+import {CONSTANTS} from '../../constants';
+import {Logger} from '../utils/logger';
 
 const enhancers = [applyMiddleware(thunkMiddleware)];
 export const configureStore = persistedState => {
   const store = createStore(rootReducer, persistedState, compose(...enhancers));
   store.dispatch(handleCalendarPermissionUsingLibrary());
   Storage.getData('local_theme').then(theme => {
-    console.log(theme);
+    Logger.pageLogger('Storage.getData:local_theme', {theme});
     if (theme === 'dark') {
       store.dispatch(setTheme({theme: _customDarkTheme}));
     } else {
@@ -23,7 +28,36 @@ export const configureStore = persistedState => {
     }
   });
   Storage.getData('quick_list_settings').then(quickListSettings => {
+    Logger.pageLogger('Storage.getData:quick_list_settings', {
+      quickListSettings,
+    });
     store.dispatch(setQuickListSettings({quickListSettings}));
+  });
+  Storage.getData('render_url_in_task_settings').then(renderURLInTask => {
+    Logger.pageLogger('Storage.getData:render_url_in_task_settings', {
+      renderURLInTask,
+    });
+    store.dispatch(setRenderURLInTaskSettings({renderURLInTask}));
+  });
+  Storage.getData('task_sort_property').then(taskSortProperty => {
+    Logger.pageLogger('Storage.getData:task_sort_property', {taskSortProperty});
+    store.dispatch(
+      setTaskSortProperty({
+        taskSortProperty: taskSortProperty
+          ? taskSortProperty
+          : CONSTANTS.TASK_SORT.DUE_DATE.code,
+      }),
+    );
+  });
+  Storage.getData('task_sort_order').then(taskSortOrder => {
+    Logger.pageLogger('Storage.getData:task_sort_order', {taskSortOrder});
+    store.dispatch(
+      setTaskSortOrder({
+        taskSortOrder: taskSortOrder
+          ? taskSortOrder
+          : CONSTANTS.TASK_SORT_ORDER.ASC.code,
+      }),
+    );
   });
   return store;
 };

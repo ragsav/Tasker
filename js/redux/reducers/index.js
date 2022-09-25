@@ -5,6 +5,7 @@ import task from './task';
 import permission from './permission';
 import timeFrame from './timeFrame';
 import settings from './settings';
+import taskSort from './taskSort';
 export default combineReducers({
   permission,
   label,
@@ -12,4 +13,5 @@ export default combineReducers({
   task,
   timeFrame,
   settings,
+  taskSort,
 });

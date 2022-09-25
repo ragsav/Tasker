@@ -1,6 +1,5 @@
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useEffect, useState} from 'react';
-import {useRef} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import {
   Appbar,
@@ -153,20 +152,6 @@ const EditLabelScreen = ({
   );
 };
 
-const styles = new StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    height: '100%',
-    width: '100%',
-    padding: 12,
-  },
-});
-// const enhanceEditLabel = withObservables(['route'], ({route}) => ({
-//   label: database.collections.get('labels').findAndObserve(route.p_id),
-// }));
-// const EnhancedEditLabel = enhanceEditLabel(EditLabelScreen);
 const mapStateToProps = state => {
   return {
     isUpdatingLabel: state.label.isUpdatingLabel,

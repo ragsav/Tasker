@@ -1,12 +1,13 @@
 import {getLinkPreview} from 'link-preview-js';
-import * as React from 'react';
-import {Linking, StyleSheet} from 'react-native';
-import {Avatar, Button, Card, Paragraph, Title} from 'react-native-paper';
+import React, {useEffect, useState} from 'react';
+import {Image, Linking, View} from 'react-native';
+import {Surface, Text} from 'react-native-paper';
+import {Logger} from '../utils/logger';
 
-export const LinkPreview = React.memo(({text, requestTimeout = 2000}) => {
-  const [data, setData] = React.useState();
+export const LinkPreview = ({text, requestTimeout = 2000}) => {
+  const [data, setData] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let isCancelled = false;
     setData(undefined);
     getLinkPreview(text).then(data => {
@@ -17,57 +18,46 @@ export const LinkPreview = React.memo(({text, requestTimeout = 2000}) => {
     };
   }, [text]);
 
+  useEffect(() => {
+    Logger.pageLogger('URLPreview.js:useEffect', {data});
+  }, [data]);
+
   const handlePress = () => data?.link && Linking.openURL(data.link);
 
-  return (
-    <Card style={{margin: 12}} elevation={2}>
-      <Card.Title
-        title={data?.title}
-        subtitle={data?.description}
-        left={props =>
-          data?.favicons &&
-          Array.isArray(data.favicons) && (
-            <Avatar.Image {...props} source={{uri: data.favicons[0]}} />
-          )
-        }
-      />
-
+  return data ? (
+    <Surface
+      style={{flexDirection: 'row', margin: 12, borderRadius: 4}}
+      mode="outlined">
       {data?.images && Array.isArray(data.images) && (
-        <Card.Cover source={{uri: data.images[0]}} />
+        <Image
+          style={{flex: 1, height: 100, width: 100, borderRadius: 4}}
+          resizeMode="cover"
+          source={{uri: data.images[0]}}
+        />
       )}
-    </Card>
+      <View
+        style={{
+          flexDirection: 'column',
+          flex: 3,
+          padding: 12,
+          justifyContent: 'space-between',
+          overflow: 'hidden',
+        }}>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={2}
+          style={{fontWeight: '600'}}>
+          {data?.title}
+        </Text>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={3}
+          style={{fontWeight: '400', fontSize: 12}}>
+          {data?.description}
+        </Text>
+      </View>
+    </Surface>
+  ) : (
+    <></>
   );
-});
-
-const styles = StyleSheet.create({
-  description: {
-    marginTop: 4,
-  },
-  header: {
-    marginBottom: 6,
-  },
-  image: {
-    alignSelf: 'center',
-    backgroundColor: '#f7f7f8',
-  },
-  metadataContainer: {
-    flexDirection: 'row',
-    marginTop: 16,
-  },
-  metadataTextContainer: {
-    flex: 1,
-  },
-  minimizedImage: {
-    borderRadius: 12,
-    height: 48,
-    marginLeft: 4,
-    width: 48,
-  },
-  textContainer: {
-    marginHorizontal: 24,
-    marginVertical: 16,
-  },
-  title: {
-    fontWeight: 'bold',
-  },
-});
+};

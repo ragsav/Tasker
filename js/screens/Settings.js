@@ -1,31 +1,25 @@
-import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback} from 'react';
-import {SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
-import {
-  Appbar,
-  Divider,
-  List,
-  Switch,
-  Text,
-  TouchableRipple,
-  useTheme,
-} from 'react-native-paper';
+import {SafeAreaView, ScrollView, StyleSheet} from 'react-native';
+import {Appbar, Divider, List, Switch, useTheme} from 'react-native-paper';
 import {connect} from 'react-redux';
+import {_customDarkTheme, _customLightTheme} from '../../themes';
 import {
-  resetDeleteNoteState,
   setQuickListSettings,
+  setRenderURLInTaskSettings,
   setTheme,
 } from '../redux/actions';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {_customDarkTheme, _customLightTheme} from '../../themes';
-import {useEffect} from 'react';
 /**
  *
  * @param {object} param0
  * @returns
  */
-const Settings = ({navigation, dispatch, quickListSettings}) => {
+const Settings = ({
+  navigation,
+  renderURLInTask,
+  dispatch,
+  quickListSettings,
+}) => {
   // ref
 
   // variables
@@ -58,7 +52,7 @@ const Settings = ({navigation, dispatch, quickListSettings}) => {
       setQuickListSettings({
         quickListSettings: {
           ...quickListSettings,
-          myDay: !quickListSettings.myDay,
+          myDay: quickListSettings ? !quickListSettings.myDay : true,
         },
       }),
     );
@@ -68,7 +62,7 @@ const Settings = ({navigation, dispatch, quickListSettings}) => {
       setQuickListSettings({
         quickListSettings: {
           ...quickListSettings,
-          all: !quickListSettings.all,
+          all: quickListSettings ? !quickListSettings.all : true,
         },
       }),
     );
@@ -78,7 +72,7 @@ const Settings = ({navigation, dispatch, quickListSettings}) => {
       setQuickListSettings({
         quickListSettings: {
           ...quickListSettings,
-          completed: !quickListSettings.completed,
+          completed: quickListSettings ? !quickListSettings.completed : true,
         },
       }),
     );
@@ -88,7 +82,7 @@ const Settings = ({navigation, dispatch, quickListSettings}) => {
       setQuickListSettings({
         quickListSettings: {
           ...quickListSettings,
-          bookmarks: !quickListSettings.bookmarks,
+          bookmarks: quickListSettings ? !quickListSettings.bookmarks : true,
         },
       }),
     );
@@ -98,9 +92,15 @@ const Settings = ({navigation, dispatch, quickListSettings}) => {
       setQuickListSettings({
         quickListSettings: {
           ...quickListSettings,
-          myCalendar: !quickListSettings.myCalendar,
+          myCalendar: quickListSettings ? !quickListSettings.myCalendar : true,
         },
       }),
+    );
+  };
+
+  const _handleToggleRenderURLSettings = () => {
+    dispatch(
+      setRenderURLInTaskSettings({renderURLInTask: !Boolean(renderURLInTask)}),
     );
   };
 
@@ -223,6 +223,19 @@ const Settings = ({navigation, dispatch, quickListSettings}) => {
             )}
           />
         </List.Section>
+        <Divider />
+        <List.Item
+          title={'Extract URLs from tasks'}
+          left={props => (
+            <List.Icon {...props} icon="link" color={theme.colors.onSurface} />
+          )}
+          right={props => (
+            <Switch
+              value={renderURLInTask}
+              onValueChange={_handleToggleRenderURLSettings}
+            />
+          )}
+        />
 
         <Divider />
       </ScrollView>
@@ -236,20 +249,8 @@ const Settings = ({navigation, dispatch, quickListSettings}) => {
 const mapStateToProps = state => {
   return {
     quickListSettings: state.settings.quickListSettings,
+    renderURLInTask: state.settings.renderURLInTask,
   };
 };
 
 export default connect(mapStateToProps)(Settings);
-
-const styles = new StyleSheet.create({
-  main: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  container: {
-    width: '100%',
-    padding: 12,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-  },
-});

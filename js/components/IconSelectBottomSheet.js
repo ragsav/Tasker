@@ -3,7 +3,7 @@ import BottomSheet, {
   BottomSheetFlatList,
 } from '@gorhom/bottom-sheet';
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import {
   Appbar,
   Divider,
@@ -13,7 +13,6 @@ import {
   useTheme,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {CONSTANTS} from '../../constants';
 import {IconsData} from '../../icons';
 
 export const IconSelectBottomSheet = ({
@@ -75,15 +74,14 @@ export const IconSelectBottomSheet = ({
           // backgroundColor: '#00000000',
         }}>
         <View
-          style={[
-            styles.transaction_category_avatar_icon,
-            {
-              backgroundColor:
-                item === selectedIcon
-                  ? theme?.colors.primary
-                  : theme?.colors.surfaceVariant,
-            },
-          ]}>
+          style={{
+            borderRadius: 8,
+            padding: 16,
+            backgroundColor:
+              item === selectedIcon
+                ? theme?.colors.primary
+                : theme?.colors.surfaceVariant,
+          }}>
           <MaterialCommunityIcons
             name={item}
             size={32}
@@ -136,40 +134,3 @@ export const IconSelectBottomSheet = ({
     </BottomSheet>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 200,
-  },
-  contentContainer: {
-    backgroundColor: 'white',
-  },
-  transaction_category_item_container: {
-    padding: 6,
-    backgroundColor: CONSTANTS.COLORS.WHITE,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    borderTopColor: CONSTANTS.COLORS.LIGHT_FONT,
-    borderTopWidth: 1,
-  },
-  transaction_category_filter_title: {
-    width: '100%',
-
-    color: CONSTANTS.COLORS.DARK_FONT,
-    fontWeight: '500',
-    fontSize: 16,
-    padding: 6,
-    borderBottomColor: CONSTANTS.COLORS.LIGHT_FONT,
-    borderBottomWidth: 1,
-    paddingHorizontal: 12,
-  },
-  transaction_category_avatar_icon: {
-    borderColor: CONSTANTS.COLORS.LIGHT_FONT,
-    backgroundColor: CONSTANTS.COLORS.LIGHT_100,
-
-    borderRadius: 8,
-    padding: 16,
-  },
-});

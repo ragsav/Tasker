@@ -27,6 +27,7 @@ export default class Task extends Model {
   @date('start_timestamp') startTimestamp;
   @date('end_timestamp') endTimestamp;
   @date('reminder_timestamp') reminderTimestamp;
+  @text('reminder_id') reminderID;
   @field('is_repeating') isRepeating;
   @text('repeat_cron') repeatCron;
 

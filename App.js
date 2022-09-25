@@ -16,10 +16,15 @@ import {configureStore} from './js/redux/store';
 
 const store = configureStore();
 import {LogBox} from 'react-native';
-LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
-LogBox.ignoreAllLogs(); //Ignore all log notifications
+import PushNotification from 'react-native-push-notification';
+import NotificationService from './js/services/notifications';
+// LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+// LogBox.ignoreAllLogs(); //Ignore all log notifications
+
 const App = () => {
   useEffect(() => {
+    NotificationService.createChannel();
+    NotificationService.getAllScheduledNotifications();
     RNBootSplash.hide();
   }, []);
   return (
