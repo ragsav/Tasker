@@ -1,10 +1,21 @@
 import {useFocusEffect} from '@react-navigation/native';
+import moment from 'moment';
 import React, {useCallback} from 'react';
+import {useState} from 'react';
 import {SafeAreaView, ScrollView, StyleSheet} from 'react-native';
-import {Appbar, Divider, List, Switch, useTheme} from 'react-native-paper';
+import DatePicker from 'react-native-date-picker';
+import {
+  Appbar,
+  Divider,
+  IconButton,
+  List,
+  Switch,
+  useTheme,
+} from 'react-native-paper';
 import {connect} from 'react-redux';
 import {_customDarkTheme, _customLightTheme} from '../../themes';
 import {
+  setDailyReminderSetting,
   setQuickListSettings,
   setRenderURLInTaskSettings,
   setTheme,
@@ -19,11 +30,14 @@ const Settings = ({
   renderURLInTask,
   dispatch,
   quickListSettings,
+  dailyReminderTimestamp,
 }) => {
   // ref
 
   // variables
   const theme = useTheme();
+  const [isReminderTimePickerVisible, setIsReminderTimePickerVisible] =
+    useState(false);
 
   // states
 
@@ -40,6 +54,7 @@ const Settings = ({
   // render functions
 
   // handle functions
+
   const _handleToggleTheme = () => {
     if (theme.dark) {
       dispatch(setTheme({theme: _customLightTheme}));
@@ -103,6 +118,29 @@ const Settings = ({
       setRenderURLInTaskSettings({renderURLInTask: !Boolean(renderURLInTask)}),
     );
   };
+  const _handleOpenReminderTimePicker = () => {
+    setIsReminderTimePickerVisible(true);
+  };
+  const _handleOnDailyReminderTimeChange = date => {
+    dispatch(
+      setDailyReminderSetting({
+        dailyReminderTimestamp: new Date(date).getTime(),
+      }),
+    );
+
+    setIsReminderTimePickerVisible(false);
+  };
+  const _handleRemoveDailyReminder = date => {
+    dispatch(
+      setDailyReminderSetting({
+        dailyReminderTimestamp: 0,
+      }),
+    );
+    setIsReminderTimePickerVisible(false);
+  };
+  const _handleCloseDailyReminderTimePicker = () => {
+    setIsReminderTimePickerVisible(false);
+  };
 
   // navigation functions
   const _navigateBack = () => {
@@ -120,6 +158,16 @@ const Settings = ({
         ...StyleSheet.absoluteFillObject,
         backgroundColor: theme?.colors.surface,
       }}>
+      <DatePicker
+        modal
+        open={isReminderTimePickerVisible}
+        date={
+          dailyReminderTimestamp ? new Date(dailyReminderTimestamp) : new Date()
+        }
+        onConfirm={_handleOnDailyReminderTimeChange}
+        onCancel={_handleCloseDailyReminderTimePicker}
+        mode="time"
+      />
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
         <Appbar.Content title={'Settings'} titleStyle={{fontWeight: '700'}} />
@@ -236,6 +284,36 @@ const Settings = ({
             />
           )}
         />
+        <Divider />
+        <List.Item
+          title={
+            dailyReminderTimestamp && dailyReminderTimestamp > 0
+              ? `Daily reminder set at ${moment(dailyReminderTimestamp).format(
+                  'hh:mm',
+                )}`
+              : `Set daily reminder`
+          }
+          onPress={_handleOpenReminderTimePicker}
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="update"
+              color={theme.colors.onSurface}
+            />
+          )}
+          right={
+            dailyReminderTimestamp && dailyReminderTimestamp > 0
+              ? props => (
+                  <IconButton
+                    {...props}
+                    icon="close"
+                    iconColor={theme.colors.onSurface}
+                    onPress={_handleRemoveDailyReminder}
+                  />
+                )
+              : null
+          }
+        />
 
         <Divider />
       </ScrollView>
@@ -250,6 +328,7 @@ const mapStateToProps = state => {
   return {
     quickListSettings: state.settings.quickListSettings,
     renderURLInTask: state.settings.renderURLInTask,
+    dailyReminderTimestamp: state.settings.dailyReminderTimestamp,
   };
 };
 

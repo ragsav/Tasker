@@ -36,10 +36,18 @@ export default class NotificationService {
       );
     });
   }
-  static scheduleTaskReminder({notificationID, title, timestamp}) {
+  static getAllDeliveredNotifications() {
+    PushNotification.getDeliveredNotifications(notifications => {
+      Logger.pageLogger(
+        'notifications.js:PushNotification.getDeliveredNotifications:notifications',
+        {notifications},
+      );
+    });
+  }
+  static scheduleTaskReminder({notificationID, title, timestamp, taskID}) {
     Logger.pageLogger(
       'notifications.js:PushNotification.scheduleTaskReminder',
-      {notificationID, title, timestamp},
+      {notificationID, title, timestamp, taskID},
     );
 
     PushNotification.localNotificationSchedule({
@@ -49,12 +57,36 @@ export default class NotificationService {
       largeIcon: '',
       message: title,
       date: new Date(timestamp),
-      allowWhileIdle: false,
+      allowWhileIdle: true,
       channelId: CONSTANTS.NOTIFICATION_CHANNEL_ID,
       playSound: true,
       soundName: 'default',
       vibrate: true,
       vibration: 300,
+      userInfo: {taskID},
+    });
+  }
+  static scheduleDailyReminder({timestamp}) {
+    Logger.pageLogger(
+      'notifications.js:PushNotification.scheduleDailyReminder',
+      {timestamp},
+    );
+
+    PushNotification.localNotificationSchedule({
+      id: CONSTANTS.DAILY_REMINDER_ID,
+      title: '#Daily reminder',
+      smallIcon: 'ic_notification',
+      largeIcon: '',
+      message: 'Have you added your tasks today?',
+      date: new Date(timestamp),
+      allowWhileIdle: true,
+      channelId: CONSTANTS.NOTIFICATION_CHANNEL_ID,
+      playSound: true,
+      soundName: 'default',
+      vibrate: true,
+      vibration: 300,
+      repeatType: 'day',
+      repeatTime: 1,
     });
   }
   static liveNotification({notificationID, description, timestamp}) {
@@ -84,4 +116,10 @@ export default class NotificationService {
     );
     PushNotification.cancelLocalNotification(notificationID);
   }
+  static cleanPastNotifications = () => {
+    PushNotification.removeAllDeliveredNotifications();
+  };
+  static cleanSelectedNotifications = ({ids}) => {
+    PushNotification.removeDeliveredNotifications(ids);
+  };
 }

@@ -1,6 +1,8 @@
 import {applyMiddleware, compose, createStore} from 'redux';
 import {
   handleCalendarPermissionUsingLibrary,
+  removePastReminders,
+  setDailyReminderSetting,
   setQuickListSettings,
   setRenderURLInTaskSettings,
   setTaskSortOrder,
@@ -59,5 +61,13 @@ export const configureStore = persistedState => {
       }),
     );
   });
+  Storage.getData('daily_reminder_timestamp').then(timestamp => {
+    if (timestamp && timestamp != 0) {
+      store.dispatch(
+        setDailyReminderSetting({dailyReminderTimestamp: timestamp}),
+      );
+    }
+  });
+  store.dispatch(removePastReminders());
   return store;
 };

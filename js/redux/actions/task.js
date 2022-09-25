@@ -1,5 +1,6 @@
 import {Q} from '@nozbe/watermelondb';
 import 'react-native-get-random-values';
+import {CONSTANTS} from '../../../constants';
 import {database} from '../../db/db';
 import Task from '../../db/models/Task';
 import NotificationService from '../../services/notifications';
@@ -168,7 +169,7 @@ export const createTask =
       });
 
       dispatch(createTaskState({loading: false, success: true, error: null}));
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:createTask:success');
     } catch (error) {
       Logger.pageLogger('task.js:createTask:catch', {error});
@@ -210,7 +211,7 @@ export const editTask =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTask:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTask:catch', {error});
@@ -328,7 +329,7 @@ export const editTaskTitle =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskTitle:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskTitle:catch', {error});
@@ -352,7 +353,7 @@ export const editTaskDescription =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskDescription:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskDescription:catch', {error});
@@ -376,7 +377,7 @@ export const editTaskPriority =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskPriority:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskPriority:catch', {error});
@@ -403,7 +404,7 @@ export const editTaskIsDone =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskIsDone:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskIsDone:catch', {error});
@@ -427,7 +428,7 @@ export const editTaskEndTimestamp =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskEndTimestamp:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskEndTimestamp:catch', {error});
@@ -452,7 +453,7 @@ export const editTaskStartTimestamp =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskStartTimestamp:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskStartTimestamp:catch', {error});
@@ -484,6 +485,7 @@ export const editTaskAddReminder =
           notificationID,
           timestamp: reminderTimestamp,
           title: taskToBeUpdated.title,
+          taskID: taskToBeUpdated.id,
         });
         Logger.pageLogger('task.js:editTaskAddReminder:notificationID', {
           notificationID,
@@ -511,7 +513,7 @@ export const editTaskAddReminder =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskAddReminder:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskAddReminder:catch', {error});
@@ -543,7 +545,7 @@ export const editTaskRemoveReminder =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskRemoveReminder:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskRemoveReminder:catch', {error});
@@ -566,7 +568,7 @@ export const editTaskRemoveDueDate =
         });
       });
       dispatch(editTaskState({loading: false, success: true, error: null}));
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskRemoveDueDate:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskRemoveDueDate:catch', {error});
@@ -590,7 +592,7 @@ export const editTaskIsRepeating =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskIsRepeating:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskIsRepeating:catch', {error});
@@ -614,7 +616,7 @@ export const editTaskIsBookmark =
 
       dispatch(editTaskState({loading: false, success: true, error: null}));
 
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:editTaskIsBookmark:success');
     } catch (error) {
       Logger.pageLogger('task.js:editTaskIsBookmark:catch', {error});
@@ -636,7 +638,7 @@ export const deleteTask =
       });
 
       dispatch(deleteTaskState({loading: false, success: true, error: null}));
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:deleteTask:success');
     } catch (error) {
       Logger.pageLogger('task.js:deleteTask:catch', {error});
@@ -678,7 +680,7 @@ export const deleteMultipleTasks =
           error: null,
         }),
       );
-      dispatch(getTasks());
+      // dispatch(getTasks());
       Logger.pageLogger('task.js:deleteMultipleTasks:success');
     } catch (error) {
       Logger.pageLogger('task.js:deleteMultipleTasks:catch', {error});
@@ -687,7 +689,37 @@ export const deleteMultipleTasks =
       );
     }
   };
+export const removePastReminders = () => async dispatch => {
+  try {
+    const taskToBeUpdated = await database
+      .get('tasks')
+      .query(
+        Q.where(
+          'reminder_timestamp',
+          Q.lt(Date.now() - CONSTANTS.NOTIFICATION_CLEAR_DELAY_BUFFER),
+        ),
+      )
+      .fetch();
 
+    const notificationIDs = taskToBeUpdated?.map(task => task.reminderID);
+    NotificationService.cleanSelectedNotifications({ids: notificationIDs});
+    Logger.pageLogger('task.js:removePastReminders:taskToBeUpdated', {
+      taskToBeUpdated,
+    });
+    const batchUpdateRecords = taskToBeUpdated.map(task => {
+      return task.prepareUpdate(t => {
+        t.reminderTimestamp = 0;
+        t.reminderID = '';
+      });
+    });
+    database.write(async () => {
+      database.batch(...batchUpdateRecords);
+    });
+    Logger.pageLogger('task.js:removePastReminder:success');
+  } catch (error) {
+    Logger.pageLogger('task.js:removePastReminders:catch', {error});
+  }
+};
 export const addTaskToCalendar = async ({calendarID, taskID}) => {
   const task = await database.collections.get('tasks').find(taskID);
   const startDate = new Date(task.createdAt).toISOString();

@@ -96,20 +96,15 @@ const TaskScreen = ({
     }
   }, [deleteTaskSuccess]);
 
-  // useEffect(() => {
-  //   if (_isDue()) {
-  //     StatusBar.setBackgroundColor(theme?.colors.errorContainer);
-  //   } else {
-  //     StatusBar.setBackgroundColor(theme?.colors.surface);
-  //   }
-  // }, [task, task.isDone]);
-
   useEffect(() => {
     if (task) {
-      if (String(task.reminderID).trim() != '') {
-        setReminderDateString(moment(task.reminderTimestamp).calendar());
+      if (String(task.reminderID).trim() != '' && task.reminderTimestamp > 0) {
+        const _s = `Reminder ${
+          task.reminderTimestamp < Date.now() ? 'was' : 'is'
+        } ${moment(task.reminderTimestamp).calendar().toLowerCase()}`;
+        setReminderDateString(_s);
       } else {
-        setReminderDateString('time');
+        setReminderDateString('Set reminder');
       }
     }
   }, [task, task.reminderID, task.reminderTimestamp]);
@@ -117,9 +112,12 @@ const TaskScreen = ({
   useEffect(() => {
     if (task) {
       if (task.endTimestamp) {
-        setDueDateString(moment(task.endTimestamp).calendar());
+        const _s = `Due ${
+          task.endTimestamp < Date.now() ? 'was' : 'is'
+        } ${moment(task.endTimestamp).calendar().toLowerCase()}`;
+        setDueDateString(_s);
       } else {
-        setDueDateString('date');
+        setDueDateString('Set due date');
       }
     }
   }, [task, task.endTimestamp]);
@@ -135,12 +133,14 @@ const TaskScreen = ({
     }
   }, [task]);
 
-  useEffect(() => {
-    if (renderURLInTask) {
-      const _s = extractUrls(`${task.title}   ${task.description}`);
-      setURLs(_s);
-    }
-  }, [renderURLInTask]);
+  useFocusEffect(
+    useCallback(() => {
+      if (renderURLInTask) {
+        const _s = extractUrls(`${task.title}   ${task.description}`);
+        setURLs(_s);
+      }
+    }, [renderURLInTask]),
+  );
 
   // callbacks
 
@@ -212,7 +212,6 @@ const TaskScreen = ({
         reminderTimestamp: new Date(date),
       }),
     );
-    setReminderDateString(moment(date).calendar());
     setIsReminderDateTimePickerVisible(false);
   };
   const _handleCloseReminderDateTimePicker = () => {
@@ -359,7 +358,7 @@ const TaskScreen = ({
         />
 
         <List.Item
-          title={`Due ${String(dueDateString).toLowerCase()}`}
+          title={dueDateString}
           titleStyle={{fontSize: 14}}
           onPress={_handleOpenDueDateTimePicker}
           left={props => (
@@ -384,7 +383,7 @@ const TaskScreen = ({
           }
         />
         <List.Item
-          title={`Reminder ${String(reminderDateString).toLowerCase()}`}
+          title={reminderDateString}
           titleStyle={{fontSize: 14}}
           onPress={_handleOpenReminderDateTimePicker}
           left={props => (

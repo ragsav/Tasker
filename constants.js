@@ -19,6 +19,8 @@ export const CONSTANTS = Object.freeze({
       conversionToDollar: 1,
     },
   },
+  DAILY_REMINDER_ID: 1023,
+  NOTIFICATION_CLEAR_DELAY_BUFFER: 15 * 60 * 1000,
   MONTH_SHORT: [
     'Jan',
     'Feb',
