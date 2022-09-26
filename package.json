@@ -34,6 +34,7 @@
     "react-native-gesture-handler": "^2.6.0",
     "react-native-get-random-values": "^1.8.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-logs": "^5.0.1",
     "react-native-material-menu": "^2.0.0",
     "react-native-modern-datepicker": "^1.0.0-beta.91",
     "react-native-paper": "^5.0.0-rc.4",
