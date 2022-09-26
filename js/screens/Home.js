@@ -21,6 +21,7 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
+import {EmptyTasks} from '../components/EmptyTasks';
 import {EnhancedLabelItem} from '../components/LabelItem';
 import {EnhancedNoteItem} from '../components/NoteItem';
 import {database} from '../db/db';
@@ -118,7 +119,7 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
       }}>
       <Appbar.Header>
         <Appbar.Content
-          title="#Notes"
+          title="#Tasker"
           titleStyle={{fontWeight: '700', color: theme?.colors.primary}}
         />
         <Appbar.Action icon={'magnify'} onPress={_navigateToSearchScreen} />
@@ -237,12 +238,15 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
               color: theme?.colors.onSurfaceVariant,
               fontWeight: '600',
             }}>
-            Unlabeled Notes
+            Unlabeled notes
           </Text>
         )}
         {notes.map((note, index) => {
           return <EnhancedNoteItem note={note} key={index} />;
         })}
+        {(!notes || notes.length == 0) && (!labels || labels.length == 0) ? (
+          <EmptyTasks />
+        ) : null}
       </ScrollView>
 
       <Appbar

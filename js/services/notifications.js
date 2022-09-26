@@ -8,8 +8,8 @@ export default class NotificationService {
     PushNotification.createChannel(
       {
         channelId: CONSTANTS.NOTIFICATION_CHANNEL_ID,
-        channelName: 'Notes channel',
-        channelDescription: 'Notes notification channel',
+        channelName: 'Tasker channel',
+        channelDescription: 'Tasker notification channel',
         playSound: true,
         soundName: 'default',
         importance: Importance.HIGH,

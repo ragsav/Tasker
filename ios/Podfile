@@ -6,7 +6,7 @@ install! 'cocoapods', :deterministic_uuids => false
 
 production = ENV["PRODUCTION"] == "1"
 
-target 'Notes' do
+target 'Tasker' do
   config = use_native_modules!
 
   # Flags change depending on the env values.

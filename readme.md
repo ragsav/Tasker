@@ -1,4 +1,4 @@
-### **Notes & Todo app inspired by Microsoft Todo**
+### **Tasker & Todo app inspired by Microsoft Todo**
 
 ---
 

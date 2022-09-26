@@ -1,6 +1,6 @@
 export const CONSTANTS = Object.freeze({
   NOTIFICATION_CHANNEL_ID:
-    'Notes-Notifications-dc5ee189-65a6-48a7-9ae6-b0ec9d067825',
+    'Tasker-Notifications-dc5ee189-65a6-48a7-9ae6-b0ec9d067825',
   CURRENCY: {
     RUPEE: {
       code: 'RUPEE',

@@ -10,6 +10,7 @@ import {Appbar, FAB, Menu, useTheme} from 'react-native-paper';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
+import {EmptyTasks} from '../components/EmptyTasks';
 import TaskInput from '../components/TaskInput';
 import TaskItem from '../components/TaskItem';
 import TaskSortBottomSheet from '../components/TaskSortBottomSheet';
@@ -191,6 +192,9 @@ const NoteScreen = ({
         }
         keyExtractor={item => item.id}
         renderItem={_renderTaskItem}
+        ListEmptyComponent={() => (
+          <EmptyTasks message={'Try adding your first task'} />
+        )}
       />
       <FAB
         icon="plus"
@@ -200,7 +204,8 @@ const NoteScreen = ({
           right: 0,
           bottom: 0,
           // backgroundColor: theme?.colors.surface,
-          backgroundColor: note?.colorString,
+          backgroundColor:
+            note && note.colorString ? note.colorString : theme?.colors.error,
         }}
         color={theme?.colors.surface}
         onPress={_handleOpenTaskInput}
