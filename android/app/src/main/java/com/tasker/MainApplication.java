@@ -12,6 +12,10 @@ import com.facebook.soloader.SoLoader;
 import com.tasker.newarchitecture.MainApplicationReactNativeHost;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import android.content.IntentFilter;
+import io.rumors.reactnativesettings.RNSettingsPackage;
+import io.rumors.reactnativesettings.receivers.GpsLocationReceiver;
+import io.rumors.reactnativesettings.receivers.AirplaneModeReceiver;
 // import com.dieam.reactnativepushnotification.ReactNativePushNotificationPackage;
 
 public class MainApplication extends Application implements ReactApplication {
@@ -57,6 +61,8 @@ public class MainApplication extends Application implements ReactApplication {
     ReactFeatureFlags.useTurboModules = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+    registerReceiver(new GpsLocationReceiver(), new IntentFilter("android.location.PROVIDERS_CHANGED"));
+    registerReceiver(new AirplaneModeReceiver(), new IntentFilter("android.intent.action.AIRPLANE_MODE"));
   }
 
   /**

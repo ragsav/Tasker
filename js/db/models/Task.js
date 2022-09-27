@@ -29,10 +29,15 @@ export default class Task extends Model {
   @date('reminder_timestamp') reminderTimestamp;
   @text('reminder_id') reminderID;
   @field('is_repeating') isRepeating;
+  @field('is_archived') isArchived;
+  @date('archive_timestamp') archiveTimestamp;
+  @field('is_marked_deleted') isMarkedDeleted;
+  @date('marked_deleted_timestamp') markedDeletedTimestamp;
+
   @text('repeat_cron') repeatCron;
 
   @readonly @date('created_at') createdAt;
   @readonly @date('updated_at') updatedAt;
 
-  @relation('notes', 'note_id') notes;
+  @relation('notes', 'note_id') note;
 }

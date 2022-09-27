@@ -18,6 +18,10 @@ export default class Label extends Model {
 
   @text('title') title;
   @text('icon_string') iconString;
+  @field('is_archived') isArchived;
+  @date('archive_timestamp') archiveTimestamp;
+  @field('is_marked_deleted') isMarkedDeleted;
+  @date('marked_deleted_timestamp') markedDeletedTimestamp;
   @readonly @date('created_at') createdAt;
   @readonly @date('updated_at') updatedAt;
 

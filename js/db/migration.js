@@ -44,5 +44,13 @@ export const xpenseDBMigration = schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 16,
+      steps: [],
+    },
+    {
+      toVersion: 17,
+      steps: [],
+    },
   ],
 });

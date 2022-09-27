@@ -180,6 +180,64 @@ export const duplicateNote =
       dispatch(createNoteState({loading: false, success: true, error}));
     }
   };
+export const editNoteIsArchived =
+  ({id, isArchived, unarchiveAll}) =>
+  async dispatch => {
+    dispatch(editNoteState({loading: true, success: false, error: null}));
+    try {
+      const noteToBeUpdated = await database.get('notes').find(id);
+      Logger.pageLogger('task.js:editNoteIsArchived:noteToBeUpdated', {
+        noteToBeUpdated,
+      });
+
+      const tasksToBeArchived = await database
+        .get('tasks')
+        .query(
+          Q.where('note_id', noteToBeUpdated.id),
+          Q.or(
+            Q.where('is_marked_deleted', Q.eq(null)),
+            Q.where('is_marked_deleted', Q.eq(false)),
+          ),
+          Q.where('is_archived', Q.notEq(!noteToBeUpdated.isArchived)),
+        )
+        .fetch();
+      Logger.pageLogger('note.js:editNoteIsArchived:tasksToBeArchived', {
+        tasksToBeArchived,
+      });
+
+      const archivedTasks = tasksToBeArchived.map(task =>
+        task.prepareUpdate(t => {
+          {
+            t.isArchived = isArchived;
+            if (isArchived) {
+              t.archiveTimestamp = Date.now();
+            }
+          }
+        }),
+      );
+
+      await database.write(async () => {
+        if (isArchived || unarchiveAll) {
+          await database.batch(...archivedTasks);
+        }
+        await noteToBeUpdated.update(note => {
+          note.isArchived = isArchived;
+          if (isArchived) {
+            note.archiveTimestamp = Date.now();
+          }
+        });
+      });
+
+      dispatch(editNoteState({loading: false, success: true, error: null}));
+
+      // dispatch(getNotes());
+      Logger.pageLogger('task.js:editNoteIsArchived:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:editNoteIsArchived:catch', {error});
+      dispatch(editNoteState({loading: false, success: true, error}));
+    }
+  };
+
 export const deleteNote =
   ({id}) =>
   async dispatch => {

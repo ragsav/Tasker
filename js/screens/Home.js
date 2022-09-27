@@ -23,7 +23,7 @@ import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {EmptyTasks} from '../components/EmptyTasks';
 import {EnhancedLabelItem} from '../components/LabelItem';
-import {EnhancedNoteItem} from '../components/NoteItem';
+import EnhancedNoteItem from '../components/NoteItem';
 import {database} from '../db/db';
 import Label from '../db/models/Label';
 import Note from '../db/models/Note';
@@ -286,7 +286,7 @@ const enhanceHome = withObservables([], ({}) => ({
   labels: database.collections.get('labels').query().observe(),
   notes: database.collections
     .get('notes')
-    .query(Q.where('label_id', ''))
+    .query(Q.where('label_id', ''), Q.where('is_archived', Q.notEq(true)))
     .observe(),
 }));
 const EnhancedHome = enhanceHome(Home);

@@ -1,7 +1,7 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 export const xpenserSchema = appSchema({
-  version: 15,
+  version: 17,
   tables: [
     tableSchema({
       name: 'labels',
@@ -10,6 +10,10 @@ export const xpenserSchema = appSchema({
         {name: 'icon_string', type: 'string'},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
+        {name: 'is_archived', type: 'boolean', isOptional: true},
+        {name: 'archive_timestamp', type: 'number', isOptional: true},
+        {name: 'is_marked_deleted', type: 'boolean', isOptional: true},
+        {name: 'marked_deleted_timestamp', type: 'number', isOptional: true},
       ],
     }),
     tableSchema({
@@ -27,6 +31,10 @@ export const xpenserSchema = appSchema({
         {name: 'reminder_timestamp', type: 'number', isOptional: true},
         {name: 'reminder_id', type: 'string', isOptional: true},
         {name: 'is_repeating', type: 'boolean', isOptional: true},
+        {name: 'is_archived', type: 'boolean', isOptional: true},
+        {name: 'archive_timestamp', type: 'number', isOptional: true},
+        {name: 'is_marked_deleted', type: 'boolean', isOptional: true},
+        {name: 'marked_deleted_timestamp', type: 'number', isOptional: true},
         {name: 'repeat_cron', type: 'string', isOptional: true},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
@@ -39,9 +47,12 @@ export const xpenserSchema = appSchema({
         {name: 'description', type: 'string', isOptional: true},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
-
         {name: 'color_string', type: 'string', isOptional: true},
         {name: 'label_id', type: 'string'},
+        {name: 'is_archived', type: 'boolean', isOptional: true},
+        {name: 'archive_timestamp', type: 'number', isOptional: true},
+        {name: 'is_marked_deleted', type: 'boolean', isOptional: true},
+        {name: 'marked_deleted_timestamp', type: 'number', isOptional: true},
       ],
     }),
   ],

@@ -5,15 +5,24 @@
  * @format
  * @flow strict-local
  */
-
+import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import {useNavigation} from '@react-navigation/native';
 import React from 'react';
 import {View} from 'react-native';
-import {Text, TouchableRipple, useTheme} from 'react-native-paper';
+import {
+  Button,
+  IconButton,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
+import {database} from '../db/db';
 import Note from '../db/models/Note';
+import {editNoteIsArchived} from '../redux/actions';
 
 /**
  *
@@ -21,7 +30,7 @@ import Note from '../db/models/Note';
  * @param {Note} param0.note
  * @returns
  */
-const NoteItem = ({note, tasksCount, handleDeleteNote}) => {
+const NoteItem = ({note, tasksCount, handleDeleteNote, dispatch}) => {
   // ref
 
   // variables
@@ -48,6 +57,11 @@ const NoteItem = ({note, tasksCount, handleDeleteNote}) => {
   };
 
   // navigation functions
+  const _handleUnarchiveNote = () => {
+    dispatch(
+      editNoteIsArchived({id: note.id, isArchived: false, unarchiveAll: false}),
+    );
+  };
 
   // misc functions
 
@@ -60,12 +74,13 @@ const NoteItem = ({note, tasksCount, handleDeleteNote}) => {
         justifyContent: 'flex-start',
         alignItems: 'stretch',
         paddingHorizontal: 12,
-        paddingVertical: 14,
+        paddingRight: 0,
+        paddingVertical: note.isArchived ? 2 : 8,
         borderLeftColor:
           note && note.colorString ? note.colorString : theme?.colors.error,
         borderLeftWidth: 5,
       }}
-      onPress={_navigateToNoteScreen}>
+      onPress={note.isArchived ? null : _navigateToNoteScreen}>
       <View
         style={{
           flexDirection: 'row',
@@ -88,7 +103,11 @@ const NoteItem = ({note, tasksCount, handleDeleteNote}) => {
           <Text style={{marginLeft: 12}}>{note?.title}</Text>
         </View>
 
-        <Text style={{marginLeft: 12}}>{tasksCount}</Text>
+        {note.isArchived ? (
+          <IconButton icon={'package-up'} onPress={_handleUnarchiveNote} />
+        ) : (
+          <Button>{tasksCount}</Button>
+        )}
       </View>
     </TouchableRipple>
   );
@@ -96,6 +115,27 @@ const NoteItem = ({note, tasksCount, handleDeleteNote}) => {
 
 const enhanceNoteItem = withObservables(['note'], ({note}) => ({
   note, // shortcut syntax for `comment: comment.observe()`
-  tasksCount: note.tasks.observeCount(),
+  // tasksCount: note.tasks.observeCount(
+  //   Q.or(
+  //     Q.where('is_marked_deleted', Q.eq(null)),
+  //     Q.where('is_marked_deleted', Q.eq(false)),
+  //   ),
+  // ),
+  tasksCount: database.collections
+    .get('tasks')
+    .query(
+      Q.or(
+        Q.where('is_marked_deleted', Q.eq(null)),
+        Q.where('is_marked_deleted', Q.eq(false)),
+      ),
+      Q.where('is_archived', Q.notEq(!note.isArchived)),
+      Q.where('note_id', note.id),
+    )
+    .observeCount(),
 }));
-export const EnhancedNoteItem = enhanceNoteItem(NoteItem);
+const EnhancedNoteItem = enhanceNoteItem(NoteItem);
+const mapStateToProps = state => {
+  return {};
+};
+
+export default connect(mapStateToProps)(EnhancedNoteItem);

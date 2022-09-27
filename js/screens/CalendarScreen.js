@@ -221,6 +221,11 @@ const enhanceCalendarScreen = withObservables(
       .get('tasks')
       .query(
         Q.or(
+          Q.where('is_marked_deleted', Q.eq(null)),
+          Q.where('is_marked_deleted', Q.eq(false)),
+        ),
+        Q.where('is_archived', Q.notEq(true)),
+        Q.or(
           Q.where(
             'created_at',
             Q.between(new Date(sDate).getTime(), new Date(eDate).getTime()),

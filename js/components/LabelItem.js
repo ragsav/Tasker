@@ -21,9 +21,10 @@ import {
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CONSTANTS} from '../../constants';
+import {database} from '../db/db';
 import Label from '../db/models/Label';
 import {DeleteConfirmationDialog} from './DeleteConfirmationDialog';
-import {EnhancedNoteItem} from './NoteItem';
+import EnhancedNoteItem from './NoteItem';
 
 /**
  *
@@ -195,5 +196,9 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
 const enhanceLabelItem = withObservables(['label'], ({label}) => ({
   label, // shortcut syntax for `comment: comment.observe()`
   notes: label.notes,
+  notes: database.collections
+    .get('notes')
+    .query(Q.where('is_archived', Q.notEq(true)), Q.where('label_id', label.id))
+    .observe(),
 }));
 export const EnhancedLabelItem = enhanceLabelItem(LabelItem);

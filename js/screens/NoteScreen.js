@@ -20,6 +20,7 @@ import Task from '../db/models/Task';
 import {
   deleteNote,
   duplicateNote,
+  editNoteIsArchived,
   resetDeleteNoteState,
 } from '../redux/actions';
 import {Logger} from '../utils/logger';
@@ -90,6 +91,15 @@ const NoteScreen = ({
   const _handleOpenDeleteNoteDialog = () => {
     setIsMenuOpen(false);
     setIsDeleteDialogOpen(true);
+  };
+  const _handleArchiveNote = () => {
+    setIsMenuOpen(false);
+    dispatch(editNoteIsArchived({id: note.id, isArchived: true}));
+    navigation?.pop();
+  };
+  const _handleUnarchiveNote = () => {
+    setIsMenuOpen(false);
+    dispatch(editNoteIsArchived({id: note.id, isArchived: false}));
   };
   const _handleCloseDeleteNoteDialog = () => {
     setIsDeleteDialogOpen(false);
@@ -177,6 +187,13 @@ const NoteScreen = ({
             leadingIcon={'content-duplicate'}
           />
           <Menu.Item
+            onPress={
+              note.isArchived ? _handleUnarchiveNote : _handleArchiveNote
+            }
+            title={note.isArchived ? 'Unarchive' : 'Archive'}
+            leadingIcon={note.isArchived ? 'package-up' : 'package-down'}
+          />
+          <Menu.Item
             onPress={_handleOpenDeleteNoteDialog}
             title="Delete note"
             leadingIcon={'delete'}
@@ -230,6 +247,11 @@ const enhanceNoteScreen = withObservables(
     tasks: database.collections
       .get('tasks')
       .query(
+        Q.or(
+          Q.where('is_marked_deleted', Q.eq(null)),
+          Q.where('is_marked_deleted', Q.eq(false)),
+        ),
+        Q.where('is_archived', Q.notEq(true)),
         Q.where('note_id', route.params.p_id),
         Q.sortBy(
           String(taskSortProperty).trim() === ''

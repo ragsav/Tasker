@@ -1,0 +1,110 @@
+import React from 'react';
+import {
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+} from 'react-native';
+import {
+  ActivityIndicator,
+  Appbar,
+  Button,
+  Divider,
+  IconButton,
+  List,
+  useTheme,
+} from 'react-native-paper';
+import RNSettings from 'react-native-settings';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {connect} from 'react-redux';
+import {handleCalendarPermissionUsingLibrary} from '../redux/actions';
+const BOTTOM_APPBAR_HEIGHT = 64;
+const PermissionsScreen = ({calendarPermissionState, dispatch}) => {
+  const theme = useTheme();
+  const {bottom} = useSafeAreaInsets();
+  const _handleCalendarPermissionRequest = () => {
+    dispatch(handleCalendarPermissionUsingLibrary());
+  };
+  const _handleOpenSettings = () => {
+    Linking.openSettings();
+  };
+  return (
+    <SafeAreaView
+      style={{
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: theme?.colors.surface,
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+      }}>
+      <StatusBar
+        barStyle={theme?.statusBarStyle}
+        backgroundColor={theme?.colors.surface}
+
+        // translucent
+      />
+      <Appbar.Header>
+        <Appbar.Content
+          title="#Permissions"
+          titleStyle={{fontWeight: '700', color: theme?.colors.primary}}
+        />
+      </Appbar.Header>
+      <Divider />
+      <ScrollView
+        contentContainerStyle={{
+          width: '100%',
+          paddingBottom: BOTTOM_APPBAR_HEIGHT,
+        }}>
+        <List.Item
+          title="Calendar permission"
+          titleStyle={{fontWeight: '600', color: theme?.colors.onSurface}}
+          description="This permission is required to add your events or tasks to local calendars"
+          left={props => <List.Icon {...props} icon="calendar" />}
+          onPress={_handleCalendarPermissionRequest}
+          right={props => (
+            <List.Icon
+              icon={calendarPermissionState ? 'check-circle' : 'close-circle'}
+              color={
+                calendarPermissionState
+                  ? theme?.colors.primary
+                  : theme?.colors.error
+              }
+            />
+          )}
+        />
+      </ScrollView>
+      <Divider />
+      <Appbar
+        style={{
+          height: BOTTOM_APPBAR_HEIGHT + bottom,
+
+          justifyContent: 'space-between',
+        }}
+        safeAreaInsets={{bottom}}>
+        <Appbar.Content
+          title="Not able to grant permission?"
+          subtitle="You can navigate to your device settings and provide the permissions required manually"
+          titleStyle={{
+            fontWeight: '600',
+            color: theme?.colors.primary,
+            fontSize: 14,
+          }}
+        />
+
+        <Button
+          contentStyle={{flexDirection: 'row-reverse'}}
+          icon="cog"
+          onPress={_handleOpenSettings}>
+          Settings
+        </Button>
+      </Appbar>
+    </SafeAreaView>
+  );
+};
+const mapStateToProps = state => {
+  return {
+    isCheckingCalendarPermission: state.permission.isCheckingCalendarPermission,
+    calendarPermissionState: state.permission.calendarPermissionState,
+  };
+};
+export default connect(mapStateToProps)(PermissionsScreen);

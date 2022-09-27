@@ -13,7 +13,12 @@ import {
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import Task from '../db/models/Task';
-import {editTaskIsBookmark, editTaskIsDone} from '../redux/actions';
+import {
+  editTaskIsArchived,
+  editTaskIsBookmark,
+  editTaskIsDone,
+  restoreTask,
+} from '../redux/actions';
 import {Logger} from '../utils/logger';
 /**
  *
@@ -21,7 +26,7 @@ import {Logger} from '../utils/logger';
  * @param {Task} param0.task
  * @returns
  */
-const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
+const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch, note}) => {
   // ref
 
   // variables
@@ -35,10 +40,108 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
   // callbacks
 
   // render functions
+  const _renderArchiveTime = () => {
+    return task.isArchived ? (
+      <Paragraph
+        style={{
+          fontWeight: '400',
+          color: theme.colors.onSurface,
+          fontSize: 12,
+          flexWrap: 'wrap',
+          flex: 1,
+          paddingHorizontal: 12,
+        }}
+        numberOfLines={2}
+        ellipsizeMode="tail">{`Archived ${moment(task.archiveTimestamp)
+        .calendar()
+        .toLowerCase()}`}</Paragraph>
+    ) : null;
+  };
+  const _renderDeletionTime = () => {
+    return task.isMarkedDeleted ? (
+      <Paragraph
+        style={{
+          fontWeight: '400',
+          color: theme.colors.onSurface,
+          fontSize: 12,
+          flexWrap: 'wrap',
+          flex: 1,
+          paddingHorizontal: 12,
+        }}
+        numberOfLines={2}
+        ellipsizeMode="tail">{`Deleted ${moment(task.markedDeletedTimestamp)
+        .calendar()
+        .toLowerCase()}`}</Paragraph>
+    ) : null;
+  };
+
+  const _renderNoteDetails = render => {
+    return render ? (
+      <Paragraph
+        style={{
+          fontWeight: '600',
+          color: theme.colors.onSurface,
+          fontSize: 14,
+          flexWrap: 'wrap',
+          flex: 1,
+          paddingHorizontal: 12,
+        }}
+        numberOfLines={2}
+        ellipsizeMode="tail">{`Belongs to #${note.title} note`}</Paragraph>
+    ) : null;
+  };
+
+  const _renderDoneTime = (render = true) => {
+    return task.isDone && task.doneTimestamp && render ? (
+      <Paragraph
+        style={{
+          fontWeight: '400',
+          color: theme.colors.onSurface,
+          fontSize: 12,
+          flexWrap: 'wrap',
+          flex: 1,
+          paddingHorizontal: 12,
+        }}
+        numberOfLines={2}
+        ellipsizeMode="tail">{`Marked done ${moment(task.doneTimestamp)
+        .calendar()
+        .toLowerCase()}`}</Paragraph>
+    ) : null;
+  };
+
+  const _renderDueDate = (render = true) => {
+    return !task.isDone && task.endTimestamp && render ? (
+      <Paragraph
+        style={{
+          fontWeight: '400',
+          color: theme.colors.onSurface,
+          fontSize: 12,
+          flexWrap: 'wrap',
+          flex: 1,
+          paddingHorizontal: 12,
+        }}
+        numberOfLines={2}
+        ellipsizeMode="tail">{`Due ${
+        task.endTimestamp < Date.now() ? 'was' : 'is'
+      } ${moment(task.endTimestamp).calendar().toLowerCase()}`}</Paragraph>
+    ) : null;
+  };
 
   // handle functions
   const _handleMarkIsDone = () => {
     dispatch(editTaskIsDone({id: task.id, isDone: !task.isDone}));
+  };
+  const _handleUnarchiveTask = (unarchiveNoteIfRequired = true) => {
+    dispatch(
+      editTaskIsArchived({
+        id: task.id,
+        isArchived: false,
+        unarchiveNoteIfRequired,
+      }),
+    );
+  };
+  const _handleRestoreTask = () => {
+    dispatch(restoreTask({id: task.id}));
   };
   const _handleBookmark = () => {
     dispatch(
@@ -125,11 +228,25 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
               {task.title}
             </Text>
           </View>
-          <IconButton
-            icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
-            onPress={_handleBookmark}
-            size={24}
-          />
+          {task.isArchived ? (
+            <IconButton
+              icon={'package-up'}
+              onPress={_handleUnarchiveTask}
+              size={24}
+            />
+          ) : task.isMarkedDeleted ? (
+            <IconButton
+              onPress={_handleRestoreTask}
+              icon={'delete-restore'}
+              size={24}
+            />
+          ) : (
+            <IconButton
+              icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
+              onPress={_handleBookmark}
+              size={24}
+            />
+          )}
         </View>
 
         {!task.description || String(task.description).trim() === '' ? null : (
@@ -147,52 +264,11 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
             {task.description}
           </Paragraph>
         )}
-
-        {task.isDone && task.endTimestamp ? (
-          <Paragraph
-            style={{
-              fontWeight: '400',
-              color: theme.colors.onSurface,
-              fontSize: 12,
-              flexWrap: 'wrap',
-              flex: 1,
-              paddingHorizontal: 12,
-            }}
-            numberOfLines={2}
-            ellipsizeMode="tail">{`Marked done ${moment(task.doneTimestamp)
-            .calendar()
-            .toLowerCase()}`}</Paragraph>
-        ) : task.endTimestamp ? (
-          <Paragraph
-            style={{
-              fontWeight: '400',
-              color: theme.colors.onSurface,
-              fontSize: 12,
-              flexWrap: 'wrap',
-              flex: 1,
-              paddingHorizontal: 12,
-            }}
-            numberOfLines={2}
-            ellipsizeMode="tail">{`Due date ${moment(task.endTimestamp)
-            .calendar()
-            .toLowerCase()}`}</Paragraph>
-        ) : (
-          _isDue() && (
-            <Paragraph
-              style={{
-                fontWeight: '400',
-                color: theme?.colors.onErrorContainer,
-                fontSize: 12,
-                flexWrap: 'wrap',
-                flex: 1,
-                paddingHorizontal: 12,
-              }}
-              numberOfLines={2}
-              ellipsizeMode="tail">{`Due on ${moment(task.endTimestamp)
-              .calendar()
-              .toLowerCase()}`}</Paragraph>
-          )
-        )}
+        {_renderNoteDetails(task.isArchived || task.isMarkedDeleted)}
+        {_renderArchiveTime()}
+        {_renderDeletionTime()}
+        {_renderDoneTime(!task.isArchived && !task.isMarkedDeleted)}
+        {_renderDueDate(!task.isArchived && !task.isMarkedDeleted)}
       </View>
     </TouchableRipple>
   );
@@ -200,6 +276,7 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch}) => {
 
 const enhanceTask = withObservables(['task'], ({task}) => ({
   task,
+  note: task.note,
 }));
 
 const mapStateToProps = state => {

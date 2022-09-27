@@ -13,6 +13,7 @@ import {
   useTheme,
 } from 'react-native-paper';
 import {connect} from 'react-redux';
+import {CONSTANTS} from '../../constants';
 import {_customDarkTheme, _customLightTheme} from '../../themes';
 import {
   setDailyReminderSetting,
@@ -146,6 +147,15 @@ const Settings = ({
   const _navigateBack = () => {
     navigation?.pop();
   };
+  const _navigateToArchivedTasks = () => {
+    navigation?.push(CONSTANTS.ROUTES.ARCHIVED_TASKS);
+  };
+  const _navigateToArchivedNotes = () => {
+    navigation?.push(CONSTANTS.ROUTES.ARCHIVED_NOTES);
+  };
+  const _navigateToDeletedTasks = () => {
+    navigation?.push(CONSTANTS.ROUTES.DELETED_TASKS);
+  };
 
   // misc functions
   const _init = () => {};
@@ -173,6 +183,60 @@ const Settings = ({
         <Appbar.Content title={'Settings'} titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
       <ScrollView>
+        <List.Item
+          onPress={_navigateToArchivedNotes}
+          title={'#Archived notes'}
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="package-down"
+              color={theme.colors.onSurface}
+            />
+          )}
+          right={props => (
+            <List.Icon
+              {...props}
+              icon="chevron-right"
+              color={theme.colors.onSurface}
+            />
+          )}
+        />
+        <List.Item
+          onPress={_navigateToArchivedTasks}
+          title={'#Archived tasks'}
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="package-down"
+              color={theme.colors.onSurface}
+            />
+          )}
+          right={props => (
+            <List.Icon
+              {...props}
+              icon="chevron-right"
+              color={theme.colors.onSurface}
+            />
+          )}
+        />
+        <List.Item
+          onPress={_navigateToDeletedTasks}
+          title={'#Trash'}
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="delete"
+              color={theme.colors.onSurface}
+            />
+          )}
+          right={props => (
+            <List.Icon
+              {...props}
+              icon="chevron-right"
+              color={theme.colors.onSurface}
+            />
+          )}
+        />
         <List.Item
           title={'Dark theme'}
           left={props => (

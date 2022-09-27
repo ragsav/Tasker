@@ -136,6 +136,11 @@ const enhanceCompletedScreen = withObservables(
     tasks: database.collections
       .get('tasks')
       .query(
+        Q.or(
+          Q.where('is_marked_deleted', Q.eq(null)),
+          Q.where('is_marked_deleted', Q.eq(false)),
+        ),
+        Q.where('is_archived', Q.notEq(true)),
         Q.where('is_done', true),
         Q.sortBy(
           String(taskSortProperty).trim() === ''

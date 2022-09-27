@@ -29,6 +29,7 @@ import {
   editTaskAddReminder,
   editTaskDescription,
   editTaskEndTimestamp,
+  editTaskIsArchived,
   editTaskIsBookmark,
   editTaskIsDone,
   editTaskRemoveDueDate,
@@ -163,6 +164,17 @@ const TaskScreen = ({
     setDescription(description);
   };
 
+  const _handleToggleArchive = () => {
+    dispatch(
+      editTaskIsArchived({
+        id: task.id,
+        isArchived: !task.isArchived,
+        unarchiveNoteIfRequired: true,
+      }),
+    );
+    _navigateBack();
+  };
+
   const _handleOpenDeleteTaskDialog = () => {
     setIsDeleteDialogOpen(true);
   };
@@ -282,6 +294,12 @@ const TaskScreen = ({
           icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
           // iconColor={theme?.colors.onPrimary}
           onPress={_handleBookmark}
+        />
+        <Appbar.Action
+          isLeading={false}
+          icon={task.isArchived ? 'package-up' : 'package-down'}
+          // iconColor={theme?.colors.onPrimary}
+          onPress={_handleToggleArchive}
         />
         <Appbar.Action
           isLeading={false}

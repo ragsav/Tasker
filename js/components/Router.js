@@ -27,6 +27,9 @@ import {StatusBar} from 'react-native';
 import Settings from '../screens/Settings';
 import AllTaskScreen from '../screens/AllTaskScreen';
 import CompletedScreen from '../screens/CompletedScreen';
+import ArchivedTasksScreen from '../screens/ArchivedTasksScreen';
+import ArchivedNotesScreen from '../screens/ArchivedNotesScreen';
+import DeletedTasksScreen from '../screens/DeletedTasksScreen';
 const Stack = createStackNavigator();
 
 const Router = ({theme}) => {
@@ -133,6 +136,21 @@ const Router = ({theme}) => {
             <Stack.Screen
               name={CONSTANTS.ROUTES.SETTINGS}
               component={Settings}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.ARCHIVED_TASKS}
+              component={ArchivedTasksScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.DELETED_TASKS}
+              component={DeletedTasksScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.ARCHIVED_NOTES}
+              component={ArchivedNotesScreen}
               options={{headerShown: false}}
             />
           </Stack.Navigator>

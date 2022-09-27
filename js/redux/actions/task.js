@@ -5,6 +5,7 @@ import {database} from '../../db/db';
 import Task from '../../db/models/Task';
 import NotificationService from '../../services/notifications';
 import {Logger} from '../../utils/logger';
+import {editNoteIsArchived} from './note';
 
 export const GET_TASKS = 'GET_TASKS';
 export const CREATE_TASK_STATE = 'CREATE_TASK_STATE';
@@ -131,7 +132,14 @@ export const getTaskByQuery = async query => {
   try {
     const task = await database.collections
       .get('tasks')
-      .query(Q.where('title', Q.like(`%${Q.sanitizeLikeString(query)}%`)))
+      .query(
+        Q.or(
+          Q.where('is_marked_deleted', Q.eq(null)),
+          Q.where('is_marked_deleted', Q.eq(false)),
+        ),
+        Q.where('is_archived', Q.notEq(true)),
+        Q.where('title', Q.like(`%${Q.sanitizeLikeString(query)}%`)),
+      )
       .fetch();
     Logger.pageLogger('task.js:getTaskByQuery:task', {task});
     return task;
@@ -624,7 +632,74 @@ export const editTaskIsBookmark =
     }
   };
 
+export const editTaskIsArchived =
+  ({id, isArchived, unarchiveNoteIfRequired}) =>
+  async dispatch => {
+    dispatch(editTaskState({loading: true, success: false, error: null}));
+    try {
+      const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskIsArchived:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
+      database.write(async () => {
+        if (isArchived) {
+          await taskToBeUpdated.update(task => {
+            task.isArchived = isArchived;
+            task.archiveTimestamp = Date.now();
+          });
+        } else {
+          if (unarchiveNoteIfRequired) {
+            const noteOfTask = await database
+              .get('notes')
+              .find(taskToBeUpdated.noteID);
+            if (noteOfTask.isArchived) {
+              await noteOfTask.update(note => {
+                note.isArchived = false;
+              });
+            }
+          }
+
+          await taskToBeUpdated.update(task => {
+            task.isArchived = isArchived;
+          });
+        }
+      });
+
+      dispatch(editTaskState({loading: false, success: true, error: null}));
+
+      // dispatch(getTasks());
+      Logger.pageLogger('task.js:editTaskIsArchived:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:editTaskIsArchived:catch', {error});
+      dispatch(editTaskState({loading: false, success: true, error}));
+    }
+  };
+
 export const deleteTask =
+  ({id}) =>
+  async dispatch => {
+    dispatch(deleteTaskState({loading: true, success: false, error: null}));
+    try {
+      const taskToBeDeletedTemporarily = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:deleteTask:taskToBeDeletedTemporarily', {
+        taskToBeDeletedTemporarily,
+      });
+      await database.write(async () => {
+        await taskToBeDeletedTemporarily.update(task => {
+          task.isMarkedDeleted = true;
+          task.markedDeletedTimestamp = Date.now();
+        });
+      });
+
+      dispatch(deleteTaskState({loading: false, success: true, error: null}));
+      // dispatch(getTasks());
+      Logger.pageLogger('task.js:deleteTask:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:deleteTask:catch', {error});
+      dispatch(deleteTaskState({loading: false, success: true, error}));
+    }
+  };
+export const deleteTaskPermanantly =
   ({id}) =>
   async dispatch => {
     dispatch(deleteTaskState({loading: true, success: false, error: null}));
@@ -645,7 +720,41 @@ export const deleteTask =
       dispatch(deleteTaskState({loading: false, success: true, error}));
     }
   };
+export const restoreTask =
+  ({id}) =>
+  async dispatch => {
+    dispatch(editTaskState({loading: true, success: false, error: null}));
+    try {
+      const taskToBeRestored = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:restoreTask:taskToBeRestored', {
+        taskToBeRestored,
+      });
+      const noteOfTask = await database
+        .get('notes')
+        .find(taskToBeRestored.noteID);
+      if (noteOfTask) {
+        await database.write(async () => {
+          await taskToBeRestored.update(task => {
+            task.isMarkedDeleted = false;
+          });
+        });
+      } else {
+        await database.write(async () => {
+          await taskToBeRestored.update(task => {
+            task.isMarkedDeleted = false;
+            task.noteID = '';
+          });
+        });
+      }
 
+      dispatch(editTaskState({loading: false, success: true, error: null}));
+      // dispatch(getTasks());
+      Logger.pageLogger('task.js:restoreTask:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:restoreTask:catch', {error});
+      dispatch(editTaskState({loading: false, success: true, error}));
+    }
+  };
 export const deleteMultipleTasks =
   ({ids}) =>
   async dispatch => {

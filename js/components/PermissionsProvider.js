@@ -4,6 +4,8 @@ import {connect} from 'react-redux';
 
 import {useEffect} from 'react';
 import {Logger} from '../utils/logger';
+import {LoadingScreen} from '../screens/LoadingScreen';
+import PermissionsScreen from '../screens/PermissionsScreen';
 
 const PermissionStatusProvider = ({
   isCheckingContactsPermission,
@@ -20,9 +22,9 @@ const PermissionStatusProvider = ({
         width: Dimensions.get('screen').width,
       }}>
       {isCheckingContactsPermission ? (
-        <Text>Loading...</Text>
+        <LoadingScreen />
       ) : !calendarPermissionState ? (
-        <Text>No permission</Text>
+        <PermissionsScreen />
       ) : (
         children
       )}

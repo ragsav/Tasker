@@ -9,11 +9,7 @@ import TaskItem from '../components/TaskItem';
 import TaskSortBottomSheet from '../components/TaskSortBottomSheet';
 import {database} from '../db/db';
 import Task from '../db/models/Task';
-import {
-  editTaskMarkBulkDone,
-  resetDeleteNoteState,
-  resetEditTaskState,
-} from '../redux/actions';
+import {resetDeleteNoteState, resetEditTaskState} from '../redux/actions';
 
 /**
  *
@@ -21,14 +17,19 @@ import {
  * @param {Array<Task>} param0.tasks
  * @returns
  */
-const AllTaskScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
+const DeletedTasksScreen = ({
+  navigation,
+  tasks,
+  deleteNoteSuccess,
+  dispatch,
+}) => {
   // ref
 
   // variables
   const theme = useTheme();
 
   // states
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const [isSortBottomSheetVisible, setIsSortBottomSheetVisible] =
     useState(false);
 
@@ -60,14 +61,7 @@ const AllTaskScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
   };
 
   // handle functions
-
-  const _handleToggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const _handleMarkAllDone = () => {
-    dispatch(editTaskMarkBulkDone({ids: tasks?.map(task => task.id)}));
-    setIsMenuOpen(false);
-  };
   const _handleOpenSortTaskBottomSheet = () => {
-    setIsMenuOpen(false);
     setIsSortBottomSheetVisible(true);
   };
 
@@ -81,7 +75,6 @@ const AllTaskScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
   const _onDestroy = () => {
     dispatch(resetDeleteNoteState());
     dispatch(resetEditTaskState());
-    setIsMenuOpen(false);
     setIsSortBottomSheetVisible(false);
   };
 
@@ -94,25 +87,11 @@ const AllTaskScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title={'All tasks'} titleStyle={{fontWeight: '700'}} />
-
-        <Menu
-          visible={isMenuOpen}
-          onDismiss={_handleToggleMenu}
-          anchor={
-            <Appbar.Action icon={'dots-vertical'} onPress={_handleToggleMenu} />
-          }>
-          <Menu.Item
-            title="Mark all done"
-            leadingIcon={'check-all'}
-            onPress={_handleMarkAllDone}
-          />
-          <Menu.Item
-            onPress={_handleOpenSortTaskBottomSheet}
-            title="Sort by"
-            leadingIcon={'sort'}
-          />
-        </Menu>
+        <Appbar.Content
+          title={'#Deleted tasks'}
+          titleStyle={{fontWeight: '700'}}
+        />
+        <Appbar.Action icon={'sort'} onPress={_handleOpenSortTaskBottomSheet} />
       </Appbar.Header>
 
       <FlatList
@@ -129,17 +108,13 @@ const AllTaskScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
   );
 };
 
-const enhanceAllTaskScreen = withObservables(
+const enhanceDeletedTasksScreen = withObservables(
   ['taskSortProperty', 'taskSortOrder'],
   ({taskSortProperty, taskSortOrder}) => ({
     tasks: database.collections
       .get('tasks')
       .query(
-        Q.or(
-          Q.where('is_marked_deleted', Q.eq(null)),
-          Q.where('is_marked_deleted', Q.eq(false)),
-        ),
-        Q.where('is_archived', Q.notEq(true)),
+        Q.where('is_marked_deleted', Q.eq(true)),
         Q.sortBy(
           String(taskSortProperty).trim() === ''
             ? CONSTANTS.TASK_SORT.DUE_DATE.code
@@ -151,7 +126,8 @@ const enhanceAllTaskScreen = withObservables(
       ),
   }),
 );
-const EnhancedAllTaskScreen = enhanceAllTaskScreen(AllTaskScreen);
+const EnhancedDeletedTasksScreen =
+  enhanceDeletedTasksScreen(DeletedTasksScreen);
 
 const mapStateToProps = state => {
   return {
@@ -160,4 +136,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps)(EnhancedAllTaskScreen);
+export default connect(mapStateToProps)(EnhancedDeletedTasksScreen);
