@@ -75,7 +75,7 @@ const NoteItem = ({note, tasksCount, handleDeleteNote, dispatch}) => {
         alignItems: 'stretch',
         paddingHorizontal: 12,
         paddingRight: 0,
-        paddingVertical: note.isArchived ? 2 : 8,
+        paddingVertical: note.isArchived ? 2 : 12,
         borderLeftColor:
           note && note.colorString ? note.colorString : theme?.colors.error,
         borderLeftWidth: 5,
@@ -106,7 +106,7 @@ const NoteItem = ({note, tasksCount, handleDeleteNote, dispatch}) => {
         {note.isArchived ? (
           <IconButton icon={'package-up'} onPress={_handleUnarchiveNote} />
         ) : (
-          <Button>{tasksCount}</Button>
+          <Text style={{marginLeft: 12, paddingRight: 12}}>{tasksCount}</Text>
         )}
       </View>
     </TouchableRipple>

@@ -18,6 +18,7 @@ export default class Task extends Model {
 
   @text('title') title;
   @text('description') description;
+  @text('image_uris') imageURIs;
   @text('note_id') noteID;
   @field('is_bookmarked') isBookmarked;
   @field('is_done') isDone;

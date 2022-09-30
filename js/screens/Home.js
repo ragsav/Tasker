@@ -217,18 +217,16 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
             Labels
           </Text>
         )}
-        <List.AccordionGroup>
-          {labels.map((label, index) => {
-            return (
-              <EnhancedLabelItem
-                label={label}
-                handleDeleteLabel={_handleDeleteLabel}
-                handleUnGroupLabel={_handleUnGroupLabel}
-                key={index}
-              />
-            );
-          })}
-        </List.AccordionGroup>
+        {labels.map((label, index) => {
+          return (
+            <EnhancedLabelItem
+              label={label}
+              handleDeleteLabel={_handleDeleteLabel}
+              handleUnGroupLabel={_handleUnGroupLabel}
+              key={index}
+            />
+          );
+        })}
         {notes && notes.length > 0 && (
           <Text
             style={{

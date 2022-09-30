@@ -1,6 +1,12 @@
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {FlatList, Pressable, SafeAreaView, StyleSheet} from 'react-native';
+import {
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
 import {
   Appbar,
   Button,
@@ -9,6 +15,7 @@ import {
   TextInput,
   useTheme,
 } from 'react-native-paper';
+
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {EnhancedLabelSelectBottomSheet} from '../components/LabelSelectBottomSheet';
@@ -99,6 +106,10 @@ const CreateNewNoteScreen = ({
     setNoteState({...noteState, label});
   };
 
+  const _handleRemoveLabel = () => {
+    setNoteState({...noteState, label: null});
+  };
+
   const _handleSave = () => {
     if (
       !noteState ||
@@ -135,6 +146,7 @@ const CreateNewNoteScreen = ({
         <Appbar.BackAction onPress={_navigateBack} />
         <Appbar.Content title="New note" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
+
       <Surface
         style={{
           height: '100%',
@@ -168,6 +180,15 @@ const CreateNewNoteScreen = ({
           style={{marginTop: 12}}
           onPressIn={_handleOpenLabelSelection}
           outlineColor={theme?.colors.primary}
+          right={
+            noteState?.label ? (
+              <TextInput.Icon
+                icon={'close'}
+                iconColor={theme?.colors.primary}
+                onPress={_handleRemoveLabel}
+              />
+            ) : null
+          }
           caretHidden
         />
         <FlatList

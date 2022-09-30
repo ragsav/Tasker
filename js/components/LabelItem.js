@@ -7,6 +7,7 @@
  */
 
 import withObservables from '@nozbe/with-observables';
+import {Q} from '@nozbe/watermelondb';
 import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
 import {View} from 'react-native';

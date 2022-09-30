@@ -33,6 +33,8 @@
     "react-native-draggable-flatlist": "^3.1.2",
     "react-native-gesture-handler": "^2.6.0",
     "react-native-get-random-values": "^1.8.0",
+    "react-native-image-picker": "^4.10.0",
+    "react-native-image-viewing": "^0.2.2",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-logs": "^5.0.1",
     "react-native-material-menu": "^2.0.0",

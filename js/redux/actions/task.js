@@ -583,6 +583,71 @@ export const editTaskRemoveDueDate =
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
+export const editTaskAddImageURI =
+  ({id, URI}) =>
+  async dispatch => {
+    dispatch(editTaskState({loading: true, success: false, error: null}));
+    try {
+      const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskAddImageURI:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
+      let _eu = JSON.parse(taskToBeUpdated.imageURIs);
+      console.log(_eu);
+      if (Array.isArray(_eu)) {
+        const urii = _eu.indexOf(URI);
+        if (urii < 0) {
+          _eu.push(URI);
+        }
+      } else {
+        _eu = [URI];
+      }
+      database.write(async () => {
+        await taskToBeUpdated.update(task => {
+          task.imageURIs = JSON.stringify(_eu);
+        });
+      });
+
+      dispatch(editTaskState({loading: false, success: true, error: null}));
+
+      // dispatch(getTasks());
+      Logger.pageLogger('task.js:editTaskAddImageURI:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:editTaskAddImageURI:catch', {error});
+      dispatch(editTaskState({loading: false, success: true, error}));
+    }
+  };
+export const editTaskRemoveImageURI =
+  ({id, URI}) =>
+  async dispatch => {
+    dispatch(editTaskState({loading: true, success: false, error: null}));
+    try {
+      const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskRemoveImageURI:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
+      const _eu = JSON.parse(taskToBeUpdated.imageURIs);
+      if (Array.isArray(_eu)) {
+        const urii = _eu.indexOf(URI);
+        if (urii > -1) {
+          _eu.splice(urii, 1);
+        }
+      }
+      database.write(async () => {
+        await taskToBeUpdated.update(task => {
+          task.imageURIs = JSON.stringify(_eu);
+        });
+      });
+
+      dispatch(editTaskState({loading: false, success: true, error: null}));
+
+      // dispatch(getTasks());
+      Logger.pageLogger('task.js:editTaskRemoveImageURI:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:editTaskRemoveImageURI:catch', {error});
+      dispatch(editTaskState({loading: false, success: true, error}));
+    }
+  };
 export const editTaskIsRepeating =
   ({id, isRepeating}) =>
   async dispatch => {

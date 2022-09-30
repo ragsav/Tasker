@@ -19,13 +19,17 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {connect} from 'react-redux';
 import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
+import {ImageAttachmentGallery} from '../components/ImageAttachmentsGallery';
+import {ImagePickerBottomSheet} from '../components/ImagePickerBottomSheet';
 import {LinkPreview} from '../components/URLPreview';
 
 import {database} from '../db/db';
 import Task from '../db/models/Task';
 import {useDebounce} from '../hooks/useDebounce';
+import ImageView from 'react-native-image-viewing';
 import {
   deleteTask,
+  editTaskAddImageURI,
   editTaskAddReminder,
   editTaskDescription,
   editTaskEndTimestamp,
@@ -33,6 +37,7 @@ import {
   editTaskIsBookmark,
   editTaskIsDone,
   editTaskRemoveDueDate,
+  editTaskRemoveImageURI,
   editTaskRemoveReminder,
   editTaskTitle,
   resetDeleteTaskState,
@@ -76,6 +81,12 @@ const TaskScreen = ({
   const [urls, setURLs] = useState([]);
 
   const debouncedDescription = useDebounce(description, 500);
+  const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
+  const [imageToView, setImageToView] = useState({
+    images: [],
+    index: 0,
+    visible: false,
+  });
 
   // effects
   useFocusEffect(
@@ -228,6 +239,17 @@ const TaskScreen = ({
   };
   const _handleCloseReminderDateTimePicker = () => {
     setIsReminderDateTimePickerVisible(false);
+  };
+
+  const _handleOpenImagePickerModal = () => {
+    setIsImagePickerOpen(true);
+  };
+
+  const _handleAddImageURI = URI => {
+    dispatch(editTaskAddImageURI({id: task.id, URI}));
+  };
+  const _handleRemoveImageURI = URI => {
+    dispatch(editTaskRemoveImageURI({id: task.id, URI}));
   };
 
   // navigation functions
@@ -428,6 +450,25 @@ const TaskScreen = ({
           }
         />
 
+        <List.Item
+          title={'Add image'}
+          titleStyle={{fontSize: 14}}
+          onPress={_handleOpenImagePickerModal}
+          left={props => (
+            <List.Icon
+              {...props}
+              icon={'image'}
+              color={theme.colors.onSurface}
+            />
+          )}
+        />
+        <ImageAttachmentGallery
+          URIs={JSON.parse(task.imageURIs)}
+          removeURI={_handleRemoveImageURI}
+          imageToView={imageToView}
+          setImageToView={setImageToView}
+        />
+
         <TextInput
           value={description}
           autoCorrect={false}
@@ -444,14 +485,29 @@ const TaskScreen = ({
           numberOfLines={5}
           placeholder="Add description"
         />
+
         {renderURLInTask &&
           urls?.map((url, index) => {
             return <LinkPreview text={url} key={index} />;
           })}
       </KeyboardAwareScrollView>
+      <ImagePickerBottomSheet
+        visible={isImagePickerOpen}
+        setVisible={setIsImagePickerOpen}
+        addURI={_handleAddImageURI}
+        removeURI={_handleRemoveImageURI}
+      />
+      <ImageView
+        images={imageToView?.images}
+        imageIndex={imageToView?.index}
+        visible={imageToView?.visible}
+        presentationStyle="overFullScreen"
+        onRequestClose={() => setImageToView({...imageToView, visible: false})}
+      />
     </SafeAreaView>
   );
 };
+
 const enhanceTaskScreen = withObservables(['route'], ({route}) => ({
   task: database.collections.get('tasks').findAndObserve(route.params.p_id),
 }));

@@ -1,7 +1,7 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 export const xpenserSchema = appSchema({
-  version: 17,
+  version: 18,
   tables: [
     tableSchema({
       name: 'labels',
@@ -36,6 +36,7 @@ export const xpenserSchema = appSchema({
         {name: 'is_marked_deleted', type: 'boolean', isOptional: true},
         {name: 'marked_deleted_timestamp', type: 'number', isOptional: true},
         {name: 'repeat_cron', type: 'string', isOptional: true},
+        {name: 'image_uris', type: 'string', isOptional: true},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
       ],

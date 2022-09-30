@@ -183,7 +183,6 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch, note}) => {
           ? theme?.colors.errorContainer
           : theme?.colors.primaryContainer,
         borderRadius: 4,
-        paddingBottom: 6,
       }}
       onPress={_navigateToTaskScreen}
       onLongPress={() => {
