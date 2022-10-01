@@ -4,6 +4,7 @@ import {
   handleStorageWritePermissionUsingLibrary,
   removePastReminders,
   setDailyReminderSetting,
+  setLastBackupTime,
   setQuickListSettings,
   setRenderURLInTaskSettings,
   setTaskSortOrder,
@@ -62,6 +63,13 @@ export const configureStore = persistedState => {
           : CONSTANTS.TASK_SORT_ORDER.ASC.code,
       }),
     );
+  });
+  Storage.getData('last_backup_timestamp').then(timestamp => {
+    if (timestamp && timestamp != 0) {
+      store.dispatch(setLastBackupTime({timestamp}));
+    } else {
+      store.dispatch(setLastBackupTime({timestamp: 0}));
+    }
   });
   Storage.getData('daily_reminder_timestamp').then(timestamp => {
     if (timestamp && timestamp != 0) {

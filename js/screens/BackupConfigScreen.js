@@ -18,12 +18,16 @@ import {
 import RNSettings from 'react-native-settings';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {connect} from 'react-redux';
-import {handleCalendarPermissionUsingLibrary} from '../redux/actions';
+import {
+  handleCalendarPermissionUsingLibrary,
+  setLastBackupTime,
+} from '../redux/actions';
 import {useNavigation} from '@react-navigation/native';
 import RNFS from 'react-native-fs';
 import {WTDBSync} from '../db/sync';
+import moment from 'moment';
 const BOTTOM_APPBAR_HEIGHT = 64;
-const BackupConfigScreen = ({dispatch}) => {
+const BackupConfigScreen = ({dispatch, lastBackupTimestamp}) => {
   // ref
 
   // variables
@@ -40,7 +44,11 @@ const BackupConfigScreen = ({dispatch}) => {
 
   // handle functions
   const _handleDownloadBackup = () => {
-    WTDBSync.fetchAllLocalRecords();
+    WTDBSync.fetchAllLocalRecords({
+      successCallback: () => {
+        dispatch(setLastBackupTime({timestamp: Date.now()}));
+      },
+    });
   };
 
   const _handleOpenBackupFile = async () => {
@@ -70,10 +78,7 @@ const BackupConfigScreen = ({dispatch}) => {
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content
-          title="#Backup"
-          titleStyle={{fontWeight: '700', color: theme?.colors.primary}}
-        />
+        <Appbar.Content title="#Backup" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
       <Divider />
       <ScrollView
@@ -86,9 +91,15 @@ const BackupConfigScreen = ({dispatch}) => {
           onPress={_handleDownloadBackup}
           titleStyle={{fontWeight: '600', color: theme?.colors.onSurface}}
           descriptionNumberOfLines={5}
-          description={`Backup of present tasks and notes can be downloaded and saved for future use. Backup will be stored at ${
-            RNFS.DownloadDirectoryPath + '/backup.json'
-          }`}
+          description={
+            lastBackupTimestamp === 0
+              ? `Backup of present tasks and notes can be downloaded and saved for future use. Backup will be stored at ${
+                  RNFS.DownloadDirectoryPath + '/backup.json'
+                }`
+              : `Last complete backup ${moment(lastBackupTimestamp)
+                  .calendar()
+                  .toString()}`
+          }
           left={props => <List.Icon icon={'folder-download'} />}
         />
         <List.Item
@@ -106,6 +117,8 @@ const BackupConfigScreen = ({dispatch}) => {
   );
 };
 const mapStateToProps = state => {
-  return {};
+  return {
+    lastBackupTimestamp: state.settings.lastBackupTimestamp,
+  };
 };
 export default connect(mapStateToProps)(BackupConfigScreen);

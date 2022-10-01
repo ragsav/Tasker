@@ -106,7 +106,7 @@ const EditLabelScreen = ({
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title="Edit label" titleStyle={{fontWeight: '700'}} />
+        <Appbar.Content title="#Edit label" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
       <Surface
         style={{

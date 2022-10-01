@@ -98,7 +98,7 @@ const CreateNewLabelScreen = ({
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title="New label" titleStyle={{fontWeight: '700'}} />
+        <Appbar.Content title="#New label" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
       <Surface
         style={{

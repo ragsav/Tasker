@@ -145,7 +145,7 @@ const CreateNewNoteScreen = ({
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title="New note" titleStyle={{fontWeight: '700'}} />
+        <Appbar.Content title="#New note" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
 
       <Surface

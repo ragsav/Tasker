@@ -95,7 +95,7 @@ const CompletedScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title={'Completed'} titleStyle={{fontWeight: '700'}} />
+        <Appbar.Content title={'#Completed'} titleStyle={{fontWeight: '700'}} />
 
         <Menu
           visible={isMenuOpen}

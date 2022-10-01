@@ -3,6 +3,7 @@ import {database} from '../../db/db';
 import {Storage} from '../../utils/asyncStorage';
 import {
   CHANGE_DAILY_REMINDER_SETTINGS,
+  CHANGE_LAST_BACKUP_TIME,
   CHANGE_QUICK_LIST_SETTINGS,
   CHANGE_RENDER_URL_IN_TASK_SETTINGS,
   CHANGE_THEME,
@@ -20,6 +21,7 @@ export default (
     },
     renderURLInTask: true,
     dailyReminderTimestamp: 0,
+    lastBackupTimestamp: null,
   },
   action,
 ) => {
@@ -43,6 +45,12 @@ export default (
       return {
         ...state,
         dailyReminderTimestamp: action.dailyReminderTimestamp,
+      };
+    }
+    case CHANGE_LAST_BACKUP_TIME: {
+      return {
+        ...state,
+        lastBackupTimestamp: action.lastBackupTimestamp,
       };
     }
     default:

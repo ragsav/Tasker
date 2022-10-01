@@ -142,7 +142,7 @@ const EditNoteScreen = ({
       }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title="Edit note" titleStyle={{fontWeight: '700'}} />
+        <Appbar.Content title="#Edit note" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
       <Surface
         style={{

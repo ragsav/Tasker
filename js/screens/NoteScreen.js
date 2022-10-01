@@ -162,7 +162,10 @@ const NoteScreen = ({
       />
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title={note ? note.title : '#Note'} />
+        <Appbar.Content
+          title={note ? `#${note.title}` : '#Note'}
+          titleStyle={{fontWeight: '700'}}
+        />
 
         <Menu
           visible={isMenuOpen}

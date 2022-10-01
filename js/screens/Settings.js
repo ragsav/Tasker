@@ -186,9 +186,9 @@ const Settings = ({
       />
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content title={'Settings'} titleStyle={{fontWeight: '700'}} />
+        <Appbar.Content title={'#Settings'} titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
-      <ScrollView>
+      <ScrollView contentContainerStyle={{paddingBottom: 40}}>
         <List.Item
           onPress={_navigateToArchivedNotes}
           title={'#Archived notes'}
@@ -207,6 +207,7 @@ const Settings = ({
             />
           )}
         />
+        <Divider />
         <List.Item
           onPress={_navigateToArchivedTasks}
           title={'#Archived tasks'}
@@ -225,6 +226,7 @@ const Settings = ({
             />
           )}
         />
+        <Divider />
         <List.Item
           onPress={_navigateToDeletedTasks}
           title={'#Trash'}
@@ -243,6 +245,19 @@ const Settings = ({
             />
           )}
         />
+        <Divider />
+        <List.Item
+          title={'Backup'}
+          onPress={_navigateToBackupScreen}
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="backup-restore"
+              color={theme.colors.onSurface}
+            />
+          )}
+        />
+        <Divider />
         <List.Item
           title={'Dark theme'}
           left={props => (
@@ -354,18 +369,8 @@ const Settings = ({
             />
           )}
         />
-        <List.Item
-          title={'Backup'}
-          onPress={_navigateToBackupScreen}
-          left={props => (
-            <List.Icon
-              {...props}
-              icon="backup-restore"
-              color={theme.colors.onSurface}
-            />
-          )}
-        />
         <Divider />
+
         <List.Item
           title={
             dailyReminderTimestamp && dailyReminderTimestamp > 0

@@ -72,10 +72,7 @@ const PermissionsScreen = ({calendarPermissionState, dispatch}) => {
         // translucent
       />
       <Appbar.Header>
-        <Appbar.Content
-          title="#Permissions"
-          titleStyle={{fontWeight: '700', color: theme?.colors.primary}}
-        />
+        <Appbar.Content title="#Permissions" titleStyle={{fontWeight: '700'}} />
       </Appbar.Header>
       <Divider />
       <ScrollView

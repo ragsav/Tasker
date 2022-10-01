@@ -296,7 +296,7 @@ const TaskScreen = ({
         }}>
         <Appbar.BackAction onPress={_navigateBack} />
         <Appbar.Content
-          title={<Text ellipsizeMode="tail">{task.title}</Text>}
+          title={<Text ellipsizeMode="tail">{`#${task.title}`}</Text>}
           titleStyle={{
             opacity: appBarTitleOpacity,
             fontWeight: '700',

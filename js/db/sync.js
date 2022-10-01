@@ -44,7 +44,7 @@ export class WTDBSync {
     return batch;
   };
 
-  static fetchAllLocalRecords = async setIsLoading => {
+  static fetchAllLocalRecords = async ({setIsLoading, successCallback}) => {
     try {
       setIsLoading?.(true);
       const tables = Object.keys(database.collections.map);
@@ -70,6 +70,7 @@ export class WTDBSync {
       const path = RNFS.DownloadDirectoryPath + '/backup.json';
       await RNFS.writeFile(path, JSON.stringify(recordsData), 'utf8');
       setIsLoading?.(false);
+      successCallback?.();
       return recordsData;
     } catch (error) {
       Logger.pageLogger('WTDBSync:fetchAllLocalRecords:catch', error);
