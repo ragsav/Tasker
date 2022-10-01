@@ -1,6 +1,6 @@
 import {Q} from '@nozbe/watermelondb';
 import React, {useState} from 'react';
-import {SafeAreaView, StyleSheet, View} from 'react-native';
+import {Animated, SafeAreaView, StyleSheet, View} from 'react-native';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -17,6 +17,9 @@ import {database} from '../db/db';
 import Task from '../db/models/Task';
 import {datesArray} from '../utils/dateTime';
 import {Logger} from '../utils/logger';
+import {PanGestureHandler, Swipeable} from 'react-native-gesture-handler';
+import {useRef} from 'react';
+import {setEndDate, setStartDate} from '../redux/actions';
 
 const CalenderCellItem = ({date, tasks, handleOpenCalenderItem}) => {
   const theme = useTheme();
@@ -50,7 +53,7 @@ const CalenderCellItem = ({date, tasks, handleOpenCalenderItem}) => {
         }}>
         {!String(date).includes('null') && moment(date).isValid() && (
           <Text variant="bodyMedium" style={{fontWeight: '600'}}>
-            {moment(date).date()}
+            {moment(date).format('DD')}
           </Text>
         )}
         {tasks && (
@@ -88,8 +91,11 @@ const CalenderCellItem = ({date, tasks, handleOpenCalenderItem}) => {
  * @param {Array<Task} param0.tasks
  * @returns
  */
-const CalendarScreen = ({tasks, sDate, eDate}) => {
+const CalendarScreen = ({tasks, sDate, eDate, dispatch}) => {
   const theme = useTheme();
+  const [initialSwipeXCoordinates, setInitialSwipeXCoordinates] = useState();
+  const translateX = new Animated.Value(0);
+
   const [selectedDateInfo, setSelectedDateInfo] = useState(false);
 
   const items = useMemo(() => {
@@ -160,6 +166,79 @@ const CalendarScreen = ({tasks, sDate, eDate}) => {
   const _handleOpenCalenderItem = ({date, taskIDs}) => {
     setSelectedDateInfo({date, taskIDs});
   };
+
+  const _handleIncrementMonth = () => {
+    const sDateLocal = new Date(sDate);
+    const finalStartDate = new Date(
+      sDateLocal.getFullYear(),
+      sDateLocal.getMonth(),
+    );
+    finalStartDate.setMonth(sDateLocal.getMonth() + 1);
+
+    const finalEndDate = new Date(
+      sDateLocal.getFullYear(),
+      sDateLocal.getMonth(),
+    );
+    finalEndDate.setMonth(sDateLocal.getMonth() + 2);
+
+    dispatch(
+      setStartDate({
+        sDate: finalStartDate,
+      }),
+    );
+    dispatch(
+      setEndDate({
+        eDate: finalEndDate,
+      }),
+    );
+  };
+  const _handleDecrementMonth = () => {
+    const sDateLocal = new Date(sDate);
+    const finalStartDate = new Date(
+      sDateLocal.getFullYear(),
+      sDateLocal.getMonth(),
+    );
+    finalStartDate.setMonth(sDateLocal.getMonth() - 1);
+
+    const finalEndDate = new Date(
+      sDateLocal.getFullYear(),
+      sDateLocal.getMonth(),
+    );
+
+    dispatch(
+      setStartDate({
+        sDate: finalStartDate,
+      }),
+    );
+    dispatch(
+      setEndDate({
+        eDate: finalEndDate,
+      }),
+    );
+  };
+
+  const _handleOnPanGestureEvent = Animated.event(
+    [
+      {
+        nativeEvent: {
+          translationX: translateX,
+        },
+      },
+    ],
+    {useNativeDriver: true},
+  );
+  const _handleOnPanStart = e => {
+    setInitialSwipeXCoordinates(e.nativeEvent.absoluteX);
+  };
+
+  const _handleOnPanEnd = e => {
+    if (initialSwipeXCoordinates < e.nativeEvent.absoluteX - 20) {
+      _handleDecrementMonth();
+    } else {
+      _handleIncrementMonth();
+    }
+  };
+
   return (
     <SafeAreaView
       style={{
@@ -169,7 +248,10 @@ const CalendarScreen = ({tasks, sDate, eDate}) => {
         justifyContent: 'flex-start',
         alignItems: 'stretch',
       }}>
-      <AppbarWithMonths />
+      <AppbarWithMonths
+        handleDecrementMonth={_handleDecrementMonth}
+        handleIncrementMonth={_handleIncrementMonth}
+      />
       <View
         style={{
           flexDirection: 'row',
@@ -187,25 +269,41 @@ const CalendarScreen = ({tasks, sDate, eDate}) => {
           );
         })}
       </View>
-
-      <FlatGrid
-        itemDimension={1}
-        adjustGridToStyles
-        spacing={StyleSheet.hairlineWidth}
-        data={items}
-        contentContainerStyle={{
-          backgroundColor: theme?.colors.surfaceVariant,
-          paddingTop: StyleSheet.hairlineWidth,
-        }}
-        renderItem={({item}) => (
-          <CalenderCellItem
-            date={item.date}
-            tasks={item.tasks}
-            handleOpenCalenderItem={_handleOpenCalenderItem}
+      <PanGestureHandler
+        onGestureEvent={_handleOnPanGestureEvent}
+        onEnded={_handleOnPanEnd}
+        onBegan={_handleOnPanStart}>
+        <Animated.View
+          style={[
+            {
+              transform: [
+                {
+                  translateX: translateX,
+                },
+              ],
+            },
+          ]}>
+          <FlatGrid
+            itemDimension={1}
+            adjustGridToStyles
+            spacing={StyleSheet.hairlineWidth}
+            data={items}
+            contentContainerStyle={{
+              backgroundColor: theme?.colors.surfaceVariant,
+              paddingTop: StyleSheet.hairlineWidth,
+            }}
+            renderItem={({item}) => (
+              <CalenderCellItem
+                date={item.date}
+                tasks={item.tasks}
+                handleOpenCalenderItem={_handleOpenCalenderItem}
+              />
+            )}
+            maxItemsPerRow={7}
           />
-        )}
-        maxItemsPerRow={7}
-      />
+        </Animated.View>
+      </PanGestureHandler>
+
       <CalendarItemBottomSheet
         selectedDateInfo={selectedDateInfo}
         setSelectedDateInfo={setSelectedDateInfo}

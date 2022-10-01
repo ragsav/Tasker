@@ -65,7 +65,7 @@ export const ImagePickerBottomSheet = ({
         {...props}
         appearsOnIndex={0}
         disappearsOnIndex={-1}
-        opacity={0.4}
+        opacity={0.6}
       />
     ),
     [],
@@ -138,6 +138,7 @@ export const ImagePickerBottomSheet = ({
             justifyContent: 'space-between',
             alignItems: 'center',
             paddingHorizontal: 12,
+            backgroundColor: theme?.colors.surface,
           }}>
           <Text>Upload from</Text>
           <IconButton
@@ -155,6 +156,7 @@ export const ImagePickerBottomSheet = ({
             flexDirection: 'column',
             justifyContent: 'flex-start',
             alignItems: 'flex-start',
+            backgroundColor: theme?.colors.surface,
           }}>
           <List.Item
             left={() => <List.Icon icon={'folder'} />}

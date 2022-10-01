@@ -6,10 +6,15 @@ import {View} from 'react-native';
 import {Appbar, IconButton, Text} from 'react-native-paper';
 import {connect} from 'react-redux';
 import {setEndDate, setStartDate} from '../redux/actions';
-const AppbarWithMonths = ({dispatch, sDate, eDate}) => {
+const AppbarWithMonths = ({
+  dispatch,
+  sDate,
+  eDate,
+  handleDecrementMonth,
+  handleIncrementMonth,
+}) => {
   // ref
-  const startDateInputRef = useRef(null);
-  const endDateInputRef = useRef(null);
+
   // variables
   const navigation = useNavigation();
 
@@ -22,55 +27,6 @@ const AppbarWithMonths = ({dispatch, sDate, eDate}) => {
   // render functions
 
   // handle functions
-  const _handleIncrementMonth = () => {
-    const sDateLocal = new Date(sDate);
-    const finalStartDate = new Date(
-      sDateLocal.getFullYear(),
-      sDateLocal.getMonth(),
-    );
-    finalStartDate.setMonth(sDateLocal.getMonth() + 1);
-
-    const finalEndDate = new Date(
-      sDateLocal.getFullYear(),
-      sDateLocal.getMonth(),
-    );
-    finalEndDate.setMonth(sDateLocal.getMonth() + 2);
-
-    dispatch(
-      setStartDate({
-        sDate: finalStartDate,
-      }),
-    );
-    dispatch(
-      setEndDate({
-        eDate: finalEndDate,
-      }),
-    );
-  };
-  const _handleDecrementMonth = () => {
-    const sDateLocal = new Date(sDate);
-    const finalStartDate = new Date(
-      sDateLocal.getFullYear(),
-      sDateLocal.getMonth(),
-    );
-    finalStartDate.setMonth(sDateLocal.getMonth() - 1);
-
-    const finalEndDate = new Date(
-      sDateLocal.getFullYear(),
-      sDateLocal.getMonth(),
-    );
-
-    dispatch(
-      setStartDate({
-        sDate: finalStartDate,
-      }),
-    );
-    dispatch(
-      setEndDate({
-        eDate: finalEndDate,
-      }),
-    );
-  };
 
   // navigation functions
   const _navigateBack = () => {
@@ -96,11 +52,11 @@ const AppbarWithMonths = ({dispatch, sDate, eDate}) => {
           justifyContent: 'flex-end',
           alignItems: 'center',
         }}>
-        <IconButton icon={'chevron-left'} onPress={_handleDecrementMonth} />
+        <IconButton icon={'chevron-left'} onPress={handleDecrementMonth} />
         <Text style={{fontWeight: '700'}}>{`${moment(sDate)
           .format('MMMM')
           .substring(0, 3)} ${moment(sDate).year()}`}</Text>
-        <IconButton icon={'chevron-right'} onPress={_handleIncrementMonth} />
+        <IconButton icon={'chevron-right'} onPress={handleIncrementMonth} />
       </View>
     </Appbar.Header>
   );

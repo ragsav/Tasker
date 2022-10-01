@@ -501,7 +501,7 @@ const TaskScreen = ({
         images={imageToView?.images}
         imageIndex={imageToView?.index}
         visible={imageToView?.visible}
-        presentationStyle="overFullScreen"
+        presentationStyle="fullScreen"
         onRequestClose={() => setImageToView({...imageToView, visible: false})}
       />
     </SafeAreaView>
