@@ -593,7 +593,6 @@ export const editTaskAddImageURI =
         taskToBeUpdated,
       });
       let _eu = JSON.parse(taskToBeUpdated.imageURIs);
-      console.log(_eu);
       if (Array.isArray(_eu)) {
         const urii = _eu.indexOf(URI);
         if (urii < 0) {

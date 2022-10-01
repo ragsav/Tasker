@@ -110,7 +110,7 @@ const TaskScreen = ({
 
   useEffect(() => {
     if (task) {
-      if (String(task.reminderID).trim() != '' && task.reminderTimestamp > 0) {
+      if (task.reminderTimestamp) {
         const _s = `Reminder ${
           task.reminderTimestamp < Date.now() ? 'was' : 'is'
         } ${moment(task.reminderTimestamp).calendar().toLowerCase()}`;
@@ -436,9 +436,8 @@ const TaskScreen = ({
             />
           )}
           right={
-            String(task.reminderID).trim() === ''
-              ? null
-              : props => (
+            task.reminderTimestamp
+              ? props => (
                   <Pressable onPress={_handleRemoveReminder}>
                     <List.Icon
                       {...props}
@@ -447,6 +446,7 @@ const TaskScreen = ({
                     />
                   </Pressable>
                 )
+              : null
           }
         />
 
