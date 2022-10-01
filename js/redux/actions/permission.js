@@ -10,6 +10,8 @@ export const CHECK_CONTACTS_PERMISSION_STATE_CHANGE =
   'CHECK_CONTACTS_PERMISSION_STATE_CHANGE';
 export const CHECK_CALENDAR_PERMISSION_STATE_CHANGE =
   'CHECK_CALENDAR_PERMISSION_STATE_CHANGE';
+export const CHECK_STORAGE_WRITE_PERMISSION_STATE_CHANGE =
+  'CHECK_STORAGE_WRITE_PERMISSION_STATE_CHANGE';
 
 const checkContactsPermissionState = (
   isCheckingContactsPermission,
@@ -23,6 +25,21 @@ const checkContactsPermissionState = (
     type: CHECK_CONTACTS_PERMISSION_STATE_CHANGE,
     isCheckingContactsPermission,
     contactsPermissionState,
+  };
+};
+
+const checkStorageWritePermissionState = (
+  isCheckingStorageWritePermission,
+  storageWritePermissionState,
+) => {
+  Logger.pageLogger('checkStorageWritePermissionState', {
+    isCheckingStorageWritePermission,
+    storageWritePermissionState,
+  });
+  return {
+    type: CHECK_STORAGE_WRITE_PERMISSION_STATE_CHANGE,
+    isCheckingStorageWritePermission,
+    storageWritePermissionState,
   };
 };
 
@@ -50,6 +67,22 @@ const checkContactsPermission = async () => {
     permission = result['android.permission.READ_CONTACTS'] === RESULTS.GRANTED;
   }
 
+  return permission;
+};
+
+const checkStorageWritePermission = async () => {
+  let result;
+  let permission;
+  if (Platform.OS === 'ios') {
+    result = await checkMultiple([PERMISSIONS.IOS.MEDIA_LIBRARY]);
+
+    permission = result['ios.permission.MEDIA_LIBRARY'] === RESULTS.GRANTED;
+  } else if (Platform.OS === 'android') {
+    result = await checkMultiple([PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
+
+    permission =
+      result['android.permission.WRITE_EXTERNAL_STORAGE'] === RESULTS.GRANTED;
+  }
   return permission;
 };
 
@@ -95,6 +128,29 @@ export const handleContactsPermissionUsingLibrary = () => async dispatch => {
   }
   dispatch(checkContactsPermissionState(false, permission));
 };
+
+export const handleStorageWritePermissionUsingLibrary =
+  () => async dispatch => {
+    dispatch(checkStorageWritePermissionState(true, null));
+    let permission = await checkStorageWritePermission();
+    Logger.pageLogger('handleStorageWritePermissionUsingLibrary', {permission});
+    if (!permission) {
+      if (Platform.OS === 'ios') {
+        requestMultiple([PERMISSIONS.IOS.MEDIA_LIBRARY]).then(async result => {
+          permission = await checkStorageWritePermission();
+          dispatch(checkStorageWritePermissionState(false, permission));
+        });
+      } else if (Platform.OS === 'android') {
+        requestMultiple([PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]).then(
+          async result => {
+            permission = await checkStorageWritePermission();
+            dispatch(checkStorageWritePermissionState(false, permission));
+          },
+        );
+      }
+    }
+    dispatch(checkContactsPermissionState(false, permission));
+  };
 
 export const handleCalendarPermissionUsingLibrary = () => async dispatch => {
   dispatch(checkCalendarPermissionState(true, null));

@@ -63,7 +63,7 @@ export const CONSTANTS = Object.freeze({
     DELETED_TASKS: 'DELETED_TASKS',
 
     NOTE: 'NOTE',
-
+    BACKUP: 'BACKUP',
     FILTER: 'FILTER',
     MY_DAY: 'MY_DAY',
     CALENDAR: 'CALENDAR',

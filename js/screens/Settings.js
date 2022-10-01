@@ -15,6 +15,8 @@ import {
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {_customDarkTheme, _customLightTheme} from '../../themes';
+import {database} from '../db/db';
+import {WTDBSync} from '../db/sync';
 import {
   setDailyReminderSetting,
   setQuickListSettings,
@@ -41,6 +43,7 @@ const Settings = ({
     useState(false);
 
   // states
+  const [dbChanges, setDBChanges] = useState();
 
   // effects
   useFocusEffect(
@@ -155,6 +158,9 @@ const Settings = ({
   };
   const _navigateToDeletedTasks = () => {
     navigation?.push(CONSTANTS.ROUTES.DELETED_TASKS);
+  };
+  const _navigateToBackupScreen = () => {
+    navigation?.push(CONSTANTS.ROUTES.BACKUP);
   };
 
   // misc functions
@@ -345,6 +351,17 @@ const Settings = ({
             <Switch
               value={renderURLInTask}
               onValueChange={_handleToggleRenderURLSettings}
+            />
+          )}
+        />
+        <List.Item
+          title={'Backup'}
+          onPress={_navigateToBackupScreen}
+          left={props => (
+            <List.Icon
+              {...props}
+              icon="backup-restore"
+              color={theme.colors.onSurface}
             />
           )}
         />

@@ -1,6 +1,7 @@
 import {applyMiddleware, compose, createStore} from 'redux';
 import {
   handleCalendarPermissionUsingLibrary,
+  handleStorageWritePermissionUsingLibrary,
   removePastReminders,
   setDailyReminderSetting,
   setQuickListSettings,
@@ -21,6 +22,7 @@ const enhancers = [applyMiddleware(thunkMiddleware)];
 export const configureStore = persistedState => {
   const store = createStore(rootReducer, persistedState, compose(...enhancers));
   store.dispatch(handleCalendarPermissionUsingLibrary());
+  store.dispatch(handleStorageWritePermissionUsingLibrary());
   Storage.getData('local_theme').then(theme => {
     Logger.pageLogger('Storage.getData:local_theme', {theme});
     if (theme === 'dark') {

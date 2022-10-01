@@ -34,6 +34,7 @@ const CreateNewLabelScreen = ({
   // effects
   useFocusEffect(
     useCallback(() => {
+      _init();
       return _onDestroy;
     }, []),
   );
@@ -48,17 +49,14 @@ const CreateNewLabelScreen = ({
   // render functions
 
   // handle functions
-  const _init = () => {};
-  const _onDestroy = () => {
-    dispatch(resetCreateLabelState());
-  };
-
   const _handleTitleChange = title => {
     setLabelState({...labelState, title});
   };
+
   const _handleOpenIconSelection = () => {
     setIsIconSelectionVisible(true);
   };
+
   const _handleOnIconChange = iconString => {
     setLabelState({...labelState, iconString});
   };
@@ -86,6 +84,10 @@ const CreateNewLabelScreen = ({
   };
 
   // misc functions
+  const _init = () => {};
+  const _onDestroy = () => {
+    dispatch(resetCreateLabelState());
+  };
 
   // return
   return (

@@ -18,17 +18,45 @@ import {
 import RNSettings from 'react-native-settings';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {connect} from 'react-redux';
-import {handleCalendarPermissionUsingLibrary} from '../redux/actions';
+import {
+  handleCalendarPermissionUsingLibrary,
+  handleStorageWritePermissionUsingLibrary,
+} from '../redux/actions';
 const BOTTOM_APPBAR_HEIGHT = 64;
 const PermissionsScreen = ({calendarPermissionState, dispatch}) => {
+  // ref
+
+  // variables
   const theme = useTheme();
   const {bottom} = useSafeAreaInsets();
+
+  // states
+
+  // effects
+
+  // callbacks
+
+  // render functions
+
+  // handle functions
   const _handleCalendarPermissionRequest = () => {
     dispatch(handleCalendarPermissionUsingLibrary());
   };
-  const _handleOpenSettings = () => {
+  const _handleStorageWritePermissionRequest = () => {
+    dispatch(handleStorageWritePermissionUsingLibrary());
+  };
+
+  // navigation functions
+  const _navigateToSystemSettings = () => {
     Linking.openSettings();
   };
+
+  // misc functions
+  const _init = () => {};
+  const _onDestroy = () => {};
+
+  // return
+
   return (
     <SafeAreaView
       style={{
@@ -72,6 +100,23 @@ const PermissionsScreen = ({calendarPermissionState, dispatch}) => {
             />
           )}
         />
+        <List.Item
+          title="Storage permission"
+          titleStyle={{fontWeight: '600', color: theme?.colors.onSurface}}
+          description="This permission is required to save your backups"
+          left={props => <List.Icon {...props} icon="backup-restore" />}
+          onPress={_handleStorageWritePermissionRequest}
+          right={props => (
+            <List.Icon
+              icon={calendarPermissionState ? 'check-circle' : 'close-circle'}
+              color={
+                calendarPermissionState
+                  ? theme?.colors.primary
+                  : theme?.colors.error
+              }
+            />
+          )}
+        />
       </ScrollView>
       <Divider />
       <Appbar
@@ -94,7 +139,7 @@ const PermissionsScreen = ({calendarPermissionState, dispatch}) => {
         <Button
           contentStyle={{flexDirection: 'row-reverse'}}
           icon="cog"
-          onPress={_handleOpenSettings}>
+          onPress={_navigateToSystemSettings}>
           Settings
         </Button>
       </Appbar>
@@ -103,8 +148,9 @@ const PermissionsScreen = ({calendarPermissionState, dispatch}) => {
 };
 const mapStateToProps = state => {
   return {
-    isCheckingCalendarPermission: state.permission.isCheckingCalendarPermission,
-    calendarPermissionState: state.permission.calendarPermissionState,
+    isCheckingStorageWritePermission:
+      state.permission.isCheckingStorageWritePermission,
+    storageWritePermissionState: state.permission.storageWritePermissionState,
   };
 };
 export default connect(mapStateToProps)(PermissionsScreen);

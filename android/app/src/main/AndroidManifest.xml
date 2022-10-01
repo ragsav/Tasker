@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    
 
     <application
     android:name=".MainApplication"
@@ -17,6 +18,7 @@
     android:icon="@drawable/ic_launcher"
     android:roundIcon="@drawable/ic_launcher_round"
     android:allowBackup="false"
+    android:requestLegacyExternalStorage="true"
     android:theme="@style/BootTheme">
 
       <meta-data

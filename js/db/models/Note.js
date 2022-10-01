@@ -9,6 +9,7 @@ import {
   readonly,
   lazy,
 } from '@nozbe/watermelondb/decorators';
+import {database} from '../db';
 export default class Note extends Model {
   static table = 'notes';
   static associations = {
@@ -29,4 +30,18 @@ export default class Note extends Model {
   @readonly @date('updated_at') updatedAt;
 
   @children('tasks') tasks;
+
+  static _backupToPrepareCreate = raw => {
+    return database.collections.get('notes').prepareCreate(note => {
+      note.id = raw.id;
+      note.title = raw.title;
+      note.description = raw.description;
+      note.colorString = raw.color_string;
+      note.labelID = raw.label_id;
+      note.isArchived = raw.is_archived;
+      note.archiveTimestamp = raw.archive_timestamp;
+      note.isMarkedDeleted = raw.is_marked_deleted;
+      note.markedDeletedTimestamp = raw.marked_deleted_timestamp;
+    });
+  };
 }

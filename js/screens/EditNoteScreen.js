@@ -35,6 +35,7 @@ const EditNoteScreen = ({
   // effects
   useFocusEffect(
     useCallback(() => {
+      _init();
       return _onDestroy;
     }, []),
   );

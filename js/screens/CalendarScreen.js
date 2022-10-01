@@ -22,17 +22,38 @@ import {useRef} from 'react';
 import {setEndDate, setStartDate} from '../redux/actions';
 
 const CalenderCellItem = ({date, tasks, handleOpenCalenderItem}) => {
+  // ref
+
+  // variables
   const theme = useTheme();
 
+  // states
+
+  // effects
+
+  // callbacks
+
+  // render functions
+
+  // handle functions
   const _handleOpenCalenderItem = () => {
-    const taskIDs = tasks?.map(v => {
-      return v.id;
+    const taskIDs = tasks?.map(task => {
+      return task.id;
     });
 
     if (Array.isArray(taskIDs) && taskIDs.length > 0) {
       handleOpenCalenderItem({date, taskIDs});
     }
   };
+
+  // navigation functions
+
+  // misc functions
+  const _init = () => {};
+  const _onDestroy = () => {};
+
+  // return
+
   return (
     <TouchableRipple
       onPress={_handleOpenCalenderItem}
@@ -92,12 +113,17 @@ const CalenderCellItem = ({date, tasks, handleOpenCalenderItem}) => {
  * @returns
  */
 const CalendarScreen = ({tasks, sDate, eDate, dispatch}) => {
+  // ref
+
+  // variables
   const theme = useTheme();
-  const [initialSwipeXCoordinates, setInitialSwipeXCoordinates] = useState();
   const translateX = new Animated.Value(0);
 
+  // states
+  const [initialSwipeXCoordinates, setInitialSwipeXCoordinates] = useState();
   const [selectedDateInfo, setSelectedDateInfo] = useState(false);
 
+  // effects
   const items = useMemo(() => {
     var datesOfMonth = calendarize(sDate).flat();
 
@@ -163,6 +189,11 @@ const CalendarScreen = ({tasks, sDate, eDate, dispatch}) => {
     return items;
   }, [tasks, sDate]);
 
+  // callbacks
+
+  // render functions
+
+  // handle functions
   const _handleOpenCalenderItem = ({date, taskIDs}) => {
     setSelectedDateInfo({date, taskIDs});
   };
@@ -192,6 +223,7 @@ const CalendarScreen = ({tasks, sDate, eDate, dispatch}) => {
       }),
     );
   };
+
   const _handleDecrementMonth = () => {
     const sDateLocal = new Date(sDate);
     const finalStartDate = new Date(
@@ -227,6 +259,7 @@ const CalendarScreen = ({tasks, sDate, eDate, dispatch}) => {
     ],
     {useNativeDriver: true},
   );
+
   const _handleOnPanStart = e => {
     setInitialSwipeXCoordinates(e.nativeEvent.absoluteX);
   };
@@ -238,6 +271,14 @@ const CalendarScreen = ({tasks, sDate, eDate, dispatch}) => {
       _handleIncrementMonth();
     }
   };
+
+  // navigation functions
+
+  // misc functions
+  const _init = () => {};
+  const _onDestroy = () => {};
+
+  // return
 
   return (
     <SafeAreaView

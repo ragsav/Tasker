@@ -43,6 +43,7 @@ import {
   resetDeleteTaskState,
   resetEditTaskState,
 } from '../redux/actions';
+import {DescriptionBottomSheet} from '../components/DescriptionBottomSheet';
 
 const BOTTOM_APPBAR_HEIGHT = 64;
 /**
@@ -72,6 +73,8 @@ const TaskScreen = ({
   const [error, setError] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [dueDateString, setDueDateString] = useState('date');
+  const [isDescriptionBottomSheetVisible, setIsDescriptionBottomSheetVisible] =
+    useState(false);
   const [isDueDateTimePickerVisible, setIsDueDateTimePickerVisible] =
     useState(false);
 
@@ -80,7 +83,6 @@ const TaskScreen = ({
     useState(false);
   const [urls, setURLs] = useState([]);
 
-  const debouncedDescription = useDebounce(description, 500);
   const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
   const [imageToView, setImageToView] = useState({
     images: [],
@@ -97,12 +99,6 @@ const TaskScreen = ({
   );
 
   useEffect(() => {
-    dispatch(
-      editTaskDescription({id: task.id, description: debouncedDescription}),
-    );
-  }, [debouncedDescription]);
-
-  useEffect(() => {
     if (deleteTaskSuccess) {
       _navigateBack();
     }
@@ -111,23 +107,23 @@ const TaskScreen = ({
   useEffect(() => {
     if (task) {
       if (task.reminderTimestamp) {
-        const _s = `Reminder ${
+        const _localReminderString = `Reminder ${
           task.reminderTimestamp < Date.now() ? 'was' : 'is'
         } ${moment(task.reminderTimestamp).calendar().toLowerCase()}`;
-        setReminderDateString(_s);
+        setReminderDateString(_localReminderString);
       } else {
         setReminderDateString('Set reminder');
       }
     }
-  }, [task, task.reminderID, task.reminderTimestamp]);
+  }, [task, task.reminderTimestamp]);
 
   useEffect(() => {
     if (task) {
       if (task.endTimestamp) {
-        const _s = `Due ${
+        const _localDueDateString = `Due ${
           task.endTimestamp < Date.now() ? 'was' : 'is'
         } ${moment(task.endTimestamp).calendar().toLowerCase()}`;
-        setDueDateString(_s);
+        setDueDateString(_localDueDateString);
       } else {
         setDueDateString('Set due date');
       }
@@ -139,20 +135,13 @@ const TaskScreen = ({
       setTitle(task.title);
       setDescription(task.description);
       if (renderURLInTask) {
-        const _s = extractUrls(`${task.title}   ${task.description}`);
-        setURLs(_s);
+        const extractedURLs = extractUrls(
+          `${task.title}   ${task.description}`,
+        );
+        setURLs(extractedURLs);
       }
     }
-  }, [task]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (renderURLInTask) {
-        const _s = extractUrls(`${task.title}   ${task.description}`);
-        setURLs(_s);
-      }
-    }, [renderURLInTask]),
-  );
+  }, [renderURLInTask, task]);
 
   // callbacks
 
@@ -171,8 +160,11 @@ const TaskScreen = ({
       dispatch(editTaskTitle({id: task.id, title}));
     }
   };
+  const _handleOpenDescriptionBottomSheet = () => {
+    setIsDescriptionBottomSheetVisible(true);
+  };
   const _handleDescriptionChange = description => {
-    setDescription(description);
+    dispatch(editTaskDescription({id: task.id, description}));
   };
 
   const _handleToggleArchive = () => {
@@ -469,28 +461,32 @@ const TaskScreen = ({
           setImageToView={setImageToView}
         />
 
-        <TextInput
-          value={description}
-          autoCorrect={false}
-          multiline
-          underlineColor="transparent"
-          onChangeText={_handleDescriptionChange}
-          style={[
-            {
-              fontSize: 16,
-              margin: 12,
-            },
-          ]}
-          mode="outlined"
-          numberOfLines={5}
-          placeholder="Add description"
-        />
+        <Text
+          style={{
+            margin: 12,
+            padding: 8,
+            borderRadius: 4,
+            borderColor: theme?.colors.onSurface,
+            borderWidth: StyleSheet.hairlineWidth,
+            height: 100,
+          }}
+          onPress={_handleOpenDescriptionBottomSheet}>
+          {!task.description || String(task.description) === ''
+            ? 'Add description'
+            : task.description}
+        </Text>
 
         {renderURLInTask &&
           urls?.map((url, index) => {
             return <LinkPreview text={url} key={index} />;
           })}
       </KeyboardAwareScrollView>
+      <DescriptionBottomSheet
+        visible={isDescriptionBottomSheetVisible}
+        setVisible={setIsDescriptionBottomSheetVisible}
+        description={task.description}
+        setDescription={_handleDescriptionChange}
+      />
       <ImagePickerBottomSheet
         visible={isImagePickerOpen}
         setVisible={setIsImagePickerOpen}

@@ -30,6 +30,7 @@ import CompletedScreen from '../screens/CompletedScreen';
 import ArchivedTasksScreen from '../screens/ArchivedTasksScreen';
 import ArchivedNotesScreen from '../screens/ArchivedNotesScreen';
 import DeletedTasksScreen from '../screens/DeletedTasksScreen';
+import BackupConfigScreen from '../screens/BackupConfigScreen';
 const Stack = createStackNavigator();
 
 const Router = ({theme}) => {
@@ -151,6 +152,11 @@ const Router = ({theme}) => {
             <Stack.Screen
               name={CONSTANTS.ROUTES.ARCHIVED_NOTES}
               component={ArchivedNotesScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.BACKUP}
+              component={BackupConfigScreen}
               options={{headerShown: false}}
             />
           </Stack.Navigator>

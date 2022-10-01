@@ -35,6 +35,7 @@ const EditLabelScreen = ({
   // effects
   useFocusEffect(
     useCallback(() => {
+      _init();
       return _onDestroy;
     }, []),
   );

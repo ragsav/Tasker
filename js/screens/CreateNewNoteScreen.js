@@ -47,6 +47,7 @@ const CreateNewNoteScreen = ({
   // effects
   useFocusEffect(
     useCallback(() => {
+      _init();
       return _onDestroy;
     }, []),
   );
@@ -82,10 +83,6 @@ const CreateNewNoteScreen = ({
   };
 
   // handle functions
-  const _init = () => {};
-  const _onDestroy = () => {
-    dispatch(resetCreateNoteState());
-  };
 
   const _handleTitleChange = title => {
     setNoteState({...noteState, title});
@@ -134,6 +131,10 @@ const CreateNewNoteScreen = ({
   };
 
   // misc functions
+  const _init = () => {};
+  const _onDestroy = () => {
+    dispatch(resetCreateNoteState());
+  };
 
   // return
   return (

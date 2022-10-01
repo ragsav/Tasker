@@ -3,7 +3,29 @@ import {SafeAreaView, StatusBar, StyleSheet} from 'react-native';
 import {ActivityIndicator, useTheme} from 'react-native-paper';
 
 export const LoadingScreen = () => {
+  // ref
+
+  // variables
   const theme = useTheme();
+
+  // states
+
+  // effects
+
+  // callbacks
+
+  // render functions
+
+  // handle functions
+
+  // navigation functions
+
+  // misc functions
+  const _init = () => {};
+  const _onDestroy = () => {};
+
+  // return
+
   return (
     <SafeAreaView
       style={{

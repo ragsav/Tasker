@@ -8,6 +8,7 @@ import {
   date,
   readonly,
 } from '@nozbe/watermelondb/decorators';
+import {database} from '../db';
 
 export default class Label extends Model {
   static table = 'labels';
@@ -26,4 +27,16 @@ export default class Label extends Model {
   @readonly @date('updated_at') updatedAt;
 
   @children('notes') notes;
+
+  static _backupToPrepareCreate = raw => {
+    return database.collections.get('notes').prepareCreate(label => {
+      label.id = raw.id;
+      label.title = raw.title;
+      label.iconString = raw.icon_string;
+      label.isArchived = raw.is_archived;
+      label.archiveTimestamp = raw.archive_timestamp;
+      label.isMarkedDeleted = raw.is_marked_deleted;
+      label.markedDeletedTimestamp = raw.marked_deleted_timestamp;
+    });
+  };
 }
