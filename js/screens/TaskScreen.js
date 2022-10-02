@@ -115,7 +115,7 @@ const TaskScreen = ({
         setReminderDateString('Set reminder');
       }
     }
-  }, [task, task.reminderTimestamp]);
+  }, [task, task.reminderTimestamp, task.reminderID]);
 
   useEffect(() => {
     if (task) {

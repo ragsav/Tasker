@@ -1,3 +1,4 @@
+import {CONSTANTS} from '../../../constants';
 import NotificationService from '../../services/notifications';
 import {Storage} from '../../utils/asyncStorage';
 
@@ -43,43 +44,57 @@ export const setDailyReminderSettingState = ({dailyReminderTimestamp}) => {
 export const setLastBackupTime =
   ({timestamp}) =>
   async dispatch => {
-    Storage.storeData('last_backup_timestamp', timestamp);
+    Storage.storeData(
+      CONSTANTS.LOCAL_STORAGE_KEYS.LAST_BACKUP_TIMESTAMP,
+      timestamp,
+    );
     dispatch(setLastBackupTimeState({timestamp}));
   };
 export const setTheme =
   ({theme}) =>
   async dispatch => {
     if (theme?.dark) {
-      Storage.storeData('local_theme', 'dark');
+      Storage.storeData(CONSTANTS.LOCAL_STORAGE_KEYS.LOCAL_THEME, 'dark');
     } else {
-      Storage.storeData('local_theme', 'light');
+      Storage.storeData(CONSTANTS.LOCAL_STORAGE_KEYS.LOCAL_THEME, 'light');
     }
     dispatch(setThemeState({theme}));
   };
 export const setQuickListSettings =
   ({quickListSettings}) =>
   async dispatch => {
-    Storage.storeData('quick_list_settings', quickListSettings);
+    Storage.storeData(
+      CONSTANTS.LOCAL_STORAGE_KEYS.QUICK_LIST_SETTING,
+      quickListSettings,
+    );
     dispatch(setQuickListSettingsState({quickListSettings}));
   };
 export const setRenderURLInTaskSettings =
   ({renderURLInTask}) =>
   async dispatch => {
-    Storage.storeData('render_url_in_task_settings', renderURLInTask);
+    Storage.storeData(
+      CONSTANTS.LOCAL_STORAGE_KEYS.RENDER_URL_IN_TASK_SETTING,
+      renderURLInTask,
+    );
     dispatch(setRenderURLInTaskSettingsState({renderURLInTask}));
   };
 export const setDailyReminderSetting =
   ({dailyReminderTimestamp}) =>
   async dispatch => {
-    Storage.getData('daily_reminder_timestamp').then(timestamp => {
-      if (timestamp && dailyReminderTimestamp === timestamp) {
-        dispatch(setDailyReminderSettingState({dailyReminderTimestamp}));
-      } else {
-        NotificationService.scheduleDailyReminder({
-          timestamp: dailyReminderTimestamp,
-        });
-        Storage.storeData('daily_reminder_timestamp', dailyReminderTimestamp);
-        dispatch(setDailyReminderSettingState({dailyReminderTimestamp}));
-      }
-    });
+    Storage.getData(CONSTANTS.LOCAL_STORAGE_KEYS.DAILY_REMINDER_TIMESTAMP).then(
+      timestamp => {
+        if (timestamp && dailyReminderTimestamp === timestamp) {
+          dispatch(setDailyReminderSettingState({dailyReminderTimestamp}));
+        } else {
+          NotificationService.scheduleDailyReminder({
+            timestamp: dailyReminderTimestamp,
+          });
+          Storage.storeData(
+            CONSTANTS.LOCAL_STORAGE_KEYS.DAILY_REMINDER_TIMESTAMP,
+            dailyReminderTimestamp,
+          );
+          dispatch(setDailyReminderSettingState({dailyReminderTimestamp}));
+        }
+      },
+    );
   };

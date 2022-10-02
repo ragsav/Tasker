@@ -1,51 +1,10 @@
 export const CONSTANTS = Object.freeze({
   NOTIFICATION_CHANNEL_ID:
     'Tasker-Notifications-dc5ee189-65a6-48a7-9ae6-b0ec9d067825',
-  CURRENCY: {
-    RUPEE: {
-      code: 'RUPEE',
-      symbol: '₹',
-      title: 'Rupee',
-      shortTitle: 'Rs',
-      conversionToRupee: 1,
-      conversionToDollar: 78,
-    },
-    DOLLAR: {
-      code: 'DOLLAR',
-      symbol: '$',
-      title: 'Dollar',
-      shortTitle: 'D',
-      conversionToRupee: 0.02,
-      conversionToDollar: 1,
-    },
-  },
+
   DAILY_REMINDER_ID: 1023,
   NOTIFICATION_CLEAR_DELAY_BUFFER: 15 * 60 * 1000,
-  MONTH_SHORT: [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ],
-  DAY_SHORT: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-  TRANSACTION_TYPE: {
-    INCOME: {
-      code: 'INCOME',
-      title: 'Income',
-    },
-    SPENDING: {
-      code: 'SPENDING',
-      title: 'Spendings',
-    },
-  },
+
   ROUTES: {
     HOME: 'HOME',
     INTRO: 'INTRO',
@@ -100,22 +59,7 @@ export const CONSTANTS = Object.freeze({
       field: 'is_done',
     },
   },
-  COLORS: {
-    PRIMARY: '#04D976',
-    DARK_FONT: '#3C5C4E',
-    LIGHT_FONT: '#D8E4F1',
-    SECONDARY_FONT: '#95A8BF',
-    ERROR: '#F35265',
-    PRIMARY_DARK: '#32694F',
-    PRIMARY_LIGHT: '#E6FFE5',
-    WHITE: '#fff',
-    TRANSPARENT: 'transparent',
-    DARK: '#32694F',
-    LINK: '#0075FF',
-    SECONDARY_YELLOW: '#F9C76B',
-    LIGHT: '#E6FFE5',
-    LIGHT_100: '#ebebeb',
-  },
+
   NOTE_COLORS: [
     '#e6194b',
     '#3cb44b',
@@ -139,45 +83,13 @@ export const CONSTANTS = Object.freeze({
     '#808080',
     '#000000',
   ],
-  INITIAL_ACCOUNTS: {
-    CASH: {
-      title: 'Cash',
-      description: 'Cash',
-      currency: 'RUPEE',
-    },
-    CARD: {
-      title: 'Card',
-      description: 'Card',
-      currency: 'RUPEE',
-    },
-    UPI: {
-      title: 'UPI',
-      description: 'UPI',
-      currency: 'RUPEE',
-    },
-  },
-  INITIAL_TRANSACTION_CATEGORIES: {
-    FOOD: {
-      title: 'Food',
-      icon_string: 'food',
-    },
-    TRANSPORTATION: {
-      title: 'Transportation',
-      icon_string: 'train-car',
-    },
-
-    HOUSEHOLD: {
-      title: 'Household',
-      icon_string: 'home',
-    },
-
-    HEALTH: {
-      title: 'Health',
-      icon_string: 'bottle-tonic-plus',
-    },
-    EDUCATION: {
-      title: 'Education',
-      icon_string: 'school',
-    },
+  LOCAL_STORAGE_KEYS: {
+    LAST_BACKUP_TIMESTAMP: 'LAST_BACKUP_TIMESTAMP',
+    LOCAL_THEME: 'LOCAL_THEME',
+    QUICK_LIST_SETTING: 'QUICK_LIST_SETTING',
+    RENDER_URL_IN_TASK_SETTING: 'RENDER_URL_IN_TASK_SETTING',
+    DAILY_REMINDER_TIMESTAMP: 'DAILY_REMINDER_TIMESTAMP',
+    TASK_SORT_ORDER: 'TASK_SORT_ORDER',
+    TASK_SORT_PROPERTY: 'TASK_SORT_PROPERTY',
   },
 });

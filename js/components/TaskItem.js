@@ -223,6 +223,8 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch, note}) => {
                 fontSize: 16,
                 flexWrap: 'wrap',
                 flex: 1,
+                textDecorationLine: task.isDone ? 'line-through' : null,
+                textDecorationStyle: 'solid',
               }}>
               {task.title}
             </Text>

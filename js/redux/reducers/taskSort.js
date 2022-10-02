@@ -10,13 +10,19 @@ export default (
 ) => {
   switch (action.type) {
     case SET_TASK_SORT_PROPERTY:
-      Storage.storeData('task_sort_property', action.taskSortProperty);
+      Storage.storeData(
+        CONSTANTS.LOCAL_STORAGE_KEYS.TASK_SORT_PROPERTY,
+        action.taskSortProperty,
+      );
       return {
         ...state,
         taskSortProperty: action.taskSortProperty,
       };
     case SET_TASK_SORT_ORDER:
-      Storage.storeData('task_sort_order', action.taskSortOrder);
+      Storage.storeData(
+        CONSTANTS.LOCAL_STORAGE_KEYS.TASK_SORT_ORDER,
+        action.taskSortOrder,
+      );
       return {
         ...state,
         taskSortOrder: action.taskSortOrder,
