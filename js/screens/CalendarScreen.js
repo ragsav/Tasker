@@ -265,7 +265,7 @@ const CalendarScreen = ({tasks, sDate, eDate, dispatch}) => {
   };
 
   const _handleOnPanEnd = e => {
-    if (initialSwipeXCoordinates < e.nativeEvent.absoluteX - 20) {
+    if (initialSwipeXCoordinates < e.nativeEvent.absoluteX - 150) {
       _handleDecrementMonth();
     } else {
       _handleIncrementMonth();

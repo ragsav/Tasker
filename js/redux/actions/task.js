@@ -6,7 +6,8 @@ import Task from '../../db/models/Task';
 import NotificationService from '../../services/notifications';
 import {Logger} from '../../utils/logger';
 import {editNoteIsArchived} from './note';
-
+import Alarm, {scheduleAlarm} from '../../services/alarm';
+import moment from 'moment';
 export const GET_TASKS = 'GET_TASKS';
 export const CREATE_TASK_STATE = 'CREATE_TASK_STATE';
 export const EDIT_TASK_STATE = 'EDIT_TASK_STATE';
@@ -489,12 +490,30 @@ export const editTaskAddReminder =
           });
         }
         const notificationID = Math.floor(Math.random() * 1000) + 1;
-        NotificationService.scheduleTaskReminder({
-          notificationID,
-          timestamp: reminderTimestamp,
+        // NotificationService.scheduleTaskReminder({
+        //   notificationID,
+        //   timestamp: reminderTimestamp,
+        //   title: taskToBeUpdated.title,
+        //   taskID: taskToBeUpdated.id,
+        // });
+        const _d = new Date(reminderTimestamp);
+        const alarm = new Alarm({
+          uid: String(notificationID),
           title: taskToBeUpdated.title,
-          taskID: taskToBeUpdated.id,
+          description:
+            taskToBeUpdated.description && taskToBeUpdated.description != ''
+              ? taskToBeUpdated.description
+              : `Reminder ${moment(reminderTimestamp)
+                  .calendar()
+                  .toString()
+                  .toLowerCase()}`,
+          year: _d.getFullYear(),
+          month: _d.getMonth(),
+          date: _d.getDate(),
+          hour: _d.getHours(),
+          minutes: _d.getMinutes(),
         });
+        scheduleAlarm(alarm);
         Logger.pageLogger('task.js:editTaskAddReminder:notificationID', {
           notificationID,
         });
