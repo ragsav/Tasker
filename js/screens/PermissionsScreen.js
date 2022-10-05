@@ -23,7 +23,11 @@ import {
   handleStorageWritePermissionUsingLibrary,
 } from '../redux/actions';
 const BOTTOM_APPBAR_HEIGHT = 64;
-const PermissionsScreen = ({calendarPermissionState, dispatch}) => {
+const PermissionsScreen = ({
+  calendarPermissionState,
+  storageWritePermissionState,
+  dispatch,
+}) => {
   // ref
 
   // variables
@@ -105,9 +109,11 @@ const PermissionsScreen = ({calendarPermissionState, dispatch}) => {
           onPress={_handleStorageWritePermissionRequest}
           right={props => (
             <List.Icon
-              icon={calendarPermissionState ? 'check-circle' : 'close-circle'}
+              icon={
+                storageWritePermissionState ? 'check-circle' : 'close-circle'
+              }
               color={
-                calendarPermissionState
+                storageWritePermissionState
                   ? theme?.colors.primary
                   : theme?.colors.error
               }
@@ -145,8 +151,7 @@ const PermissionsScreen = ({calendarPermissionState, dispatch}) => {
 };
 const mapStateToProps = state => {
   return {
-    isCheckingStorageWritePermission:
-      state.permission.isCheckingStorageWritePermission,
+    calendarPermissionState: state.permission.calendarPermissionState,
     storageWritePermissionState: state.permission.storageWritePermissionState,
   };
 };

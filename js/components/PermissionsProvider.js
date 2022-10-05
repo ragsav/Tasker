@@ -9,21 +9,26 @@ import PermissionsScreen from '../screens/PermissionsScreen';
 
 const PermissionStatusProvider = ({
   isCheckingContactsPermission,
+  isCheckingStorageWritePermission,
   calendarPermissionState,
+  storageWritePermissionState,
   children,
 }) => {
   useEffect(() => {
-    Logger.pageLogger('PermissionStatusProvider', {calendarPermissionState});
-  }, [calendarPermissionState]);
+    Logger.pageLogger('PermissionStatusProvider', {
+      calendarPermissionState,
+      storageWritePermissionState,
+    });
+  }, [calendarPermissionState, storageWritePermissionState]);
   return (
     <View
       style={{
         height: '100%',
         width: Dimensions.get('screen').width,
       }}>
-      {isCheckingContactsPermission ? (
+      {isCheckingContactsPermission || isCheckingStorageWritePermission ? (
         <LoadingScreen />
-      ) : !calendarPermissionState ? (
+      ) : !calendarPermissionState || !storageWritePermissionState ? (
         <PermissionsScreen />
       ) : (
         children
@@ -35,7 +40,10 @@ const PermissionStatusProvider = ({
 const mapStateToProps = state => {
   return {
     isCheckingCalendarPermission: state.permission.isCheckingCalendarPermission,
+    isCheckingStorageWritePermission:
+      state.permission.isCheckingStorageWritePermission,
     calendarPermissionState: state.permission.calendarPermissionState,
+    storageWritePermissionState: state.permission.storageWritePermissionState,
   };
 };
 export default connect(mapStateToProps)(PermissionStatusProvider);
