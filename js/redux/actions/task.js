@@ -3,11 +3,8 @@ import 'react-native-get-random-values';
 import {CONSTANTS} from '../../../constants';
 import {database} from '../../db/db';
 import Task from '../../db/models/Task';
-import NotificationService from '../../services/notifications';
 import {Logger} from '../../utils/logger';
-import {editNoteIsArchived} from './note';
-import Alarm, {scheduleAlarm} from '../../services/alarm';
-import moment from 'moment';
+import {TaskReminderService} from '../../services/alarm';
 export const GET_TASKS = 'GET_TASKS';
 export const CREATE_TASK_STATE = 'CREATE_TASK_STATE';
 export const EDIT_TASK_STATE = 'EDIT_TASK_STATE';
@@ -163,6 +160,18 @@ export const createTask =
     dispatch(createTaskState({loading: true, success: false, error: null}));
     try {
       Logger.pageLogger('task.js:createTask:start');
+      let alarmID = '';
+      if (reminderTimestamp > 0) {
+        alarmID = await TaskReminderService.scheduleSingleReminder({
+          reminderTimestamp,
+          title: taskToBeUpdated.title,
+          description: taskToBeUpdated.description,
+        });
+
+        Logger.pageLogger('task.js:editTaskAddReminder:alarmID', {
+          alarmID,
+        });
+      }
       database.write(async () => {
         await database.get('tasks').create(task => {
           task.title = title;
@@ -173,6 +182,7 @@ export const createTask =
           task.startTimestamp = startTimestamp;
           task.endTimestamp = endTimestamp;
           task.reminderTimestamp = reminderTimestamp;
+          task.reminderID = alarmID;
           task.isRepeating = isRepeating;
         });
       });
@@ -183,48 +193,6 @@ export const createTask =
     } catch (error) {
       Logger.pageLogger('task.js:createTask:catch', {error});
       dispatch(createTaskState({loading: false, success: true, error}));
-    }
-  };
-
-export const editTask =
-  ({
-    id,
-    title,
-    noteID,
-    priority,
-    startTimestamp,
-    endTimestamp,
-    reminderTimestamp,
-    isRepeating,
-    isBookmarked,
-    isDone,
-  }) =>
-  async dispatch => {
-    dispatch(editTaskState({loading: true, success: false, error: null}));
-    try {
-      const taskToBeUpdated = await database.get('tasks').find(id);
-      Logger.pageLogger('task.js:editTask:taskToBeUpdated', {taskToBeUpdated});
-      database.write(async () => {
-        await taskToBeUpdated.update(task => {
-          task.title = title;
-          task.noteID = noteID;
-          task.isBookmarked = isBookmarked;
-          task.isDone = isDone;
-          task.priority = priority;
-          task.startTimestamp = startTimestamp;
-          task.endTimestamp = endTimestamp;
-          task.reminderTimestamp = reminderTimestamp;
-          task.isRepeating = isRepeating;
-        });
-      });
-
-      dispatch(editTaskState({loading: false, success: true, error: null}));
-
-      // dispatch(getTasks());
-      Logger.pageLogger('task.js:editTask:success');
-    } catch (error) {
-      Logger.pageLogger('task.js:editTask:catch', {error});
-      dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
 
@@ -484,43 +452,31 @@ export const editTaskAddReminder =
       });
       if (reminderTimestamp > 0) {
         if (taskToBeUpdated.reminderID) {
-          NotificationService.cancelNotification(taskToBeUpdated.reminderID);
+          Logger.pageLogger(
+            'task.js:editTaskAddReminder:removing existing reminder',
+          );
+          TaskReminderService.removeReminder({
+            alarmID: taskToBeUpdated.reminderID,
+          });
           Logger.pageLogger('task.js:editTaskAddReminder:cancel', {
             reminderID: taskToBeUpdated.reminderID,
           });
         }
-        const notificationID = Math.floor(Math.random() * 1000) + 1;
-        // NotificationService.scheduleTaskReminder({
-        //   notificationID,
-        //   timestamp: reminderTimestamp,
-        //   title: taskToBeUpdated.title,
-        //   taskID: taskToBeUpdated.id,
-        // });
-        const _d = new Date(reminderTimestamp);
-        const alarm = new Alarm({
-          uid: String(notificationID),
+        // TODO:Generate alarm ID from different method to avoid collision
+
+        const alarmID = await TaskReminderService.scheduleSingleReminder({
+          reminderTimestamp,
           title: taskToBeUpdated.title,
-          description:
-            taskToBeUpdated.description && taskToBeUpdated.description != ''
-              ? taskToBeUpdated.description
-              : `Reminder ${moment(reminderTimestamp)
-                  .calendar()
-                  .toString()
-                  .toLowerCase()}`,
-          year: _d.getFullYear(),
-          month: _d.getMonth(),
-          date: _d.getDate(),
-          hour: _d.getHours(),
-          minutes: _d.getMinutes(),
+          description: taskToBeUpdated.description,
         });
-        scheduleAlarm(alarm);
-        Logger.pageLogger('task.js:editTaskAddReminder:notificationID', {
-          notificationID,
+
+        Logger.pageLogger('task.js:editTaskAddReminder:alarmID', {
+          alarmID,
         });
         database.write(async () => {
           await taskToBeUpdated.update(task => {
             task.reminderTimestamp = reminderTimestamp;
-            task.reminderID = `${notificationID}`;
+            task.reminderID = `${alarmID}`;
           });
         });
       } else {
@@ -528,7 +484,9 @@ export const editTaskAddReminder =
           reminderID: taskToBeUpdated.reminderID,
         });
         if (taskToBeUpdated.reminderID) {
-          NotificationService.cancelNotification(taskToBeUpdated.reminderID);
+          TaskReminderService.removeReminder({
+            alarmID: taskToBeUpdated.reminderID,
+          });
           database.write(async () => {
             await taskToBeUpdated.update(task => {
               task.reminderTimestamp = 0;
@@ -561,7 +519,9 @@ export const editTaskRemoveReminder =
         Logger.pageLogger('task.js:editTaskRemoveReminder:cancel', {
           reminderID: taskToBeUpdated.reminderID,
         });
-        NotificationService.cancelNotification(taskToBeUpdated.reminderID);
+        TaskReminderService.removeReminder({
+          alarmID: taskToBeUpdated.reminderID,
+        });
       }
       database.write(async () => {
         await taskToBeUpdated.update(task => {
@@ -883,7 +843,7 @@ export const deleteMultipleTasks =
   };
 export const removePastReminders = () => async dispatch => {
   try {
-    const taskToBeUpdated = await database
+    const tasksToBeUpdated = await database
       .get('tasks')
       .query(
         Q.where(
@@ -893,12 +853,12 @@ export const removePastReminders = () => async dispatch => {
       )
       .fetch();
 
-    const notificationIDs = taskToBeUpdated?.map(task => task.reminderID);
-    NotificationService.cleanSelectedNotifications({ids: notificationIDs});
-    Logger.pageLogger('task.js:removePastReminders:taskToBeUpdated', {
-      taskToBeUpdated,
+    const alarmIDs = tasksToBeUpdated?.map(task => task.reminderID);
+    TaskReminderService.removeRemindersByIDs({alarmIDs});
+    Logger.pageLogger('task.js:removePastReminders:tasksToBeUpdated', {
+      tasksToBeUpdated,
     });
-    const batchUpdateRecords = taskToBeUpdated.map(task => {
+    const batchUpdateRecords = tasksToBeUpdated.map(task => {
       return task.prepareUpdate(t => {
         t.reminderTimestamp = 0;
         t.reminderID = '';

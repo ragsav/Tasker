@@ -1,51 +1,100 @@
 import {NativeModules} from 'react-native';
 
 import React from 'react';
+import {Logger} from '../utils/logger';
+import moment from 'moment';
 
 const AlarmService = NativeModules.AlarmModule;
-console.log({NativeModules});
-export async function scheduleAlarm(alarm) {
-  if (!(alarm instanceof Alarm)) {
-    alarm = new Alarm(alarm);
-  }
-  await AlarmService.set(alarm);
-  console.log('scheduling alarm: ', JSON.stringify(alarm));
-}
+export class TaskReminderService {
+  static scheduleSingleReminder = async ({
+    reminderTimestamp,
+    title,
+    description,
+  }) => {
+    const alarmID = String(Math.floor(Math.random() * 1000) + 1);
+    console.log({alarmID});
+    const _d = new Date(reminderTimestamp);
+    console.log({_d});
+    const alarm = new Alarm({
+      uid: alarmID,
+      title: title,
+      description:
+        description && String(description).length > 0
+          ? description
+          : `Reminder ${moment(reminderTimestamp)
+              .calendar()
+              .toString()
+              .toLowerCase()}`,
+      year: _d.getFullYear(),
+      month: _d.getMonth(),
+      date: _d.getDate(),
+      hour: _d.getHours(),
+      minutes: _d.getMinutes(),
+    });
+    console.log({alarm});
+    await NativeAlarmService.scheduleAlarm(alarm);
+    return alarmID;
+  };
 
-export async function stopAlarm() {
-  await AlarmService.stop();
-}
+  static removeReminder = async ({alarmID}) => {
+    await NativeAlarmService.stopAlarm();
+    await NativeAlarmService.removeAlarm(alarmID);
+  };
+  static removeRemindersByIDs = async ({alarmIDs}) => {
+    if (Array.isArray(alarmIDs) && alarmIDs.length > 0) {
+      alarmIDs.forEach(alarmID => {
+        this.removeAlarm({alarmID});
+      });
+    }
+  };
+  static getCurrentReminder = async () => {
+    const alarmID = await NativeAlarmService.getAlarmState();
+    const alarm = await NativeAlarmService.getAlarm(alarmID);
 
-export async function removeAlarm(uid) {
-  await AlarmService.remove(uid);
+    return new Alarm(alarm);
+  };
 }
+export class NativeAlarmService {
+  static scheduleAlarm = async alarm => {
+    if (!(alarm instanceof Alarm)) {
+      alarm = new Alarm(alarm);
+    }
+    await AlarmService.set(alarm);
+    Logger.pageLogger('NativeAlarmService:scheduleAlarm:alarm', alarm);
+  };
+  static stopAlarm = async () => {
+    await AlarmService.stop();
+  };
 
-export async function updateAlarm(alarm) {
-  if (!(alarm instanceof Alarm)) {
-    alarm = new Alarm(alarm);
-  }
-  await AlarmService.update(alarm);
+  static removeAlarm = async uid => {
+    await AlarmService.remove(uid);
+  };
+
+  static updateAlarm = async alarm => {
+    if (!(alarm instanceof Alarm)) {
+      alarm = new Alarm(alarm);
+    }
+    await AlarmService.update(alarm);
+  };
+
+  static removeAllAlarms = async () => {
+    await AlarmService.removeAll();
+  };
+
+  static getAllAlarms = async () => {
+    const alarms = await AlarmService.getAll();
+    return alarms;
+  };
+
+  static getAlarm = async uid => {
+    const alarm = await AlarmService.get(uid);
+    return new Alarm(alarm);
+  };
+
+  static getAlarmState = async () => {
+    return AlarmService.getState();
+  };
 }
-
-export async function removeAllAlarms() {
-  await AlarmService.removeAll();
-}
-
-export async function getAllAlarms() {
-  const alarms = await AlarmService.getAll();
-  console.log({alarms});
-  return alarms;
-}
-
-export async function getAlarm(uid) {
-  const alarm = await AlarmService.get(uid);
-  return new Alarm(alarm);
-}
-
-export async function getAlarmState() {
-  return AlarmService.getState();
-}
-
 export default class Alarm {
   constructor(params = null) {
     this.uid = getParam(params, 'uid', '3');
