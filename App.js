@@ -15,13 +15,9 @@ import Router from './js/components/Router';
 import {configureStore} from './js/redux/store';
 
 const store = configureStore();
-import NotificationService from './js/services/notifications';
 
 const App = () => {
   useEffect(() => {
-    NotificationService.createChannel();
-    NotificationService.getAllScheduledNotifications();
-    // NotificationService.cleanPastNotifications();
     RNBootSplash.hide();
   }, []);
   return (

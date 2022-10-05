@@ -19,7 +19,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String alarmUid = intent.getStringExtra("ALARM_UID");
         Log.d(TAG, "received alarm: " + alarmUid);
-        Toast.makeText(context, "received alarm: " + alarmUid, Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Tasker reminder", Toast.LENGTH_LONG).show();
 
         Intent serviceIntent = new Intent(context, AlarmService.class);
         serviceIntent.putExtra("ALARM_UID", alarmUid);

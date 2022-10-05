@@ -37,13 +37,15 @@ export class TaskReminderService {
   };
 
   static removeReminder = async ({alarmID}) => {
-    await NativeAlarmService.stopAlarm();
-    await NativeAlarmService.removeAlarm(alarmID);
+    const alarm = await NativeAlarmService.getAlarm(alarmID);
+    if (alarm) {
+      await NativeAlarmService.removeAlarm(alarmID);
+    }
   };
   static removeRemindersByIDs = async ({alarmIDs}) => {
     if (Array.isArray(alarmIDs) && alarmIDs.length > 0) {
       alarmIDs.forEach(alarmID => {
-        this.removeAlarm({alarmID});
+        this.removeReminder({alarmID});
       });
     }
   };
@@ -106,6 +108,17 @@ export default class Alarm {
     this.hour = getParam(params, 'hour', new Date().getHours());
     this.minutes = getParam(params, 'minutes', new Date().getMinutes() + 1);
   }
+
+  getDateObject = () => {
+    const time = new Date();
+    time.setFullYear(this.year);
+    time.setMonth(this.month);
+    time.setDate(this.date);
+    time.setHours(this.hour);
+    time.setMinutes(this.minutes);
+
+    return time;
+  };
 
   static getEmpty() {
     return new Alarm({

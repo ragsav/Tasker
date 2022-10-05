@@ -164,8 +164,7 @@ export const createTask =
       if (reminderTimestamp > 0) {
         alarmID = await TaskReminderService.scheduleSingleReminder({
           reminderTimestamp,
-          title: taskToBeUpdated.title,
-          description: taskToBeUpdated.description,
+          title,
         });
 
         Logger.pageLogger('task.js:editTaskAddReminder:alarmID', {

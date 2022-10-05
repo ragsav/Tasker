@@ -138,6 +138,7 @@ export const handleStorageWritePermissionUsingLibrary =
       if (Platform.OS === 'ios') {
         requestMultiple([PERMISSIONS.IOS.MEDIA_LIBRARY]).then(async result => {
           permission = await checkStorageWritePermission();
+          console.log(permission);
           dispatch(checkStorageWritePermissionState(false, permission));
         });
       } else if (Platform.OS === 'android') {
@@ -149,7 +150,7 @@ export const handleStorageWritePermissionUsingLibrary =
         );
       }
     }
-    dispatch(checkContactsPermissionState(false, permission));
+    dispatch(checkStorageWritePermissionState(false, permission));
   };
 
 export const handleCalendarPermissionUsingLibrary = () => async dispatch => {

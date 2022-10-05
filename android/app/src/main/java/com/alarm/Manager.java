@@ -52,10 +52,8 @@ public class Manager {
     }
 
     static void remove(Context context, String alarmUid) {
-        if (sound != null) {
-            sound.stop();
-        }
         Alarm alarm = Storage.getAlarm(context, alarmUid);
+        if(alarm==null) return;
         AlarmDate date = Storage.getDate(context, alarm.uid);
         Storage.removeAlarm(context, alarm.uid);
         Storage.removeDate(context, alarm.uid);
@@ -77,12 +75,14 @@ public class Manager {
 
     static void stop(Context context) {
         Log.d(TAG, "Stopping " + activeAlarmUid);
-
-        sound.stop();
+        if (sound != null) {
+            sound.stop();
+        }
+        
         Alarm alarm = Storage.getAlarm(context, activeAlarmUid);
+        if(alarm==null) return;
         AlarmDate date = Storage.getDate(context, activeAlarmUid);
-        Storage.saveAlarm(context, alarm);
-        Storage.removeDate(context, activeAlarmUid);
+        Manager.remove(context,activeAlarmUid);
         activeAlarmUid = null;
     }
 
