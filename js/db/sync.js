@@ -8,7 +8,19 @@ import RNFS from 'react-native-fs';
 import Label from './models/Label';
 import Note from './models/Note';
 import Task from './models/Task';
+import {CONSTANTS} from '../../constants';
 export class WTDBSync {
+  /**
+   *
+   * @param {object} raw
+   * @param {Collection} collection
+   * @returns
+   */
+  static _backupToPrepareCreate = (raw, collection) => {
+    return database.collections.get(collection.table).prepareCreate(label => {
+      label._raw = sanitizedRaw({...raw}, collection.schema);
+    });
+  };
   static _prepareCreateFromDirtyRaw(collection, dirtyRaw) {
     const sanitized = sanitizedRaw(dirtyRaw, collection.schema);
     const record = new Model(collection, sanitized);
@@ -54,16 +66,21 @@ export class WTDBSync {
       );
       const promiseRecords = [];
       const recordsData = {};
+
       tables.forEach(table => {
         promiseRecords.push(database.collections.get(table).query().fetch());
       });
 
       const resolvedRecords = await Promise.all(promiseRecords);
+      Logger.pageLogger('WTDBSync:fetchAllLocalRecords:resolvedRecords', {
+        resolvedRecords,
+      });
       resolvedRecords.forEach((records, index) => {
         recordsData[tables[index]] = records.map(record => {
-          return {...record._raw};
+          return {...record._raw, _changed: null, _status: null};
         });
       });
+
       Logger.pageLogger('WTDBSync:fetchAllLocalRecords:recordsData', {
         recordsData,
       });
@@ -80,6 +97,7 @@ export class WTDBSync {
 
   static loadDatabase = async ({setIsLoading, recordsData}) => {
     try {
+      if (typeof recordsData != 'object') return;
       setIsLoading?.(true);
       await database.write(async () => {
         await database.unsafeResetDatabase();
@@ -89,19 +107,36 @@ export class WTDBSync {
       // now batch the complete recreation of database
 
       Logger.pageLogger('WTDBSync:loadDatabase:recordsData', recordsData);
-      var batch = [];
-      Object.keys(recordsData).forEach(table => {
-        const _localBatch = this.prepareCreateCollectionWise(
-          table,
-          recordsData[table],
-        );
-        console.log({_localBatch, table});
-        batch = batch.concat(_localBatch);
+
+      const prepareCreateRecords = [];
+      Object.keys(recordsData).forEach(tableName => {
+        const collection = database.collections.get(tableName);
+        console.log(collection.table);
+        const tableRecords = recordsData[tableName];
+
+        if (
+          tableRecords &&
+          Array.isArray(tableRecords) &&
+          tableRecords.length > 0
+        ) {
+          tableRecords.forEach(record => {
+            const preparedBatchRecord = this._backupToPrepareCreate(
+              record,
+              collection,
+            );
+            prepareCreateRecords.push(preparedBatchRecord);
+          });
+        }
       });
+      Logger.pageLogger(
+        'WTDBSync:loadDatabase:prepareCreateRecords',
+        prepareCreateRecords,
+      );
 
       await database.write(async () => {
-        await database.batch(...batch);
+        await database.batch(...prepareCreateRecords);
       });
+
       Logger.pageLogger('WTDBSync:loadDatabase:success');
       setIsLoading?.(false);
     } catch (error) {

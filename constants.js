@@ -5,6 +5,11 @@ export const CONSTANTS = Object.freeze({
   DAILY_REMINDER_ID: 1023,
   NOTIFICATION_CLEAR_DELAY_BUFFER: 15 * 60 * 1000,
 
+  TABLE_NAMES: {
+    LABELS: 'labels',
+    NOTES: 'notes',
+    TASKS: 'tasks',
+  },
   ROUTES: {
     HOME: 'HOME',
     INTRO: 'INTRO',

@@ -12,6 +12,7 @@ import {
 } from 'react-native-paper';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
+import {database} from '../db/db';
 import Task from '../db/models/Task';
 import {
   editTaskIsArchived,
@@ -265,7 +266,7 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch, note}) => {
             {task.description}
           </Paragraph>
         )}
-        {_renderNoteDetails(task.isArchived || task.isMarkedDeleted)}
+        {note && _renderNoteDetails(task.isArchived || task.isMarkedDeleted)}
         {_renderArchiveTime()}
         {_renderDeletionTime()}
         {_renderDoneTime(!task.isArchived && !task.isMarkedDeleted)}

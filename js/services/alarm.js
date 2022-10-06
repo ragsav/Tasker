@@ -43,6 +43,7 @@ export class TaskReminderService {
     }
   };
   static removeRemindersByIDs = async ({alarmIDs}) => {
+    //TODO: this step throughs error in runtime
     if (Array.isArray(alarmIDs) && alarmIDs.length > 0) {
       alarmIDs.forEach(alarmID => {
         this.removeReminder({alarmID});

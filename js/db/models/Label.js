@@ -8,6 +8,8 @@ import {
   date,
   readonly,
 } from '@nozbe/watermelondb/decorators';
+import {sanitizedRaw} from '@nozbe/watermelondb/RawRecord';
+import {CONSTANTS} from '../../../constants';
 import {database} from '../db';
 
 export default class Label extends Model {
@@ -29,14 +31,14 @@ export default class Label extends Model {
   @children('notes') notes;
 
   static _backupToPrepareCreate = raw => {
-    return database.collections.get('notes').prepareCreate(label => {
-      label.id = raw.id;
-      label.title = raw.title;
-      label.iconString = raw.icon_string;
-      label.isArchived = raw.is_archived;
-      label.archiveTimestamp = raw.archive_timestamp;
-      label.isMarkedDeleted = raw.is_marked_deleted;
-      label.markedDeletedTimestamp = raw.marked_deleted_timestamp;
-    });
+    const collection = database.collections.get(CONSTANTS.TABLE_NAMES.LABELS);
+    return database.collections
+      .get(CONSTANTS.TABLE_NAMES.LABELS)
+      .prepareCreate(label => {
+        label._raw = sanitizedRaw({...raw}, collection.schema);
+      });
+  };
+  static _jsonDataForBackup = raw => {
+    return {...raw, _changed: null, _status: null};
   };
 }

@@ -10,6 +10,8 @@ import {
   reader,
   lazy,
 } from '@nozbe/watermelondb/decorators';
+import {sanitizedRaw} from '@nozbe/watermelondb/RawRecord';
+import {CONSTANTS} from '../../../constants';
 import {database} from '../db';
 export default class Task extends Model {
   static table = 'tasks';
@@ -44,26 +46,12 @@ export default class Task extends Model {
   @relation('notes', 'note_id') note;
 
   static _backupToPrepareCreate = raw => {
+    const collection = database.collections.get(CONSTANTS.TABLE_NAMES.TASKS);
     return database.collections.get('tasks').prepareCreate(task => {
-      task.id = raw.id;
-      task.title = raw.title;
-      task.description = raw.description;
-      task.imageURIs = raw.image_uris;
-      task.noteID = raw.note_id;
-      task.isBookmarked = raw.is_bookmarked;
-      task.isDone = raw.is_done;
-      task.doneTimestamp = raw.done_timestamp;
-      task.priority = raw.priority;
-      task.startTimestamp = raw.start_timestamp;
-      task.endTimestamp = raw.end_timestamp;
-      task.reminderTimestamp = raw.reminder_timestamp;
-      task.reminderID = raw.reminder_id;
-      task.isRepeating = raw.is_repeating;
-      task.isArchived = raw.is_archived;
-      task.archiveTimestamp = raw.archive_timestamp;
-      task.isMarkedDeleted = raw.is_marked_deleted;
-      task.markedDeletedTimestamp = raw.marked_deleted_timestamp;
-      task.repeatCron = raw.repeat_cron;
+      task._raw = sanitizedRaw({...raw}, collection.schema);
     });
+  };
+  static _jsonDataForBackup = raw => {
+    return {...raw, _changed: null, _status: null};
   };
 }

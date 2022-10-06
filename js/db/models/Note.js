@@ -9,6 +9,8 @@ import {
   readonly,
   lazy,
 } from '@nozbe/watermelondb/decorators';
+import {sanitizedRaw} from '@nozbe/watermelondb/RawRecord';
+import {CONSTANTS} from '../../../constants';
 import {database} from '../db';
 export default class Note extends Model {
   static table = 'notes';
@@ -32,16 +34,14 @@ export default class Note extends Model {
   @children('tasks') tasks;
 
   static _backupToPrepareCreate = raw => {
-    return database.collections.get('notes').prepareCreate(note => {
-      note.id = raw.id;
-      note.title = raw.title;
-      note.description = raw.description;
-      note.colorString = raw.color_string;
-      note.labelID = raw.label_id;
-      note.isArchived = raw.is_archived;
-      note.archiveTimestamp = raw.archive_timestamp;
-      note.isMarkedDeleted = raw.is_marked_deleted;
-      note.markedDeletedTimestamp = raw.marked_deleted_timestamp;
-    });
+    const collection = database.collections.get(CONSTANTS.TABLE_NAMES.NOTES);
+    return database.collections
+      .get(CONSTANTS.TABLE_NAMES.NOTES)
+      .prepareCreate(note => {
+        note._raw = sanitizedRaw({...raw}, collection.schema);
+      });
+  };
+  static _jsonDataForBackup = raw => {
+    return {...raw, _changed: null, _status: null};
   };
 }
