@@ -87,13 +87,13 @@ const BackupConfigScreen = ({
           titleStyle={{fontWeight: '600', color: theme?.colors.onSurface}}
           descriptionNumberOfLines={5}
           description={
-            lastBackupTimeStamp === 0
-              ? `Backup of present tasks and notes can be downloaded and saved for future use. Backup will be stored at ${
-                  RNFS.DownloadDirectoryPath + '/backup.json'
-                }`
-              : `Last complete backup ${moment(lastBackupTimeStamp)
+            lastBackupTimeStamp
+              ? `Last complete backup ${moment(lastBackupTimeStamp)
                   .calendar()
                   .toString()}`
+              : `Backup of present tasks and notes can be downloaded and saved for future use. Backup will be stored at ${
+                  RNFS.DownloadDirectoryPath + '/backup.json'
+                }`
           }
           left={props => <List.Icon icon={'folder-download'} />}
         />
@@ -103,11 +103,11 @@ const BackupConfigScreen = ({
           titleStyle={{fontWeight: '600', color: theme?.colors.onSurface}}
           descriptionNumberOfLines={5}
           description={
-            lastRestoreTimeStamp === 0
-              ? `If backup is present on device then it can be restored.Click to pick a json backup file`
-              : `Last complete restore ${moment(lastRestoreTimeStamp)
+            lastRestoreTimeStamp
+              ? `Last complete restore ${moment(lastRestoreTimeStamp)
                   .calendar()
                   .toString()}`
+              : `If backup is present on device then it can be restored.Click to pick a json backup file`
           }
           left={props => <List.Icon icon={'backup-restore'} />}
         />
@@ -117,8 +117,8 @@ const BackupConfigScreen = ({
 };
 const mapStateToProps = state => {
   return {
-    lastBackupTimeStamp: state.settings.lastBackupTimeStamp,
-    lastRestoreTimeStamp: state.settings.lastRestoreTimeStamp,
+    lastBackupTimeStamp: state.backup.lastBackupTimeStamp,
+    lastRestoreTimeStamp: state.backup.lastRestoreTimeStamp,
   };
 };
 export default connect(mapStateToProps)(BackupConfigScreen);
