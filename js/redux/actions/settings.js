@@ -5,15 +5,9 @@ import {Storage} from '../../utils/asyncStorage';
 export const CHANGE_THEME = 'CHANGE_THEME';
 export const CHANGE_QUICK_LIST_SETTINGS = 'CHANGE_QUICK_LIST_SETTINGS';
 export const CHANGE_DAILY_REMINDER_SETTINGS = 'CHANGE_DAILY_REMINDER_SETTINGS';
-export const CHANGE_LAST_BACKUP_TIME = 'CHANGE_LAST_BACKUP_TIME';
 export const CHANGE_RENDER_URL_IN_TASK_SETTINGS =
   'CHANGE_RENDER_URL_IN_TASK_SETTINGS';
-export const setLastBackupTimeState = ({timestamp}) => {
-  return {
-    type: CHANGE_LAST_BACKUP_TIME,
-    lastbackupTimeStamp: timestamp,
-  };
-};
+
 export const setThemeState = ({theme}) => {
   return {
     type: CHANGE_THEME,
@@ -41,15 +35,7 @@ export const setDailyReminderSettingState = ({dailyReminderTimestamp}) => {
     dailyReminderTimestamp,
   };
 };
-export const setLastBackupTime =
-  ({timestamp}) =>
-  async dispatch => {
-    Storage.storeData(
-      CONSTANTS.LOCAL_STORAGE_KEYS.LAST_BACKUP_TIMESTAMP,
-      timestamp,
-    );
-    dispatch(setLastBackupTimeState({timestamp}));
-  };
+
 export const setTheme =
   ({theme}) =>
   async dispatch => {

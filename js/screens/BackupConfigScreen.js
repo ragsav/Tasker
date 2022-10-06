@@ -15,19 +15,20 @@ import {
   List,
   useTheme,
 } from 'react-native-paper';
-import RNSettings from 'react-native-settings';
+
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {connect} from 'react-redux';
-import {
-  handleCalendarPermissionUsingLibrary,
-  setLastBackupTime,
-} from '../redux/actions';
+import {backupDB, restoreDB} from '../redux/actions';
 import {useNavigation} from '@react-navigation/native';
 import RNFS from 'react-native-fs';
-import {WTDBSync} from '../db/sync';
+import {WTDBBackup} from '../db/sync';
 import moment from 'moment';
 const BOTTOM_APPBAR_HEIGHT = 64;
-const BackupConfigScreen = ({dispatch, lastBackupTimestamp}) => {
+const BackupConfigScreen = ({
+  dispatch,
+  lastBackupTimeStamp,
+  lastRestoreTimeStamp,
+}) => {
   // ref
 
   // variables
@@ -44,17 +45,11 @@ const BackupConfigScreen = ({dispatch, lastBackupTimestamp}) => {
 
   // handle functions
   const _handleDownloadBackup = () => {
-    WTDBSync.fetchAllLocalRecords({
-      successCallback: () => {
-        dispatch(setLastBackupTime({timestamp: Date.now()}));
-      },
-    });
+    dispatch(backupDB());
   };
 
   const _handleOpenBackupFile = async () => {
-    const path = RNFS.DownloadDirectoryPath + '/backup.json';
-    const file = await RNFS.readFile(path, 'utf8');
-    WTDBSync.loadDatabase({recordsData: JSON.parse(file)});
+    dispatch(restoreDB());
   };
 
   // navigation functions
@@ -92,11 +87,11 @@ const BackupConfigScreen = ({dispatch, lastBackupTimestamp}) => {
           titleStyle={{fontWeight: '600', color: theme?.colors.onSurface}}
           descriptionNumberOfLines={5}
           description={
-            lastBackupTimestamp === 0
+            lastBackupTimeStamp === 0
               ? `Backup of present tasks and notes can be downloaded and saved for future use. Backup will be stored at ${
                   RNFS.DownloadDirectoryPath + '/backup.json'
                 }`
-              : `Last complete backup ${moment(lastBackupTimestamp)
+              : `Last complete backup ${moment(lastBackupTimeStamp)
                   .calendar()
                   .toString()}`
           }
@@ -107,9 +102,13 @@ const BackupConfigScreen = ({dispatch, lastBackupTimestamp}) => {
           onPress={_handleOpenBackupFile}
           titleStyle={{fontWeight: '600', color: theme?.colors.onSurface}}
           descriptionNumberOfLines={5}
-          description={`If backup is present on device then it can be restored. Backup can be restored from ${
-            RNFS.DownloadDirectoryPath + '/backup.json'
-          }`}
+          description={
+            lastRestoreTimeStamp === 0
+              ? `If backup is present on device then it can be restored.Click to pick a json backup file`
+              : `Last complete restore ${moment(lastRestoreTimeStamp)
+                  .calendar()
+                  .toString()}`
+          }
           left={props => <List.Icon icon={'backup-restore'} />}
         />
       </ScrollView>
@@ -118,7 +117,8 @@ const BackupConfigScreen = ({dispatch, lastBackupTimestamp}) => {
 };
 const mapStateToProps = state => {
   return {
-    lastBackupTimestamp: state.settings.lastBackupTimestamp,
+    lastBackupTimeStamp: state.settings.lastBackupTimeStamp,
+    lastRestoreTimeStamp: state.settings.lastRestoreTimeStamp,
   };
 };
 export default connect(mapStateToProps)(BackupConfigScreen);

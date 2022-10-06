@@ -15,8 +15,7 @@ import {
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {_customDarkTheme, _customLightTheme} from '../../themes';
-import {database} from '../db/db';
-import {WTDBSync} from '../db/sync';
+
 import {
   setDailyReminderSetting,
   setQuickListSettings,
@@ -43,7 +42,6 @@ const Settings = ({
     useState(false);
 
   // states
-  const [dbChanges, setDBChanges] = useState();
 
   // effects
   useFocusEffect(

@@ -9,7 +9,7 @@ import Label from './models/Label';
 import Note from './models/Note';
 import Task from './models/Task';
 import {CONSTANTS} from '../../constants';
-export class WTDBSync {
+export class WTDBBackup {
   /**
    *
    * @param {object} raw
@@ -21,47 +21,13 @@ export class WTDBSync {
       label._raw = sanitizedRaw({...raw}, collection.schema);
     });
   };
-  static _prepareCreateFromDirtyRaw(collection, dirtyRaw) {
-    const sanitized = sanitizedRaw(dirtyRaw, collection.schema);
-    const record = new Model(collection, sanitized);
-    record._preparedState = 'create';
-    return record;
-  }
-  static prepareCreateCollectionWise = (table, records) => {
-    // console.log({table, records});
-    const collection = database.collections.get(table);
-
-    const batch = [];
-    records.forEach(dirtyRaw => {
-      let batchItem;
-      if (collection.table === 'labels') {
-        batchItem = Label._backupToPrepareCreate(
-          sanitizedRaw(dirtyRaw, collection.schema),
-        );
-      }
-      if (collection.table === 'notes') {
-        batchItem = Note._backupToPrepareCreate(
-          sanitizedRaw(dirtyRaw, collection.schema),
-        );
-      }
-      if (collection.table === 'tasks') {
-        batchItem = Task._backupToPrepareCreate(
-          sanitizedRaw(dirtyRaw, collection.schema),
-        );
-      }
-      console.log({batchItem});
-      batch.push(batchItem);
-    });
-    // console.log({table, batch});
-    return batch;
-  };
 
   static fetchAllLocalRecords = async ({setIsLoading, successCallback}) => {
     try {
       setIsLoading?.(true);
       const tables = Object.keys(database.collections.map);
       Logger.pageLogger(
-        'WTDBSync:fetchAllLocalRecords:tables retrieved',
+        'WTDBBackup:fetchAllLocalRecords:tables retrieved',
         tables,
       );
       const promiseRecords = [];
@@ -72,7 +38,7 @@ export class WTDBSync {
       });
 
       const resolvedRecords = await Promise.all(promiseRecords);
-      Logger.pageLogger('WTDBSync:fetchAllLocalRecords:resolvedRecords', {
+      Logger.pageLogger('WTDBBackup:fetchAllLocalRecords:resolvedRecords', {
         resolvedRecords,
       });
       resolvedRecords.forEach((records, index) => {
@@ -81,7 +47,7 @@ export class WTDBSync {
         });
       });
 
-      Logger.pageLogger('WTDBSync:fetchAllLocalRecords:recordsData', {
+      Logger.pageLogger('WTDBBackup:fetchAllLocalRecords:recordsData', {
         recordsData,
       });
       const path = RNFS.DownloadDirectoryPath + '/backup.json';
@@ -90,12 +56,16 @@ export class WTDBSync {
       successCallback?.();
       return recordsData;
     } catch (error) {
-      Logger.pageLogger('WTDBSync:fetchAllLocalRecords:catch', error);
+      Logger.pageLogger('WTDBBackup:fetchAllLocalRecords:catch', error);
       setIsLoading?.(false);
     }
   };
 
-  static loadDatabase = async ({setIsLoading, recordsData}) => {
+  static loadDatabase = async ({
+    setIsLoading,
+    recordsData,
+    successCallback,
+  }) => {
     try {
       if (typeof recordsData != 'object') return;
       setIsLoading?.(true);
@@ -103,10 +73,10 @@ export class WTDBSync {
         await database.unsafeResetDatabase();
       });
 
-      Logger.pageLogger('WTDBSync:loadDatabase:database reset');
+      Logger.pageLogger('WTDBBackup:loadDatabase:database reset');
       // now batch the complete recreation of database
 
-      Logger.pageLogger('WTDBSync:loadDatabase:recordsData', recordsData);
+      Logger.pageLogger('WTDBBackup:loadDatabase:recordsData', recordsData);
 
       const prepareCreateRecords = [];
       Object.keys(recordsData).forEach(tableName => {
@@ -129,7 +99,7 @@ export class WTDBSync {
         }
       });
       Logger.pageLogger(
-        'WTDBSync:loadDatabase:prepareCreateRecords',
+        'WTDBBackup:loadDatabase:prepareCreateRecords',
         prepareCreateRecords,
       );
 
@@ -137,10 +107,11 @@ export class WTDBSync {
         await database.batch(...prepareCreateRecords);
       });
 
-      Logger.pageLogger('WTDBSync:loadDatabase:success');
+      Logger.pageLogger('WTDBBackup:loadDatabase:success');
       setIsLoading?.(false);
+      successCallback?.();
     } catch (error) {
-      Logger.pageLogger('WTDBSync:loadDatabase:catch', error);
+      Logger.pageLogger('WTDBBackup:loadDatabase:catch', error);
       setIsLoading?.(false);
     }
     // first clear the database

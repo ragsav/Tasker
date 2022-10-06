@@ -6,6 +6,8 @@ import permission from './permission';
 import timeFrame from './timeFrame';
 import settings from './settings';
 import taskSort from './taskSort';
+import backup from './backup';
+
 export default combineReducers({
   permission,
   label,
@@ -14,4 +16,5 @@ export default combineReducers({
   timeFrame,
   settings,
   taskSort,
+  backup,
 });

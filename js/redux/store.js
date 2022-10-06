@@ -5,6 +5,7 @@ import {
   removePastReminders,
   setDailyReminderSetting,
   setLastBackupTime,
+  setLastRestoreTime,
   setQuickListSettings,
   setRenderURLInTaskSettings,
   setTaskSortOrder,
@@ -81,6 +82,16 @@ export const configureStore = persistedState => {
         store.dispatch(setLastBackupTime({timestamp}));
       } else {
         store.dispatch(setLastBackupTime({timestamp: 0}));
+      }
+    },
+  );
+  Storage.getData(CONSTANTS.LOCAL_STORAGE_KEYS.LAST_RESTORE_TIMESTAMP).then(
+    timestamp => {
+      Logger.pageLogger('Storage.getData:LAST_RESTORE_TIMESTAMP', {timestamp});
+      if (timestamp && timestamp != 0) {
+        store.dispatch(setLastRestoreTime({timestamp}));
+      } else {
+        store.dispatch(setLastRestoreTime({timestamp: 0}));
       }
     },
   );

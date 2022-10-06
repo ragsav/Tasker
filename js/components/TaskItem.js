@@ -278,6 +278,7 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch, note}) => {
 
 const enhanceTask = withObservables(['task'], ({task}) => ({
   task,
+  //TODO: if note is not present this throughs error. some solution is needed
   note: task.note,
 }));
 
