@@ -383,7 +383,7 @@ const TaskScreen = ({
           left={props => (
             <List.Icon
               {...props}
-              icon={task.isDone ? 'checkbox-marked' : 'checkbox-blank-outline'}
+              icon={task.isDone ? 'radiobox-marked' : 'radiobox-blank'}
               color={theme.colors.onSurface}
             />
           )}
