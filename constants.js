@@ -3,7 +3,7 @@ export const CONSTANTS = Object.freeze({
     'Tasker-Notifications-dc5ee189-65a6-48a7-9ae6-b0ec9d067825',
 
   DAILY_REMINDER_ID: 1023,
-  NOTIFICATION_CLEAR_DELAY_BUFFER: 15 * 60 * 1000,
+  NOTIFICATION_CLEAR_DELAY_BUFFER: 1 * 60 * 1000,
 
   TABLE_NAMES: {
     LABELS: 'labels',

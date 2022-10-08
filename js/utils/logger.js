@@ -10,9 +10,9 @@ export class Logger {
     }
     const _s = String(page);
     if (_s.includes('error') || _s.includes('catch')) {
-      log.warn(_s, obj);
+      obj ? log.warn(_s, obj) : log.warn(_s);
     } else {
-      log.info(_s, obj);
+      obj ? log.info(_s, obj) : log.info(_s);
     }
   };
 }

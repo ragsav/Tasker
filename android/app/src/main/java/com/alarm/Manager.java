@@ -73,16 +73,28 @@ public class Manager {
         Log.d(TAG, "Starting " + activeAlarmUid);
     }
 
+    // static void stop(Context context) {
+    //     Log.d(TAG, "Stopping " + activeAlarmUid);
+    //     if (sound != null) {
+    //         sound.stop();
+    //     }
+        
+    //     Alarm alarm = Storage.getAlarm(context, activeAlarmUid);
+    //     if(alarm==null) return;
+    //     AlarmDate date = Storage.getDate(context, activeAlarmUid);
+    //     // Manager.remove(context,activeAlarmUid);
+    //     activeAlarmUid = null;
+    // }
     static void stop(Context context) {
         Log.d(TAG, "Stopping " + activeAlarmUid);
+
         if (sound != null) {
             sound.stop();
         }
-        
         Alarm alarm = Storage.getAlarm(context, activeAlarmUid);
-        if(alarm==null) return;
         AlarmDate date = Storage.getDate(context, activeAlarmUid);
-        Manager.remove(context,activeAlarmUid);
+        Storage.saveAlarm(context, alarm);
+        Storage.removeDate(context, activeAlarmUid);
         activeAlarmUid = null;
     }
 

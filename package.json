@@ -19,6 +19,7 @@
     "@react-navigation/native": "^6.0.11",
     "@react-navigation/native-stack": "^6.7.0",
     "@react-navigation/stack": "^6.2.3",
+    "base-64": "^1.0.0",
     "calendarize": "^1.1.1",
     "extract-urls": "^1.3.2",
     "link-preview-js": "^3.0.4",
@@ -56,6 +57,7 @@
     "react-redux": "^8.0.2",
     "redux": "^4.2.0",
     "redux-thunk": "^2.4.1",
+    "rn-fetch-blob": "^0.12.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

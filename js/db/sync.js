@@ -9,6 +9,9 @@ import Label from './models/Label';
 import Note from './models/Note';
 import Task from './models/Task';
 import {CONSTANTS} from '../../constants';
+import RNFetchBlob from 'rn-fetch-blob';
+import {Share} from 'react-native';
+import {decode as atob, encode as btoa} from 'base-64';
 export class WTDBBackup {
   /**
    *
@@ -50,6 +53,7 @@ export class WTDBBackup {
       Logger.pageLogger('WTDBBackup:fetchAllLocalRecords:recordsData', {
         recordsData,
       });
+
       const path = RNFS.DownloadDirectoryPath + '/backup.json';
       await RNFS.writeFile(path, JSON.stringify(recordsData), 'utf8');
       setIsLoading?.(false);
