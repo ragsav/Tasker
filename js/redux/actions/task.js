@@ -387,6 +387,30 @@ export const editTaskIsDone =
       dispatch(editTaskState({loading: false, success: true, error}));
     }
   };
+export const editTaskIsPinned =
+  ({id, isPinned}) =>
+  async dispatch => {
+    dispatch(editTaskState({loading: true, success: false, error: null}));
+    try {
+      const taskToBeUpdated = await database.get('tasks').find(id);
+      Logger.pageLogger('task.js:editTaskIsPinned:taskToBeUpdated', {
+        taskToBeUpdated,
+      });
+      database.write(async () => {
+        await taskToBeUpdated.update(task => {
+          task.isPinned = isPinned;
+        });
+      });
+
+      dispatch(editTaskState({loading: false, success: true, error: null}));
+
+      // dispatch(getTasks());
+      Logger.pageLogger('task.js:editTaskIsPinned:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:editTaskIsPinned:catch', {error});
+      dispatch(editTaskState({loading: false, success: true, error}));
+    }
+  };
 export const editTaskEndTimestamp =
   ({id, endTimestamp}) =>
   async dispatch => {

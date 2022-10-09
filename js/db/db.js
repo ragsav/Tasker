@@ -2,14 +2,14 @@ import {Database} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {xpenseDBMigration} from './migration';
 
-import {xpenserSchema} from './schema';
+import {taskerSchema} from './schema';
 import Task from './models/Task';
 import Note from './models/Note';
 import Label from './models/Label';
 const adapter = new SQLiteAdapter({
-  schema: xpenserSchema,
+  schema: taskerSchema,
 
-  dbName: 'xnoteDB', // optional database name or file system path
+  dbName: 'taskerDB', // optional database name or file system path
   // migrations, // optional migrations
   jsi: false,
 });

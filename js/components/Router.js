@@ -31,8 +31,29 @@ import ArchivedTasksScreen from '../screens/ArchivedTasksScreen';
 import ArchivedNotesScreen from '../screens/ArchivedNotesScreen';
 import DeletedTasksScreen from '../screens/DeletedTasksScreen';
 import BackupConfigScreen from '../screens/BackupConfigScreen';
-const Stack = createStackNavigator();
-
+import PinScreen from '../screens/PinScreen';
+import {createSharedElementStackNavigator} from 'react-navigation-shared-element';
+// const Stack = createStackNavigator();
+const Stack = createSharedElementStackNavigator();
+const opacityTransition = {
+  gestureDirection: 'horizontal', // we will swipe right if we want to close the screen;
+  transitionSpec: {
+    open: {
+      animation: 'timing',
+    },
+    close: {
+      animation: 'timing',
+      config: {
+        duration: 200,
+      },
+    },
+  },
+  cardStyleInterpolator: ({current}) => ({
+    cardStyle: {
+      opacity: current.progress,
+    }, // updates the opacity depending on the transition progress value of the current screen
+  }),
+};
 const Router = ({theme}) => {
   // ref
 
@@ -66,10 +87,17 @@ const Router = ({theme}) => {
         <NavigationContainer theme={theme} onReady={() => RNBootSplash.hide()}>
           <Stack.Navigator
             initialRouteName={CONSTANTS.ROUTES.HOME}
-            screenOptions={{...TransitionPresets.SlideFromRightIOS}}>
+            screenOptions={{...TransitionPresets.ScaleFromCenterAndroid}}>
             <Stack.Screen
               name={CONSTANTS.ROUTES.HOME}
               component={Home}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.PINNED_NOTES}
+              component={PinScreen}
               options={{
                 headerShown: false,
               }}
@@ -97,6 +125,10 @@ const Router = ({theme}) => {
             <Stack.Screen
               name={CONSTANTS.ROUTES.NOTE}
               component={NoteScreen}
+              sharedElements={(route, otherRoute, showing) => {
+                const {p_id} = route.params;
+                return [`note.${p_id}.hero`];
+              }}
               options={{headerShown: false}}
             />
             <Stack.Screen

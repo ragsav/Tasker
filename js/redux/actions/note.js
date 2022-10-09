@@ -237,7 +237,31 @@ export const editNoteIsArchived =
       dispatch(editNoteState({loading: false, success: true, error}));
     }
   };
+export const editNoteIsPinned =
+  ({id, isPinned}) =>
+  async dispatch => {
+    dispatch(editNoteState({loading: true, success: false, error: null}));
+    try {
+      const noteToBeUpdated = await database.get('notes').find(id);
+      Logger.pageLogger('task.js:editNoteIsPinned:noteToBeUpdated', {
+        noteToBeUpdated,
+      });
 
+      await database.write(async () => {
+        await noteToBeUpdated.update(note => {
+          note.isPinned = isPinned;
+        });
+      });
+
+      dispatch(editNoteState({loading: false, success: true, error: null}));
+
+      // dispatch(getNotes());
+      Logger.pageLogger('task.js:editNoteIsPinned:success');
+    } catch (error) {
+      Logger.pageLogger('task.js:editNoteIsPinned:catch', {error});
+      dispatch(editNoteState({loading: false, success: true, error}));
+    }
+  };
 export const deleteNote =
   ({id}) =>
   async dispatch => {

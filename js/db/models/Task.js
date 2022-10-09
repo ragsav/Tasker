@@ -24,6 +24,7 @@ export default class Task extends Model {
   @text('image_uris') imageURIs;
   @text('note_id') noteID;
   @field('is_bookmarked') isBookmarked;
+  @field('is_pinned') isPinned;
   @field('is_done') isDone;
   @date('done_timestamp') doneTimestamp;
 

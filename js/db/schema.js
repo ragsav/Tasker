@@ -1,7 +1,7 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
-export const xpenserSchema = appSchema({
-  version: 18,
+export const taskerSchema = appSchema({
+  version: 20,
   tables: [
     tableSchema({
       name: 'labels',
@@ -23,6 +23,7 @@ export const xpenserSchema = appSchema({
         {name: 'description', type: 'string', isOptional: true},
         {name: 'note_id', type: 'string'},
         {name: 'is_bookmarked', type: 'boolean'},
+        {name: 'is_pinned', type: 'boolean', isOptional: true},
         {name: 'is_done', type: 'boolean'},
         {name: 'done_timestamp', type: 'number', isOptional: true},
         {name: 'priority', type: 'number'},
@@ -51,6 +52,7 @@ export const xpenserSchema = appSchema({
         {name: 'color_string', type: 'string', isOptional: true},
         {name: 'label_id', type: 'string'},
         {name: 'is_archived', type: 'boolean', isOptional: true},
+        {name: 'is_pinned', type: 'boolean', isOptional: true},
         {name: 'archive_timestamp', type: 'number', isOptional: true},
         {name: 'is_marked_deleted', type: 'boolean', isOptional: true},
         {name: 'marked_deleted_timestamp', type: 'number', isOptional: true},

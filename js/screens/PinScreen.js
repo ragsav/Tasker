@@ -19,14 +19,17 @@ import {
   useTheme,
 } from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {FlatGrid} from 'react-native-super-grid';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {EmptyTasks} from '../components/EmptyTasks';
 import {EnhancedLabelItem} from '../components/LabelItem';
 import EnhancedNoteItem from '../components/NoteItem';
+import PinnedNoteItem from '../components/PinnedNoteItem';
 import {database} from '../db/db';
 import Label from '../db/models/Label';
 import Note from '../db/models/Note';
+import MasonryList from '@react-native-seoul/masonry-list';
 import {
   deleteLabel,
   resetDeleteLabelState,
@@ -42,7 +45,13 @@ const BOTTOM_APPBAR_HEIGHT = 64;
  * @param {Array<Note>} param0.notes
  * @returns
  */
-const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
+const PinScreen = ({
+  navigation,
+  dispatch,
+  labels,
+  notes,
+  quickListSettings,
+}) => {
   // ref
 
   // variables
@@ -64,6 +73,9 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
   // callbacks
 
   // render functions
+  const _renderPinnedNoteItem = ({item}) => {
+    return <PinnedNoteItem note={item} />;
+  };
 
   // handle functions
   const _handleDeleteLabel = id => {
@@ -74,6 +86,17 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
   };
 
   // navigation functions
+
+  const _navigateBack = () => {
+    navigation?.pop();
+  };
+
+  const _navigateHome = () => {
+    navigation?.reset({
+      index: 0,
+      routes: [{name: CONSTANTS.ROUTES.HOME}],
+    });
+  };
 
   const _navigateToCreateLabelScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.ADD_LABEL);
@@ -95,12 +118,6 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
   };
   const _navigateToCreateNoteScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE);
-  };
-  const _navigateToPinScreen = () => {
-    navigation?.reset({
-      index: 0,
-      routes: [{name: CONSTANTS.ROUTES.PINNED_NOTES}],
-    });
   };
   const _navigateToSearchScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.SEARCH);
@@ -125,133 +142,32 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
       }}>
       <Appbar.Header>
         <Appbar.Content
-          title="#Tasker"
+          title="#Pinned notes"
           titleStyle={{fontWeight: '700', color: theme?.colors.primary}}
         />
         <Appbar.Action icon={'magnify'} onPress={_navigateToSearchScreen} />
         <Appbar.Action icon={'cog'} onPress={_navigateToSettings} />
       </Appbar.Header>
-      <ScrollView
+      <MasonryList
+        style={{alignSelf: 'stretch'}}
         contentContainerStyle={{
-          width: '100%',
-          paddingBottom: BOTTOM_APPBAR_HEIGHT,
-        }}>
-        {quickListSettings?.myDay && (
-          <List.Item
-            title="My day"
-            left={props => (
-              <List.Icon
-                {...props}
-                icon="calendar-today"
-                color={theme.colors.onSurface}
-              />
-            )}
-            right={props => <List.Icon {...props} icon="chevron-right" />}
-            onPress={_navigateToDayScreen}
-          />
-        )}
-        {quickListSettings?.myDay && <Divider />}
-        {quickListSettings?.all && (
-          <List.Item
-            title="All"
-            left={props => (
-              <List.Icon
-                {...props}
-                icon="all-inclusive"
-                color={theme.colors.onSurface}
-              />
-            )}
-            right={props => <List.Icon {...props} icon="chevron-right" />}
-            onPress={_navigateToAllTaskScreen}
-          />
-        )}
-        {quickListSettings?.all && <Divider />}
-        {quickListSettings?.completed && (
-          <List.Item
-            title="Completed"
-            left={props => (
-              <List.Icon
-                {...props}
-                icon="check-all"
-                color={theme.colors.onSurface}
-              />
-            )}
-            right={props => <List.Icon {...props} icon="chevron-right" />}
-            onPress={_navigateToCompletedScreen}
-          />
-        )}
-        {quickListSettings?.completed && <Divider />}
-        {quickListSettings?.bookmarks && (
-          <List.Item
-            title="Bookmarks"
-            left={props => (
-              <List.Icon
-                {...props}
-                icon="bookmark"
-                color={theme.colors.onSurface}
-              />
-            )}
-            right={props => <List.Icon {...props} icon="chevron-right" />}
-            onPress={_navigateToBookmarkScreen}
-          />
-        )}
-        {quickListSettings?.bookmarks && <Divider />}
-        {quickListSettings?.myCalendar && (
-          <List.Item
-            title="My calendar"
-            left={props => (
-              <List.Icon
-                {...props}
-                icon="calendar"
-                color={theme.colors.onSurface}
-              />
-            )}
-            right={props => <List.Icon {...props} icon="chevron-right" />}
-            onPress={_navigateToCalendarScreen}
-          />
-        )}
-
-        {labels && labels.length > 0 && (
-          <Text
-            style={{
-              backgroundColor: theme?.colors.surfaceVariant,
-              padding: 12,
-              paddingVertical: 6,
-              color: theme?.colors.onSurfaceVariant,
-              fontWeight: '600',
-            }}>
-            Labels
-          </Text>
-        )}
-        {labels.map((label, index) => {
-          return (
-            <EnhancedLabelItem
-              label={label}
-              handleDeleteLabel={_handleDeleteLabel}
-              handleUnGroupLabel={_handleUnGroupLabel}
-              key={index}
-            />
-          );
-        })}
-        {notes && notes.length > 0 && (
-          <Text
-            style={{
-              backgroundColor: theme?.colors.surfaceVariant,
-              padding: 12,
-              paddingVertical: 6,
-              color: theme?.colors.onSurfaceVariant,
-              fontWeight: '600',
-            }}>
-            Unlabeled notes
-          </Text>
-        )}
-        {notes.map((note, index) => {
-          return <EnhancedNoteItem note={note} key={index} />;
-        })}
-        {(!notes || notes.length == 0) && (!labels || labels.length == 0) ? (
-          <EmptyTasks />
-        ) : null}
-      </ScrollView>
+          alignSelf: 'stretch',
+          paddingHorizontal: 6,
+        }}
+        numColumns={2}
+        data={notes}
+        keyExtractor={(item, index) => item.id}
+        renderItem={_renderPinnedNoteItem}
+      />
+      {/* <FlatGrid
+        data={notes}
+        maxItemsPerRow={2}
+        spacing={12}
+        renderItem={_renderPinnedNoteItem}
+        adjustGridToStyles={true}
+        additionalRowStyle={{alignItems: 'flex-start'}}
+        keyExtractor={(item, index) => item.id}
+      /> */}
 
       <Appbar
         style={{
@@ -260,12 +176,7 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
           justifyContent: 'space-between',
         }}
         safeAreaInsets={{bottom}}>
-        <Button
-          icon="plus"
-          onPress={_navigateToCreateLabelScreen}
-          textColor={theme?.colors.onPrimary}>
-          Add label
-        </Button>
+        <View></View>
         <View
           style={{
             flexDirection: 'row',
@@ -274,9 +185,9 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
           }}>
           <Appbar.Action
             isLeading={false}
-            icon="pin"
+            icon="format-list-group"
             iconColor={theme?.colors.onPrimary}
-            onPress={_navigateToPinScreen}
+            onPress={_navigateHome}
           />
           <Appbar.Action
             isLeading={false}
@@ -299,13 +210,13 @@ const mapStateToProps = state => {
   };
 };
 
-const enhanceHome = withObservables([], ({}) => ({
+const enhancePinScreen = withObservables([], ({}) => ({
   labels: database.collections.get('labels').query().observe(),
   notes: database.collections
     .get('notes')
     .query(Q.where('label_id', ''), Q.where('is_archived', Q.notEq(true)))
     .observe(),
 }));
-const EnhancedHome = enhanceHome(Home);
+const EnhancedPinScreen = enhancePinScreen(PinScreen);
 
-export default connect(mapStateToProps)(EnhancedHome);
+export default connect(mapStateToProps)(EnhancedPinScreen);

@@ -74,6 +74,7 @@ const NoteItem = ({note, tasksCount, handleDeleteNote, dispatch}) => {
         justifyContent: 'flex-start',
         alignItems: 'stretch',
         paddingHorizontal: 12,
+        width: '100%',
         paddingRight: 0,
         paddingVertical: note.isArchived ? 2 : 12,
         borderLeftColor:
@@ -92,6 +93,7 @@ const NoteItem = ({note, tasksCount, handleDeleteNote, dispatch}) => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             alignItems: 'center',
+            flex: 4,
           }}>
           {
             <MaterialCommunityIcons
@@ -100,13 +102,27 @@ const NoteItem = ({note, tasksCount, handleDeleteNote, dispatch}) => {
               color={theme?.colors.onSurface}
             />
           }
-          <Text style={{marginLeft: 12}}>{note?.title}</Text>
+          <Text style={{marginLeft: 12}} numberOfLines={1} ellipsizeMode="tail">
+            {note?.title}
+          </Text>
         </View>
 
         {note.isArchived ? (
-          <IconButton icon={'package-up'} onPress={_handleUnarchiveNote} />
+          <IconButton
+            style={{flex: 1}}
+            icon={'package-up'}
+            onPress={_handleUnarchiveNote}
+          />
         ) : (
-          <Text style={{marginLeft: 12, paddingRight: 12}}>{tasksCount}</Text>
+          <Text
+            style={{
+              marginLeft: 12,
+              textAlign: 'right',
+              paddingRight: 12,
+              flex: 1,
+            }}>
+            {tasksCount}
+          </Text>
         )}
       </View>
     </TouchableRipple>

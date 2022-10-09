@@ -25,6 +25,7 @@ export default class Note extends Model {
   @text('color_string') colorString;
   @text('label_id') labelID;
   @field('is_archived') isArchived;
+  @field('is_pinned') isPinned;
   @date('archive_timestamp') archiveTimestamp;
   @field('is_marked_deleted') isMarkedDeleted;
   @date('marked_deleted_timestamp') markedDeletedTimestamp;

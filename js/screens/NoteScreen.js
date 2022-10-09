@@ -2,10 +2,11 @@ import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import DraggableFlatList, {
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
+
 import {Appbar, FAB, Menu, useTheme} from 'react-native-paper';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
@@ -17,13 +18,16 @@ import TaskSortBottomSheet from '../components/TaskSortBottomSheet';
 import {database} from '../db/db';
 import Note from '../db/models/Note';
 import Task from '../db/models/Task';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   deleteNote,
   duplicateNote,
   editNoteIsArchived,
+  editNoteIsPinned,
   resetDeleteNoteState,
 } from '../redux/actions';
 import {Logger} from '../utils/logger';
+import {SharedElement} from 'react-navigation-shared-element';
 
 /**
  *
@@ -114,6 +118,14 @@ const NoteScreen = ({
     dispatch(duplicateNote({id: note.id}));
     setIsMenuOpen(false);
   };
+  const _handlePinNote = () => {
+    dispatch(editNoteIsPinned({id: note.id, isPinned: true}));
+    setIsMenuOpen(false);
+  };
+  const _handleUnpinNote = () => {
+    dispatch(editNoteIsPinned({id: note.id, isPinned: false}));
+    setIsMenuOpen(false);
+  };
   const _handleOpenTaskInput = () => {
     setIsTaskInputOpen(true);
   };
@@ -149,6 +161,7 @@ const NoteScreen = ({
 
   // return
   return (
+    // <SharedElement id={`note.${note.id}.hero`}>
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
@@ -162,9 +175,20 @@ const NoteScreen = ({
       />
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
+
         <Appbar.Content
-          title={note ? `#${note.title}` : '#Note'}
-          titleStyle={{fontWeight: '700'}}
+          title={
+            <SharedElement id={`note.${note.id}.hero`}>
+              <Text
+                style={{
+                  fontSize: 22,
+                  fontWeight: '700',
+                  color: theme?.colors.onSurface,
+                }}>
+                {note ? `${note.title}` : '#Note'}
+              </Text>
+            </SharedElement>
+          }
         />
 
         <Menu
@@ -177,6 +201,11 @@ const NoteScreen = ({
             onPress={_navigateToEditNoteScreen}
             title="Edit"
             leadingIcon={'pencil'}
+          />
+          <Menu.Item
+            onPress={note.isPinned ? _handleUnpinNote : _handlePinNote}
+            title={note.isPinned ? 'Unpin note' : 'Pin note'}
+            leadingIcon={note.isPinned ? 'pin-off' : 'pin'}
           />
           <Menu.Item
             onPress={_handleOpenSortTaskBottomSheet}
@@ -243,6 +272,7 @@ const NoteScreen = ({
     </SafeAreaView>
   );
 };
+
 const enhanceNoteScreen = withObservables(
   ['route', 'taskSortProperty', 'taskSortOrder'],
   ({route, taskSortProperty, taskSortOrder}) => ({
@@ -267,6 +297,16 @@ const enhanceNoteScreen = withObservables(
       ),
   }),
 );
+// NoteScreen.sharedElements = route => {
+//   const {p_id} = route.params;
+//   return [
+//     {
+//       id: `note.${p_id}.hero`,
+//       animation: 'move',
+//       resize: 'clip',
+//     },
+//   ];
+// };
 const EnhancedNoteScreen = enhanceNoteScreen(NoteScreen);
 
 const mapStateToProps = state => {

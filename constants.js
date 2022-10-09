@@ -13,7 +13,7 @@ export const CONSTANTS = Object.freeze({
   ROUTES: {
     HOME: 'HOME',
     INTRO: 'INTRO',
-
+    PINNED_NOTES: 'PINNED_NOTES',
     BOOKMARKS: 'BOOKMARKS',
     ADD_LABEL: 'ADD_LABEL',
     EDIT_LABEL: 'EDIT_LABEL',
