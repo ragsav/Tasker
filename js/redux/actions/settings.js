@@ -7,11 +7,20 @@ export const CHANGE_QUICK_LIST_SETTINGS = 'CHANGE_QUICK_LIST_SETTINGS';
 export const CHANGE_DAILY_REMINDER_SETTINGS = 'CHANGE_DAILY_REMINDER_SETTINGS';
 export const CHANGE_RENDER_URL_IN_TASK_SETTINGS =
   'CHANGE_RENDER_URL_IN_TASK_SETTINGS';
+export const CHANGE_DEFAULT_HOME_SCREEN_SETTINGS =
+  'CHANGE_DEFAULT_HOME_SCREEN_SETTINGS';
 
 export const setThemeState = ({theme}) => {
   return {
     type: CHANGE_THEME,
     theme,
+  };
+};
+
+export const setDefaultHomeScreenState = ({defaultHomeScreen}) => {
+  return {
+    type: CHANGE_DEFAULT_HOME_SCREEN_SETTINGS,
+    defaultHomeScreen,
   };
 };
 
@@ -45,6 +54,15 @@ export const setTheme =
       Storage.storeData(CONSTANTS.LOCAL_STORAGE_KEYS.LOCAL_THEME, 'light');
     }
     dispatch(setThemeState({theme}));
+  };
+export const setDefaultHomeScreen =
+  ({defaultHomeScreen}) =>
+  async dispatch => {
+    Storage.storeData(
+      CONSTANTS.LOCAL_STORAGE_KEYS.DEFAULT_HOME_SCREEN,
+      defaultHomeScreen,
+    );
+    dispatch(setDefaultHomeScreenState({defaultHomeScreen}));
   };
 export const setQuickListSettings =
   ({quickListSettings}) =>

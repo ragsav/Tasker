@@ -18,6 +18,7 @@ import {_customDarkTheme, _customLightTheme} from '../../themes';
 
 import {
   setDailyReminderSetting,
+  setDefaultHomeScreen,
   setQuickListSettings,
   setRenderURLInTaskSettings,
   setTheme,
@@ -33,6 +34,7 @@ const Settings = ({
   dispatch,
   quickListSettings,
   dailyReminderTimestamp,
+  defaultHomeScreen,
 }) => {
   // ref
 
@@ -62,6 +64,22 @@ const Settings = ({
       dispatch(setTheme({theme: _customLightTheme}));
     } else {
       dispatch(setTheme({theme: _customDarkTheme}));
+    }
+  };
+  const _handleToggleDefaultHomeScreen = () => {
+    if (
+      defaultHomeScreen &&
+      defaultHomeScreen === CONSTANTS.ROUTES.PINNED_NOTES
+    ) {
+      dispatch(
+        setDefaultHomeScreen({defaultHomeScreen: CONSTANTS.ROUTES.HOME}),
+      );
+    } else {
+      dispatch(
+        setDefaultHomeScreen({
+          defaultHomeScreen: CONSTANTS.ROUTES.PINNED_NOTES,
+        }),
+      );
     }
   };
   const _handleToggleMyDayList = () => {
@@ -244,6 +262,7 @@ const Settings = ({
           )}
         />
         <Divider />
+
         <List.Item
           title={'Backup'}
           onPress={_navigateToBackupScreen}
@@ -267,6 +286,20 @@ const Settings = ({
           )}
           right={props => (
             <Switch value={theme.dark} onValueChange={_handleToggleTheme} />
+          )}
+        />
+        <Divider />
+        <List.Item
+          title={'Set pinned screen as default home screen'}
+          titleNumberOfLines={2}
+          left={props => (
+            <List.Icon {...props} icon="pin" color={theme.colors.onSurface} />
+          )}
+          right={props => (
+            <Switch
+              value={CONSTANTS.ROUTES.PINNED_NOTES === defaultHomeScreen}
+              onValueChange={_handleToggleDefaultHomeScreen}
+            />
           )}
         />
         <Divider />
@@ -413,6 +446,7 @@ const mapStateToProps = state => {
     quickListSettings: state.settings.quickListSettings,
     renderURLInTask: state.settings.renderURLInTask,
     dailyReminderTimestamp: state.settings.dailyReminderTimestamp,
+    defaultHomeScreen: state.settings.defaultHomeScreen,
   };
 };
 

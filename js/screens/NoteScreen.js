@@ -28,6 +28,7 @@ import {
 } from '../redux/actions';
 import {Logger} from '../utils/logger';
 import {SharedElement} from 'react-navigation-shared-element';
+import Animated, {SlideInRight} from 'react-native-reanimated';
 
 /**
  *
@@ -178,16 +179,16 @@ const NoteScreen = ({
 
         <Appbar.Content
           title={
-            <SharedElement id={`note.${note.id}.hero`}>
-              <Text
-                style={{
-                  fontSize: 22,
-                  fontWeight: '700',
-                  color: theme?.colors.onSurface,
-                }}>
-                {note ? `${note.title}` : '#Note'}
-              </Text>
-            </SharedElement>
+            // <SharedElement id={`note.${note.id}.hero`}>
+            <Text
+              style={{
+                fontSize: 22,
+                fontWeight: '700',
+                color: theme?.colors.onSurface,
+              }}>
+              {note ? `${note.title}` : '#Note'}
+            </Text>
+            // </SharedElement>
           }
         />
 
@@ -245,6 +246,7 @@ const NoteScreen = ({
           <EmptyTasks message={'Try adding your first task'} />
         )}
       />
+
       <FAB
         icon="plus"
         style={{

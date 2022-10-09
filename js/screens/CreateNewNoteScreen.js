@@ -19,7 +19,7 @@ import {
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {EnhancedLabelSelectBottomSheet} from '../components/LabelSelectBottomSheet';
-import {createNote, resetCreateNoteState} from '../redux/actions';
+import {createNote, getLabelByID, resetCreateNoteState} from '../redux/actions';
 
 const CreateNewNoteScreen = ({
   dispatch,
@@ -27,6 +27,7 @@ const CreateNewNoteScreen = ({
   isCreatingNote,
   createNoteSuccess,
   createNoteFailure,
+  route,
 }) => {
   // ref
   const titleRef = useRef();
@@ -34,6 +35,7 @@ const CreateNewNoteScreen = ({
 
   // variables
   const theme = useTheme();
+  // const {p_id, p_title, p_colorString, p_labelID} = route?.params;
   // states
   const [noteState, setNoteState] = useState({
     title: '',
@@ -50,6 +52,19 @@ const CreateNewNoteScreen = ({
       _init();
       return _onDestroy;
     }, []),
+  );
+  useFocusEffect(
+    useCallback(() => {
+      if (route && route.params && route.params.p_labelID) {
+        getLabelByID(route.params.p_labelID)
+          .then(label => {
+            setNoteState({
+              label: label,
+            });
+          })
+          .catch(error => {});
+      }
+    }, [route]),
   );
   useEffect(() => {
     if (createNoteSuccess) {

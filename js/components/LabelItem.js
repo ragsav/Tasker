@@ -13,6 +13,7 @@ import React, {useState} from 'react';
 import {View} from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import {
+  Button,
   Divider,
   IconButton,
   Menu,
@@ -26,6 +27,14 @@ import {database} from '../db/db';
 import Label from '../db/models/Label';
 import {DeleteConfirmationDialog} from './DeleteConfirmationDialog';
 import EnhancedNoteItem from './NoteItem';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  Layout,
+  SlideInLeft,
+  SlideInUp,
+  Transition,
+} from 'react-native-reanimated';
 
 /**
  *
@@ -57,6 +66,27 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
   // callbacks
 
   // render functions
+  const _renderAddNoteView = () => {
+    return (
+      <TouchableRipple onPress={_navigateToAddNoteScreen} style={{padding: 12}}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          {/* <MaterialCommunityIcons
+            name="note-plus"
+            color={theme?.colors.primary}
+            size={18}
+          /> */}
+          <Text style={{color: theme?.colors.primary}}>
+            Add note to this label
+          </Text>
+        </View>
+      </TouchableRipple>
+    );
+  };
 
   // handle functions
   const _handleOpenDeleteLabelDialog = () => {
@@ -84,6 +114,14 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
       p_id: label.id,
       p_title: label.title,
       p_iconString: label.iconString,
+    });
+    // navigation?.navigate(CONSTANTS.ROUTES.ADD_LABEL);
+  };
+
+  const _navigateToAddNoteScreen = () => {
+    setIsMenuOpen(false);
+    navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE, {
+      p_labelID: label.id,
     });
     // navigation?.navigate(CONSTANTS.ROUTES.ADD_LABEL);
   };
@@ -119,7 +157,8 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-            paddingHorizontal: 12,
+            paddingLeft: 16,
+            paddingRight: 4,
           }}>
           <View
             style={{
@@ -127,18 +166,34 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
               justifyContent: 'flex-start',
               alignItems: 'center',
             }}>
-            {
-              <MaterialCommunityIcons
-                name={label && label.iconString ? label.iconString : 'label'}
-                size={24}
-                color={theme?.colors.onSurface}
-              />
-            }
-            <Text
-              style={{marginLeft: 12, fontWeight: collapsed ? '400' : '700'}}>
-              {label?.title}
-            </Text>
+            {collapsed && (
+              <Animated.View
+                exiting={FadeOut}
+                entering={FadeIn.delay(300)}
+                layout={Layout.springify()}>
+                <MaterialCommunityIcons
+                  name={label && label.iconString ? label.iconString : 'label'}
+                  size={24}
+                  style={{marginRight: 12}}
+                  color={theme?.colors.onSurface}
+                />
+              </Animated.View>
+            )}
+
+            {/* <AnimatedComponent layout={Transition.duration(3000).otherModifier()} ></AnimatedComponent> */}
+            <Animated.View
+              // exiting={FadeOut}
+              // entering={FadeIn}
+              layout={Layout.easing().delay(100)}>
+              <Text
+                style={{
+                  fontWeight: '700',
+                }}>
+                {label?.title}
+              </Text>
+            </Animated.View>
           </View>
+
           <View
             style={{
               flexDirection: 'row',
@@ -173,17 +228,19 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
                 onPress={_handleUnGroupLabel}
               />
             </Menu>
-            {/* {_renderMenu()} */}
+
             <IconButton
-              icon={collapsed ? 'chevron-down' : 'chevron-up'}
+              icon={collapsed ? 'chevron-left' : 'chevron-down'}
               size={24}
               onPress={_handleToggleCollapse}
             />
           </View>
         </View>
 
-        <Collapsible collapsed={collapsed} style={{paddingLeft: 20}}>
-          <Divider />
+        <Collapsible
+          collapsed={collapsed}
+          style={{paddingLeft: notes.length > 0 ? 20 : 0}}>
+          {notes.length === 0 && _renderAddNoteView()}
           {notes.map((note, index) => {
             return <EnhancedNoteItem note={note} key={index} />;
           })}

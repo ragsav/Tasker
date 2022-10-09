@@ -33,6 +33,8 @@ import DeletedTasksScreen from '../screens/DeletedTasksScreen';
 import BackupConfigScreen from '../screens/BackupConfigScreen';
 import PinScreen from '../screens/PinScreen';
 import {createSharedElementStackNavigator} from 'react-navigation-shared-element';
+import {Storage} from '../utils/asyncStorage';
+import {setDefaultHomeScreen} from '../redux/actions';
 // const Stack = createStackNavigator();
 const Stack = createSharedElementStackNavigator();
 const opacityTransition = {
@@ -54,7 +56,7 @@ const opacityTransition = {
     }, // updates the opacity depending on the transition progress value of the current screen
   }),
 };
-const Router = ({theme}) => {
+const Router = ({theme, defaultHomeScreen, dispatch}) => {
   // ref
 
   // variables
@@ -84,7 +86,12 @@ const Router = ({theme}) => {
           backgroundColor={theme?.colors.surface}
           // translucent
         />
-        <NavigationContainer theme={theme} onReady={() => RNBootSplash.hide()}>
+
+        <NavigationContainer
+          theme={theme}
+          onReady={() => {
+            RNBootSplash.hide();
+          }}>
           <Stack.Navigator
             initialRouteName={CONSTANTS.ROUTES.HOME}
             screenOptions={{...TransitionPresets.ScaleFromCenterAndroid}}>
@@ -201,6 +208,7 @@ const Router = ({theme}) => {
 const mapStateToProps = state => {
   return {
     theme: state.settings.theme,
+    defaultHomeScreen: state.settings.defaultHomeScreen,
   };
 };
 export default connect(mapStateToProps)(Router);

@@ -34,8 +34,10 @@ import {
   deleteLabel,
   resetDeleteLabelState,
   resetEditLabelState,
+  setDefaultHomeScreen,
   unGroupLabel,
 } from '../redux/actions';
+import {Storage} from '../utils/asyncStorage';
 const BOTTOM_APPBAR_HEIGHT = 64;
 // const EnhancedLabelItem = enhanceLabelItem(LabelItem);
 /**
@@ -96,6 +98,7 @@ const PinScreen = ({
       index: 0,
       routes: [{name: CONSTANTS.ROUTES.HOME}],
     });
+    dispatch(setDefaultHomeScreen({defaultHomeScreen: CONSTANTS.ROUTES.HOME}));
   };
 
   const _navigateToCreateLabelScreen = () => {

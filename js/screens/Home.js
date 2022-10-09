@@ -31,8 +31,10 @@ import {
   deleteLabel,
   resetDeleteLabelState,
   resetEditLabelState,
+  setDefaultHomeScreen,
   unGroupLabel,
 } from '../redux/actions';
+import {Storage} from '../utils/asyncStorage';
 const BOTTOM_APPBAR_HEIGHT = 64;
 // const EnhancedLabelItem = enhanceLabelItem(LabelItem);
 /**
@@ -101,6 +103,9 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
       index: 0,
       routes: [{name: CONSTANTS.ROUTES.PINNED_NOTES}],
     });
+    dispatch(
+      setDefaultHomeScreen({defaultHomeScreen: CONSTANTS.ROUTES.PINNED_NOTES}),
+    );
   };
   const _navigateToSearchScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.SEARCH);
@@ -110,7 +115,16 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
   };
 
   // misc functions
-  const _init = () => {};
+  const _init = () => {
+    Storage.getData(CONSTANTS.LOCAL_STORAGE_KEYS.DEFAULT_HOME_SCREEN)
+      .then(defaultHomeScreen => {
+        dispatch(setDefaultHomeScreen({defaultHomeScreen}));
+        if (defaultHomeScreen != CONSTANTS.ROUTES.HOME) {
+          _navigateToPinScreen();
+        }
+      })
+      .finally(() => {});
+  };
   const _onDestroy = () => {
     dispatch(resetDeleteLabelState());
     dispatch(resetEditLabelState());
@@ -150,7 +164,7 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
             onPress={_navigateToDayScreen}
           />
         )}
-        {quickListSettings?.myDay && <Divider />}
+        {/* {quickListSettings?.myDay && <Divider />} */}
         {quickListSettings?.all && (
           <List.Item
             title="All"
@@ -165,7 +179,7 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
             onPress={_navigateToAllTaskScreen}
           />
         )}
-        {quickListSettings?.all && <Divider />}
+        {/* {quickListSettings?.all && <Divider />} */}
         {quickListSettings?.completed && (
           <List.Item
             title="Completed"
@@ -180,7 +194,7 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
             onPress={_navigateToCompletedScreen}
           />
         )}
-        {quickListSettings?.completed && <Divider />}
+        {/* {quickListSettings?.completed && <Divider />} */}
         {quickListSettings?.bookmarks && (
           <List.Item
             title="Bookmarks"
@@ -195,7 +209,7 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
             onPress={_navigateToBookmarkScreen}
           />
         )}
-        {quickListSettings?.bookmarks && <Divider />}
+        {/* {quickListSettings?.bookmarks && <Divider />} */}
         {quickListSettings?.myCalendar && (
           <List.Item
             title="My calendar"
@@ -211,7 +225,7 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
           />
         )}
 
-        {labels && labels.length > 0 && (
+        {/* {labels && labels.length > 0 && (
           <Text
             style={{
               backgroundColor: theme?.colors.surfaceVariant,
@@ -222,7 +236,8 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
             }}>
             Labels
           </Text>
-        )}
+        )} */}
+        <Divider style={{marginTop: 12}} />
         {labels.map((label, index) => {
           return (
             <EnhancedLabelItem
@@ -233,7 +248,7 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
             />
           );
         })}
-        {notes && notes.length > 0 && (
+        {/* {notes && notes.length > 0 && (
           <Text
             style={{
               backgroundColor: theme?.colors.surfaceVariant,
@@ -244,7 +259,7 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
             }}>
             Unlabeled notes
           </Text>
-        )}
+        )} */}
         {notes.map((note, index) => {
           return <EnhancedNoteItem note={note} key={index} />;
         })}

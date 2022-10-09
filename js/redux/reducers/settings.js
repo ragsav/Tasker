@@ -1,6 +1,8 @@
+import {CONSTANTS} from '../../../constants';
 import {_customLightTheme} from '../../../themes';
 import {
   CHANGE_DAILY_REMINDER_SETTINGS,
+  CHANGE_DEFAULT_HOME_SCREEN_SETTINGS,
   CHANGE_QUICK_LIST_SETTINGS,
   CHANGE_RENDER_URL_IN_TASK_SETTINGS,
   CHANGE_THEME,
@@ -18,6 +20,7 @@ export default (
     },
     renderURLInTask: true,
     dailyReminderTimestamp: 0,
+    defaultHomeScreen: CONSTANTS.ROUTES.HOME,
   },
   action,
 ) => {
@@ -26,6 +29,13 @@ export default (
       return {
         ...state,
         theme: action.theme,
+      };
+    case CHANGE_DEFAULT_HOME_SCREEN_SETTINGS:
+      return {
+        ...state,
+        defaultHomeScreen: action.defaultHomeScreen
+          ? action.defaultHomeScreen
+          : CONSTANTS.ROUTES.HOME,
       };
     case CHANGE_QUICK_LIST_SETTINGS:
       return {

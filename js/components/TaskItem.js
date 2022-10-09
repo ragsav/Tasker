@@ -10,6 +10,11 @@ import {
   TouchableRipple,
   useTheme,
 } from 'react-native-paper';
+import Animated, {
+  Layout,
+  SlideInLeft,
+  SlideInRight,
+} from 'react-native-reanimated';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {database} from '../db/db';
@@ -27,7 +32,15 @@ import {Logger} from '../utils/logger';
  * @param {Task} param0.task
  * @returns
  */
-const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch, note}) => {
+const TaskItem = ({
+  task,
+  index,
+  onLongPress,
+  noteColor,
+  isActive,
+  dispatch,
+  note,
+}) => {
   // ref
 
   // variables
@@ -171,108 +184,113 @@ const TaskItem = ({task, onLongPress, noteColor, isActive, dispatch, note}) => {
   // return
 
   return (
-    <TouchableRipple
-      style={{
-        marginBottom: 6,
-        borderLeftColor: _isDue()
-          ? theme?.colors.error
-          : noteColor
-          ? noteColor
-          : theme?.colors.primary,
-        borderLeftWidth: 4,
-        backgroundColor: _isDue()
-          ? theme?.colors.errorContainer
-          : theme?.colors.primaryContainer,
-        borderRadius: 4,
-      }}
-      onPress={_navigateToTaskScreen}
-      onLongPress={() => {
-        Logger.pageLogger('TaskItem.js:onLongPress');
-        onLongPress?.();
-      }}>
-      <View
+    <Animated.View
+      entering={SlideInLeft.delay(index * 200)}
+      layout={Layout.springify()}>
+      <TouchableRipple
         style={{
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-          alignItems: 'flex-start',
+          marginBottom: 6,
+          borderLeftColor: _isDue()
+            ? theme?.colors.error
+            : noteColor
+            ? noteColor
+            : theme?.colors.primary,
+          borderLeftWidth: 4,
+          backgroundColor: _isDue()
+            ? theme?.colors.errorContainer
+            : theme?.colors.primaryContainer,
+          borderRadius: 4,
+        }}
+        onPress={_navigateToTaskScreen}
+        onLongPress={() => {
+          Logger.pageLogger('TaskItem.js:onLongPress');
+          onLongPress?.();
         }}>
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '100%',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
           }}>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'flex-start',
+              justifyContent: 'space-between',
               width: '100%',
-              flex: 4,
             }}>
-            <IconButton
-              icon={task.isDone ? 'radiobox-marked' : 'radiobox-blank'}
-              onPress={_handleMarkIsDone}
-            />
-            <Text
-              ellipsizeMode="tail"
-              numberOfLines={1}
+            <View
               style={{
-                fontWeight: '600',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                width: '100%',
+                flex: 4,
+              }}>
+              <IconButton
+                icon={task.isDone ? 'radiobox-marked' : 'radiobox-blank'}
+                onPress={_handleMarkIsDone}
+              />
+              <Text
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                style={{
+                  fontWeight: '600',
+                  color: theme.colors.onSurface,
+                  fontSize: 16,
+                  flexWrap: 'wrap',
+                  flex: 1,
+                  textDecorationLine: task.isDone ? 'line-through' : null,
+                  textDecorationStyle: 'solid',
+                }}>
+                {task.title}
+              </Text>
+            </View>
+            {task.isArchived ? (
+              <IconButton
+                icon={'package-up'}
+                onPress={_handleUnarchiveTask}
+                size={24}
+              />
+            ) : task.isMarkedDeleted ? (
+              <IconButton
+                onPress={_handleRestoreTask}
+                icon={'delete-restore'}
+                size={24}
+              />
+            ) : (
+              <IconButton
+                icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
+                onPress={_handleBookmark}
+                size={24}
+              />
+            )}
+          </View>
+
+          {!task.description ||
+          String(task.description).trim() === '' ? null : (
+            <Paragraph
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              style={{
+                fontWeight: '400',
                 color: theme.colors.onSurface,
-                fontSize: 16,
+                fontSize: 14,
                 flexWrap: 'wrap',
                 flex: 1,
-                textDecorationLine: task.isDone ? 'line-through' : null,
-                textDecorationStyle: 'solid',
+                paddingHorizontal: 12,
               }}>
-              {task.title}
-            </Text>
-          </View>
-          {task.isArchived ? (
-            <IconButton
-              icon={'package-up'}
-              onPress={_handleUnarchiveTask}
-              size={24}
-            />
-          ) : task.isMarkedDeleted ? (
-            <IconButton
-              onPress={_handleRestoreTask}
-              icon={'delete-restore'}
-              size={24}
-            />
-          ) : (
-            <IconButton
-              icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
-              onPress={_handleBookmark}
-              size={24}
-            />
+              {task.description}
+            </Paragraph>
           )}
+          {note && _renderNoteDetails(task.isArchived || task.isMarkedDeleted)}
+          {_renderArchiveTime()}
+          {_renderDeletionTime()}
+          {_renderDoneTime(!task.isArchived && !task.isMarkedDeleted)}
+          {_renderDueDate(!task.isArchived && !task.isMarkedDeleted)}
         </View>
-
-        {!task.description || String(task.description).trim() === '' ? null : (
-          <Paragraph
-            numberOfLines={2}
-            ellipsizeMode="tail"
-            style={{
-              fontWeight: '400',
-              color: theme.colors.onSurface,
-              fontSize: 14,
-              flexWrap: 'wrap',
-              flex: 1,
-              paddingHorizontal: 12,
-            }}>
-            {task.description}
-          </Paragraph>
-        )}
-        {note && _renderNoteDetails(task.isArchived || task.isMarkedDeleted)}
-        {_renderArchiveTime()}
-        {_renderDeletionTime()}
-        {_renderDoneTime(!task.isArchived && !task.isMarkedDeleted)}
-        {_renderDueDate(!task.isArchived && !task.isMarkedDeleted)}
-      </View>
-    </TouchableRipple>
+      </TouchableRipple>
+    </Animated.View>
   );
 };
 

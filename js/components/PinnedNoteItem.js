@@ -85,15 +85,15 @@ const PinnedNoteItem = ({note, tasks, handleDeleteNote, dispatch}) => {
             paddingHorizontal: 8,
             paddingVertical: 6,
           }}>
-          <SharedElement id={`note.${note.id}.hero`}>
-            <Text
-              variant="bodyMedium"
-              style={{fontWeight: '700', marginBottom: 8}}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {note?.title}
-            </Text>
-          </SharedElement>
+          {/* <SharedElement id={`note.${note.id}.hero`}> */}
+          <Text
+            variant="bodyMedium"
+            style={{fontWeight: '700', marginBottom: 8}}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {note?.title}
+          </Text>
+          {/* </SharedElement> */}
 
           {tasks &&
             Array.isArray(tasks) &&
