@@ -12,6 +12,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {
   Button,
+  Divider,
   IconButton,
   Text,
   TouchableRipple,
@@ -30,7 +31,7 @@ import {editNoteIsArchived} from '../redux/actions';
  * @param {Note} param0.note
  * @returns
  */
-const NoteItem = ({note, tasksCount, handleDeleteNote, dispatch}) => {
+const NoteItem = ({note, tasks, tasksCount, handleDeleteNote, dispatch}) => {
   // ref
 
   // variables
@@ -68,64 +69,61 @@ const NoteItem = ({note, tasksCount, handleDeleteNote, dispatch}) => {
   // return
 
   return (
-    <TouchableRipple
-      style={{
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        alignItems: 'stretch',
-        paddingHorizontal: 12,
-        width: '100%',
-        paddingRight: 0,
-        paddingVertical: note.isArchived ? 2 : 12,
-        borderLeftColor:
-          note && note.colorString ? note.colorString : theme?.colors.error,
-        borderLeftWidth: 5,
-      }}
-      onPress={note.isArchived ? null : _navigateToNoteScreen}>
-      <View
+    <View style={{padding: 4}}>
+      <TouchableRipple
         style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'flex-start',
+          padding: 10,
+          width: '100%',
+          borderColor:
+            note && note.colorString ? note.colorString : theme?.colors.error,
+          borderWidth: 1,
+          borderRadius: 6,
+          marginBottom: 10,
+          flex: 1,
+        }}
+        onPress={note.isArchived ? null : _navigateToNoteScreen}>
         <View
           style={{
-            flexDirection: 'row',
+            flexDirection: 'column',
             justifyContent: 'flex-start',
-            alignItems: 'center',
-            flex: 4,
+            alignItems: 'flex-start',
           }}>
-          {
-            <MaterialCommunityIcons
-              name={'format-list-bulleted'}
-              size={24}
-              color={theme?.colors.onSurface}
-            />
-          }
-          <Text style={{marginLeft: 12}} numberOfLines={1} ellipsizeMode="tail">
-            {note?.title}
-          </Text>
-        </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-start',
+              alignItems: 'flex-start',
+              flex: 4,
+            }}>
+            <Text
+              style={{fontSize: 18, fontWeight: '700'}}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {note?.title}
+            </Text>
+          </View>
 
-        {note.isArchived ? (
-          <IconButton
-            style={{flex: 1}}
-            icon={'package-up'}
-            onPress={_handleUnarchiveNote}
-          />
-        ) : (
+          {tasks &&
+            Array.isArray(tasks) &&
+            tasks.slice(0, 6).map(task => {
+              return <Text key={`note-tasks-${task.id}`}>{task.title}</Text>;
+            })}
+
           <Text
             style={{
-              marginLeft: 12,
               textAlign: 'right',
-              paddingRight: 12,
               flex: 1,
+              fontSize: 12,
+              marginTop: 10,
             }}>
-            {tasksCount}
+            {String(tasksCount) + '  tasks'}
           </Text>
-        )}
-      </View>
-    </TouchableRipple>
+        </View>
+      </TouchableRipple>
+    </View>
   );
 };
 
@@ -137,6 +135,17 @@ const enhanceNoteItem = withObservables(['note'], ({note}) => ({
   //     Q.where('is_marked_deleted', Q.eq(false)),
   //   ),
   // ),
+  tasks: database.collections
+    .get('tasks')
+    .query(
+      Q.or(
+        Q.where('is_marked_deleted', Q.eq(null)),
+        Q.where('is_marked_deleted', Q.eq(false)),
+      ),
+      Q.where('is_archived', Q.notEq(!note.isArchived)),
+      Q.where('note_id', note.id),
+    )
+    .observe(),
   tasksCount: database.collections
     .get('tasks')
     .query(

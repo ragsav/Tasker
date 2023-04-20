@@ -12,6 +12,7 @@ export const CONSTANTS = Object.freeze({
   },
   ROUTES: {
     HOME: 'HOME',
+    LABEL: 'LABEL',
     INTRO: 'INTRO',
     PINNED_NOTES: 'PINNED_NOTES',
     BOOKMARKS: 'BOOKMARKS',
@@ -36,6 +37,12 @@ export const CONSTANTS = Object.freeze({
     COMPLETED: 'COMPLETED',
     ALL: 'ALL',
   },
+
+  NOTE_SORT: {
+    TITLE: {text: 'Title', code: 'title'},
+    CREATED_AT: {text: 'Created on', code: 'created_at'},
+  },
+
   TASK_SORT: {
     TITLE: {text: 'Title', code: 'title'},
     START_DATE: {text: 'Start time', code: 'start_timestamp'},

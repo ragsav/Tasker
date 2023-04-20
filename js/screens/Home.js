@@ -275,31 +275,13 @@ const Home = ({navigation, dispatch, labels, notes, quickListSettings}) => {
           justifyContent: 'space-between',
         }}
         safeAreaInsets={{bottom}}>
+        <View />
         <Button
           icon="plus"
           onPress={_navigateToCreateLabelScreen}
           textColor={theme?.colors.onPrimary}>
           Add label
         </Button>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-          }}>
-          <Appbar.Action
-            isLeading={false}
-            icon="pin"
-            iconColor={theme?.colors.onPrimary}
-            onPress={_navigateToPinScreen}
-          />
-          <Appbar.Action
-            isLeading={false}
-            icon="note-plus"
-            iconColor={theme?.colors.onPrimary}
-            onPress={_navigateToCreateNoteScreen}
-          />
-        </View>
       </Appbar>
     </SafeAreaView>
   );

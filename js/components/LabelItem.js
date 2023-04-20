@@ -42,7 +42,7 @@ import Animated, {
  * @param {Label} param0.label
  * @returns
  */
-const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
+const LabelItem = ({label, handleDeleteLabel, handleUnGroupLabel}) => {
   // ref
 
   // variables
@@ -50,43 +50,15 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
   const navigation = useNavigation();
 
   // states
-  const [collapsed, setCollapsed] = useState(true);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // effects
-  // useEffect(() => {
-  // 	navigation.setOptions({
-  // 		p_id: label.id,
-  //     p_title: label.title,
-  //     p_iconString: label.iconString,
-  // 	});
-  // }, [isMasterDetail, navigation]);
 
   // callbacks
 
   // render functions
-  const _renderAddNoteView = () => {
-    return (
-      <TouchableRipple onPress={_navigateToAddNoteScreen} style={{padding: 12}}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          {/* <MaterialCommunityIcons
-            name="note-plus"
-            color={theme?.colors.primary}
-            size={18}
-          /> */}
-          <Text style={{color: theme?.colors.primary}}>
-            Add note to this label
-          </Text>
-        </View>
-      </TouchableRipple>
-    );
-  };
 
   // handle functions
   const _handleOpenDeleteLabelDialog = () => {
@@ -96,9 +68,9 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
   const _handleCloseDeleteLabelDialog = () => {
     setIsDeleteDialogOpen(false);
   };
-  const _handleToggleCollapse = () => setCollapsed(!collapsed);
+
   const _handleToggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const _handleLongPressLabel = () => {};
+
   const _handleDeleteLabel = () => {
     handleDeleteLabel(label.id);
     setIsMenuOpen(false);
@@ -118,12 +90,10 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
     // navigation?.navigate(CONSTANTS.ROUTES.ADD_LABEL);
   };
 
-  const _navigateToAddNoteScreen = () => {
-    setIsMenuOpen(false);
-    navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE, {
-      p_labelID: label.id,
+  const _navigateToLabelScreen = () => {
+    navigation?.navigate(CONSTANTS.ROUTES.LABEL, {
+      p_id: label.id,
     });
-    // navigation?.navigate(CONSTANTS.ROUTES.ADD_LABEL);
   };
 
   // navigation functions
@@ -139,7 +109,7 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
         justifyContent: 'flex-start',
         alignItems: 'stretch',
       }}
-      onPress={_handleToggleCollapse}>
+      onPress={_navigateToLabelScreen}>
       <View
         style={{
           flexDirection: 'column',
@@ -166,32 +136,22 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
               justifyContent: 'flex-start',
               alignItems: 'center',
             }}>
-            {collapsed && (
-              <Animated.View
-                exiting={FadeOut}
-                entering={FadeIn.delay(300)}
-                layout={Layout.springify()}>
-                <MaterialCommunityIcons
-                  name={label && label.iconString ? label.iconString : 'label'}
-                  size={24}
-                  style={{marginRight: 12}}
-                  color={theme?.colors.onSurface}
-                />
-              </Animated.View>
+            {true && (
+              <MaterialCommunityIcons
+                name={label && label.iconString ? label.iconString : 'label'}
+                size={24}
+                style={{marginRight: 12}}
+                color={theme?.colors.onSurface}
+              />
             )}
 
             {/* <AnimatedComponent layout={Transition.duration(3000).otherModifier()} ></AnimatedComponent> */}
-            <Animated.View
-              // exiting={FadeOut}
-              // entering={FadeIn}
-              layout={Layout.easing().delay(100)}>
-              <Text
-                style={{
-                  fontWeight: '700',
-                }}>
-                {label?.title}
-              </Text>
-            </Animated.View>
+            <Text
+              style={{
+                fontWeight: '700',
+              }}>
+              {label?.title}
+            </Text>
           </View>
 
           <View
@@ -204,13 +164,11 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
               visible={isMenuOpen}
               onDismiss={_handleToggleMenu}
               anchor={
-                !collapsed && (
-                  <IconButton
-                    icon="dots-vertical"
-                    size={24}
-                    onPress={_handleToggleMenu}
-                  />
-                )
+                <IconButton
+                  icon="dots-vertical"
+                  size={24}
+                  onPress={_handleToggleMenu}
+                />
               }>
               <Menu.Item
                 title="Edit"
@@ -228,24 +186,8 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
                 onPress={_handleUnGroupLabel}
               />
             </Menu>
-
-            <IconButton
-              icon={collapsed ? 'chevron-left' : 'chevron-down'}
-              size={24}
-              onPress={_handleToggleCollapse}
-            />
           </View>
         </View>
-
-        <Collapsible
-          collapsed={collapsed}
-          style={{paddingLeft: notes.length > 0 ? 20 : 0}}>
-          {notes.length === 0 && _renderAddNoteView()}
-          {notes.map((note, index) => {
-            return <EnhancedNoteItem note={note} key={index} />;
-          })}
-          <Divider />
-        </Collapsible>
       </View>
     </TouchableRipple>
   );
@@ -253,10 +195,5 @@ const LabelItem = ({label, notes, handleDeleteLabel, handleUnGroupLabel}) => {
 
 const enhanceLabelItem = withObservables(['label'], ({label}) => ({
   label, // shortcut syntax for `comment: comment.observe()`
-  notes: label.notes,
-  notes: database.collections
-    .get('notes')
-    .query(Q.where('is_archived', Q.notEq(true)), Q.where('label_id', label.id))
-    .observe(),
 }));
 export const EnhancedLabelItem = enhanceLabelItem(LabelItem);

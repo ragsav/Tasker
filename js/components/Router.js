@@ -35,6 +35,7 @@ import PinScreen from '../screens/PinScreen';
 import {createSharedElementStackNavigator} from 'react-navigation-shared-element';
 import {Storage} from '../utils/asyncStorage';
 import {setDefaultHomeScreen} from '../redux/actions';
+import LabelScreen from '../screens/LabelScreen';
 // const Stack = createStackNavigator();
 const Stack = createSharedElementStackNavigator();
 const opacityTransition = {
@@ -98,6 +99,13 @@ const Router = ({theme, defaultHomeScreen, dispatch}) => {
             <Stack.Screen
               name={CONSTANTS.ROUTES.HOME}
               component={Home}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name={CONSTANTS.ROUTES.LABEL}
+              component={LabelScreen}
               options={{
                 headerShown: false,
               }}
