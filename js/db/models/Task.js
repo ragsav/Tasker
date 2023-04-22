@@ -1,4 +1,4 @@
-import {Model} from '@nozbe/watermelondb';
+import {Model, Q} from '@nozbe/watermelondb';
 import {
   field,
   text,
@@ -54,5 +54,34 @@ export default class Task extends Model {
   };
   static _jsonDataForBackup = raw => {
     return {...raw, _changed: null, _status: null};
+  };
+  static archived = () => {
+    return Q.on('notes', Q.where('is_archived', Q.eq(true)));
+  };
+  static unarchived = () => {
+    return Q.on(
+      'notes',
+      Q.or(
+        Q.where('is_archived', Q.eq(undefined)),
+        Q.where('is_archived', Q.eq(null)),
+        Q.where('is_archived', Q.eq(false)),
+      ),
+    );
+  };
+
+  static sortQuery = (taskSortProperty, taskSortOrder) => {
+    return Q.sortBy(
+      !taskSortProperty ||
+        String(taskSortProperty).trim() === '' ||
+        taskSortProperty === undefined
+        ? CONSTANTS.TASK_SORT.CREATED_AT.code
+        : String(taskSortProperty).trim(),
+      !taskSortOrder ||
+        taskSortOrder === undefined ||
+        String(taskSortOrder) === Q.asc ||
+        String(taskSortOrder) === Q.desc
+        ? taskSortOrder
+        : Q.asc,
+    );
   };
 }

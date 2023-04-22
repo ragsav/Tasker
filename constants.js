@@ -11,11 +11,11 @@ export const CONSTANTS = Object.freeze({
     TASKS: 'tasks',
   },
   ROUTES: {
-    HOME: 'HOME',
     LABEL: 'LABEL',
     INTRO: 'INTRO',
     PINNED_NOTES: 'PINNED_NOTES',
     BOOKMARKS: 'BOOKMARKS',
+    LABEL_DRAWER: 'LABEL_DRAWER',
     ADD_LABEL: 'ADD_LABEL',
     EDIT_LABEL: 'EDIT_LABEL',
 
@@ -35,12 +35,23 @@ export const CONSTANTS = Object.freeze({
     SEARCH: 'SEARCH',
     SETTINGS: 'SETTINGS',
     COMPLETED: 'COMPLETED',
-    ALL: 'ALL',
+    ALL_TASKS: 'ALL_TASKS',
   },
 
   NOTE_SORT: {
     TITLE: {text: 'Title', code: 'title'},
     CREATED_AT: {text: 'Created on', code: 'created_at'},
+  },
+
+  NOTE_SORT_ORDER: {
+    ASC: {
+      text: 'Ascensing',
+      code: 'asc',
+    },
+    DESC: {
+      text: 'Descending',
+      code: 'desc',
+    },
   },
 
   TASK_SORT: {
@@ -105,5 +116,8 @@ export const CONSTANTS = Object.freeze({
     TASK_SORT_ORDER: 'TASK_SORT_ORDER',
     TASK_SORT_PROPERTY: 'TASK_SORT_PROPERTY',
     DEFAULT_HOME_SCREEN: 'DEFAULT_HOME_SCREEN',
+
+    NOTE_SORT_ORDER: 'NOTE_SORT_ORDER',
+    NOTE_SORT_PROPERTY: 'NOTE_SORT_PROPERTY',
   },
 });

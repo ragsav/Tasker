@@ -42,7 +42,7 @@ const EditNoteScreen = ({
   useFocusEffect(
     useCallback(() => {
       if (p_id) {
-        getLabelByID(p_labelID)
+        getLabelByID({id: p_labelID})
           .then(label => {
             setNoteState({
               title: p_title,

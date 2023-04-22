@@ -56,7 +56,7 @@ const CreateNewNoteScreen = ({
   useFocusEffect(
     useCallback(() => {
       if (route && route.params && route.params.p_labelID) {
-        getLabelByID(route.params.p_labelID)
+        getLabelByID({id: route.params.p_labelID})
           .then(label => {
             setNoteState({
               label: label,

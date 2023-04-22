@@ -1,4 +1,4 @@
-import {useFocusEffect} from '@react-navigation/native';
+import {StackActions, useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import {
@@ -13,6 +13,7 @@ import {
 import {connect} from 'react-redux';
 import {IconSelectBottomSheet} from '../components/IconSelectBottomSheet';
 import {createLabel, resetCreateLabelState} from '../redux/actions';
+import {CONSTANTS} from '../../constants';
 const CreateNewLabelScreen = ({
   dispatch,
   navigation,

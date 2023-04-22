@@ -2,7 +2,7 @@ import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import {SafeAreaView, StyleSheet, Text} from 'react-native';
 import DraggableFlatList, {
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
@@ -18,7 +18,6 @@ import TaskSortBottomSheet from '../components/TaskSortBottomSheet';
 import {database} from '../db/db';
 import Note from '../db/models/Note';
 import Task from '../db/models/Task';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   deleteNote,
   duplicateNote,
@@ -27,8 +26,6 @@ import {
   resetDeleteNoteState,
 } from '../redux/actions';
 import {Logger} from '../utils/logger';
-import {SharedElement} from 'react-navigation-shared-element';
-import Animated, {SlideInRight} from 'react-native-reanimated';
 
 /**
  *
@@ -191,6 +188,10 @@ const NoteScreen = ({
             // </SharedElement>
           }
         />
+        <Appbar.Action
+          icon={Boolean(note.isPinned) ? 'pin-off' : 'pin'}
+          onPress={note.isPinned ? _handleUnpinNote : _handlePinNote}
+        />
 
         <Menu
           visible={isMenuOpen}
@@ -286,29 +287,12 @@ const enhanceNoteScreen = withObservables(
           Q.where('is_marked_deleted', Q.eq(null)),
           Q.where('is_marked_deleted', Q.eq(false)),
         ),
-        Q.where('is_archived', Q.notEq(true)),
         Q.where('note_id', route.params.p_id),
-        Q.sortBy(
-          String(taskSortProperty).trim() === ''
-            ? CONSTANTS.TASK_SORT.DUE_DATE.code
-            : String(taskSortProperty).trim(),
-          String(taskSortOrder) === Q.asc || String(taskSortOrder) === Q.desc
-            ? taskSortOrder
-            : Q.asc,
-        ),
+        Task.sortQuery(taskSortProperty, taskSortOrder),
       ),
   }),
 );
-// NoteScreen.sharedElements = route => {
-//   const {p_id} = route.params;
-//   return [
-//     {
-//       id: `note.${p_id}.hero`,
-//       animation: 'move',
-//       resize: 'clip',
-//     },
-//   ];
-// };
+
 const EnhancedNoteScreen = enhanceNoteScreen(NoteScreen);
 
 const mapStateToProps = state => {

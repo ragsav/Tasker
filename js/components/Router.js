@@ -3,39 +3,35 @@
  * @flow strict-local
  */
 
-import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
+import {TransitionPresets} from '@react-navigation/stack';
+import React, {useEffect} from 'react';
+import {StatusBar} from 'react-native';
 import RNBootSplash from 'react-native-bootsplash';
+import {Provider as PaperProvider} from 'react-native-paper';
+import {createSharedElementStackNavigator} from 'react-navigation-shared-element';
 import {connect} from 'react-redux';
-import Home from '../screens/Home';
 import {CONSTANTS} from '../../constants';
+import AllTaskScreen from '../screens/AllTaskScreen';
+import ArchivedNotesScreen from '../screens/ArchivedNotesScreen';
+import BackupConfigScreen from '../screens/BackupConfigScreen';
+import BookmarkScreen from '../screens/BookmarkScreen';
+import CalendarScreen from '../screens/CalendarScreen';
+import CompletedScreen from '../screens/CompletedScreen';
 import CreateNewLabelScreen from '../screens/CreateNewLabelScreen';
 import CreateNewNoteScreen from '../screens/CreateNewNoteScreen';
+import DayScreen from '../screens/DayScreen';
+import DeletedTasksScreen from '../screens/DeletedTasksScreen';
 import EditLabelScreen from '../screens/EditLabelScreen';
 import EditNoteScreen from '../screens/EditNoteScreen';
-import NoteScreen from '../screens/NoteScreen';
-import DayScreen from '../screens/DayScreen';
-import BookmarkScreen from '../screens/BookmarkScreen';
-import TaskScreen from '../screens/TaskScreen';
-import CalendarScreen from '../screens/CalendarScreen';
-import {useEffect} from 'react';
-import PermissionsProvider from './PermissionsProvider';
-import {SearchScreen} from '../screens/SearchScreen';
-import {Provider as PaperProvider} from 'react-native-paper';
-import {StatusBar} from 'react-native';
-import Settings from '../screens/Settings';
-import AllTaskScreen from '../screens/AllTaskScreen';
-import CompletedScreen from '../screens/CompletedScreen';
-import ArchivedTasksScreen from '../screens/ArchivedTasksScreen';
-import ArchivedNotesScreen from '../screens/ArchivedNotesScreen';
-import DeletedTasksScreen from '../screens/DeletedTasksScreen';
-import BackupConfigScreen from '../screens/BackupConfigScreen';
-import PinScreen from '../screens/PinScreen';
-import {createSharedElementStackNavigator} from 'react-navigation-shared-element';
-import {Storage} from '../utils/asyncStorage';
-import {setDefaultHomeScreen} from '../redux/actions';
 import LabelScreen from '../screens/LabelScreen';
+import NoteScreen from '../screens/NoteScreen';
+import PinScreen from '../screens/PinScreen';
+import {SearchScreen} from '../screens/SearchScreen';
+import Settings from '../screens/Settings';
+import TaskScreen from '../screens/TaskScreen';
+import EnhancedDrawerBasedNavigation from './DrawerBasedNavigator';
+import PermissionsProvider from './PermissionsProvider';
 // const Stack = createStackNavigator();
 const Stack = createSharedElementStackNavigator();
 const opacityTransition = {
@@ -94,15 +90,16 @@ const Router = ({theme, defaultHomeScreen, dispatch}) => {
             RNBootSplash.hide();
           }}>
           <Stack.Navigator
-            initialRouteName={CONSTANTS.ROUTES.HOME}
+            initialRouteName={CONSTANTS.ROUTES.LABEL_DRAWER}
             screenOptions={{...TransitionPresets.ScaleFromCenterAndroid}}>
             <Stack.Screen
-              name={CONSTANTS.ROUTES.HOME}
-              component={Home}
+              name={CONSTANTS.ROUTES.LABEL_DRAWER}
+              component={EnhancedDrawerBasedNavigation}
               options={{
                 headerShown: false,
               }}
             />
+
             <Stack.Screen
               name={CONSTANTS.ROUTES.LABEL}
               component={LabelScreen}
@@ -152,7 +149,7 @@ const Router = ({theme, defaultHomeScreen, dispatch}) => {
               options={{headerShown: false}}
             />
             <Stack.Screen
-              name={CONSTANTS.ROUTES.ALL}
+              name={CONSTANTS.ROUTES.ALL_TASKS}
               component={AllTaskScreen}
               options={{headerShown: false}}
             />
@@ -187,11 +184,6 @@ const Router = ({theme, defaultHomeScreen, dispatch}) => {
               options={{headerShown: false}}
             />
             <Stack.Screen
-              name={CONSTANTS.ROUTES.ARCHIVED_TASKS}
-              component={ArchivedTasksScreen}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
               name={CONSTANTS.ROUTES.DELETED_TASKS}
               component={DeletedTasksScreen}
               options={{headerShown: false}}
@@ -215,7 +207,7 @@ const Router = ({theme, defaultHomeScreen, dispatch}) => {
 
 const mapStateToProps = state => {
   return {
-    theme: state.settings.theme,
+    // theme: state.settings.theme,
     defaultHomeScreen: state.settings.defaultHomeScreen,
   };
 };

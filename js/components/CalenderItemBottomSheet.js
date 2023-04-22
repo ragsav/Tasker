@@ -114,30 +114,16 @@ const enhanceSelectLabel = withObservables(
             .get('tasks')
             .query(
               Q.where('id', Q.oneOf(selectedDateInfo.taskIDs)),
-              Q.sortBy(
-                String(taskSortProperty).trim() === ''
-                  ? CONSTANTS.TASK_SORT.DUE_DATE.code
-                  : String(taskSortProperty).trim(),
-                String(taskSortOrder) === Q.asc ||
-                  String(taskSortOrder) === Q.desc
-                  ? taskSortOrder
-                  : Q.asc,
-              ),
+              Task.unarchived(),
+              Task.sortQuery(taskSortProperty, taskSortOrder),
             )
             .observe()
         : database.collections
             .get('tasks')
             .query(
               Q.where('id', Q.oneOf([])),
-              Q.sortBy(
-                String(taskSortProperty).trim() === ''
-                  ? CONSTANTS.TASK_SORT.DUE_DATE.code
-                  : String(taskSortProperty).trim(),
-                String(taskSortOrder) === Q.asc ||
-                  String(taskSortOrder) === Q.desc
-                  ? taskSortOrder
-                  : Q.asc,
-              ),
+              Task.unarchived(),
+              Task.sortQuery(taskSortProperty, taskSortOrder),
             )
             .observe(),
   }),

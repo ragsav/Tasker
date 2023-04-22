@@ -26,12 +26,14 @@ export const editLabelState = ({loading, success, error}) => {
     state: {loading, success, error},
   };
 };
+
 export const resetEditLabelState = () => {
   return {
     type: EDIT_LABEL_STATE,
     state: {loading: false, success: false, error: null},
   };
 };
+
 export const deleteLabelState = ({loading, success, error}) => {
   return {
     type: DELETE_LABEL_STATE,
@@ -51,7 +53,7 @@ export const resetDeleteLabelState = () => {
  * @param {string} id
  * @returns {Promise<Label>}
  */
-export const getLabelByID = async id => {
+export const getLabelByID = async ({id}) => {
   try {
     const label = await database.get('labels').find(id);
     Logger.pageLogger('label.js:getLabelByID:label', {label});
@@ -106,12 +108,13 @@ export const editLabel =
       dispatch(editLabelState({loading: false, success: true, error}));
     }
   };
+
 export const unGroupLabel =
   ({id}) =>
   async dispatch => {
     dispatch(editLabelState({loading: true, success: false, error: null}));
     try {
-      Logger.pageLogger('label.js:deleteLabel:start');
+      Logger.pageLogger('label.js:unGroupLabel:start');
       const notesToBeDetached = await database
         .get('notes')
         .query(Q.where('label_id', id))
@@ -121,7 +124,7 @@ export const unGroupLabel =
           n.labelID = '';
         });
       });
-      Logger.pageLogger('label.js:deleteLabel:batchUpdateRecords', {
+      Logger.pageLogger('label.js:unGroupLabel:batchUpdateRecords', {
         batchUpdateRecords,
       });
       database.write(async () => {
@@ -129,7 +132,7 @@ export const unGroupLabel =
       });
 
       dispatch(editLabelState({loading: false, success: true, error: null}));
-      Logger.pageLogger('label.js:deleteLabel:success');
+      Logger.pageLogger('label.js:unGroupLabel:success');
     } catch (error) {
       Logger.pageLogger('label.js:unGroupLabel:catch', {error});
       dispatch(editLabelState({loading: false, success: true, error}));
@@ -146,31 +149,27 @@ export const deleteLabel =
       Logger.pageLogger('label.js:deleteLabel:labelToBeDeleted', {
         labelToBeDeleted,
       });
-      const notesToBeDeleted = await database
+
+      const notesToBeDetached = await database
         .get('notes')
         .query(Q.where('label_id', labelToBeDeleted.id))
         .fetch();
-      Logger.pageLogger('label.js:deleteLabel:notesToBeDeleted', {
-        notesToBeDeleted,
+      const batchDetachRecords = notesToBeDetached.map(note => {
+        return note.prepareUpdate(n => {
+          n.labelID = '';
+        });
       });
-      const notesIDs = notesToBeDeleted.map(note => note.id);
-      const tasksToBeDeleted = await database
-        .get('tasks')
-        .query(Q.where('note_id', Q.oneOf(notesIDs)))
-        .fetch();
-      Logger.pageLogger('label.js:deleteLabel:tasksToBeDeleted', {
-        tasksToBeDeleted,
+      Logger.pageLogger('label.js:deleteLabel:batchDetachRecords', {
+        batchDetachRecords,
       });
-
-      const deletedTasks = tasksToBeDeleted.map(task =>
-        task.prepareDestroyPermanently(),
-      );
-      const deletedNotes = notesToBeDeleted.map(task =>
-        task.prepareDestroyPermanently(),
-      );
+      database.write(async () => {
+        database.batch(...batchDetachRecords);
+      });
 
       await database.write(async () => {
-        await database.batch(...deletedTasks, ...deletedNotes);
+        await database.batch(...batchDetachRecords);
+      });
+      await database.write(async () => {
         await labelToBeDeleted.destroyPermanently();
       });
 

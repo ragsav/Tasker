@@ -7,37 +7,20 @@
  */
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
+import MasonryList from '@react-native-seoul/masonry-list';
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback} from 'react';
-import {SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
-import {
-  Appbar,
-  Button,
-  Divider,
-  List,
-  Text,
-  useTheme,
-} from 'react-native-paper';
+import React, {useCallback, useState} from 'react';
+import {SafeAreaView, StyleSheet} from 'react-native';
+import {Appbar, useTheme} from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {FlatGrid} from 'react-native-super-grid';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
 import {EmptyTasks} from '../components/EmptyTasks';
-import {EnhancedLabelItem} from '../components/LabelItem';
 import EnhancedNoteItem from '../components/NoteItem';
-import PinnedNoteItem from '../components/PinnedNoteItem';
 import {database} from '../db/db';
 import Label from '../db/models/Label';
 import Note from '../db/models/Note';
-import MasonryList from '@react-native-seoul/masonry-list';
-import {
-  deleteLabel,
-  resetDeleteLabelState,
-  resetEditLabelState,
-  setDefaultHomeScreen,
-  unGroupLabel,
-} from '../redux/actions';
-import {Storage} from '../utils/asyncStorage';
+import {resetDeleteLabelState, resetEditLabelState} from '../redux/actions';
 const BOTTOM_APPBAR_HEIGHT = 64;
 // const EnhancedLabelItem = enhanceLabelItem(LabelItem);
 /**
@@ -57,6 +40,7 @@ const PinScreen = ({
   // ref
 
   // variables
+  const [listViewMode, setListViewMode] = useState('grid');
   const {bottom} = useSafeAreaInsets();
   const theme = useTheme();
 
@@ -75,16 +59,13 @@ const PinScreen = ({
   // callbacks
 
   // render functions
-  const _renderPinnedNoteItem = ({item}) => {
-    return <PinnedNoteItem note={item} />;
-  };
 
-  // handle functions
-  const _handleDeleteLabel = id => {
-    dispatch(deleteLabel({id}));
-  };
-  const _handleUnGroupLabel = id => {
-    dispatch(unGroupLabel({id}));
+  const _handleListViewMode = () => {
+    if (listViewMode === 'grid') {
+      setListViewMode('list');
+    } else {
+      setListViewMode('grid');
+    }
   };
 
   // navigation functions
@@ -92,41 +73,8 @@ const PinScreen = ({
   const _navigateBack = () => {
     navigation?.pop();
   };
-
-  const _navigateHome = () => {
-    navigation?.reset({
-      index: 0,
-      routes: [{name: CONSTANTS.ROUTES.HOME}],
-    });
-    dispatch(setDefaultHomeScreen({defaultHomeScreen: CONSTANTS.ROUTES.HOME}));
-  };
-
-  const _navigateToCreateLabelScreen = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.ADD_LABEL);
-  };
-  const _navigateToDayScreen = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.MY_DAY);
-  };
-  const _navigateToBookmarkScreen = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.BOOKMARKS);
-  };
-  const _navigateToCompletedScreen = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.COMPLETED);
-  };
-  const _navigateToAllTaskScreen = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.ALL);
-  };
-  const _navigateToCalendarScreen = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.CALENDAR);
-  };
-  const _navigateToCreateNoteScreen = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE);
-  };
   const _navigateToSearchScreen = () => {
     navigation?.navigate(CONSTANTS.ROUTES.SEARCH);
-  };
-  const _navigateToSettings = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.SETTINGS);
   };
 
   // misc functions
@@ -144,62 +92,32 @@ const PinScreen = ({
         backgroundColor: theme?.colors.surface,
       }}>
       <Appbar.Header>
+        <Appbar.BackAction onPress={_navigateBack} />
         <Appbar.Content
           title="#Pinned notes"
           titleStyle={{fontWeight: '700', color: theme?.colors.primary}}
         />
+        <Appbar.Action
+          icon={listViewMode === 'grid' ? 'view-grid' : 'view-list'}
+          onPress={_handleListViewMode}
+        />
         <Appbar.Action icon={'magnify'} onPress={_navigateToSearchScreen} />
-        <Appbar.Action icon={'cog'} onPress={_navigateToSettings} />
       </Appbar.Header>
       <MasonryList
-        style={{alignSelf: 'stretch'}}
+        style={{alignSelf: 'stretch', marginTop: 10, height: '100%'}}
         contentContainerStyle={{
+          paddingHorizontal: 8,
           alignSelf: 'stretch',
-          paddingHorizontal: 6,
         }}
-        numColumns={2}
+        numColumns={listViewMode === 'grid' ? 2 : 1}
         data={notes}
-        keyExtractor={(item, index) => item.id}
-        renderItem={_renderPinnedNoteItem}
+        renderItem={({item}) => (
+          <EnhancedNoteItem key={`notes-${item.id}`} note={item} />
+        )}
+        ListEmptyComponent={() => (
+          <EmptyTasks message={'Try adding your first task'} />
+        )}
       />
-      {/* <FlatGrid
-        data={notes}
-        maxItemsPerRow={2}
-        spacing={12}
-        renderItem={_renderPinnedNoteItem}
-        adjustGridToStyles={true}
-        additionalRowStyle={{alignItems: 'flex-start'}}
-        keyExtractor={(item, index) => item.id}
-      /> */}
-
-      <Appbar
-        style={{
-          height: BOTTOM_APPBAR_HEIGHT + bottom,
-          backgroundColor: theme?.colors.primary,
-          justifyContent: 'space-between',
-        }}
-        safeAreaInsets={{bottom}}>
-        <View></View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-          }}>
-          <Appbar.Action
-            isLeading={false}
-            icon="format-list-group"
-            iconColor={theme?.colors.onPrimary}
-            onPress={_navigateHome}
-          />
-          <Appbar.Action
-            isLeading={false}
-            icon="note-plus"
-            iconColor={theme?.colors.onPrimary}
-            onPress={_navigateToCreateNoteScreen}
-          />
-        </View>
-      </Appbar>
     </SafeAreaView>
   );
 };
@@ -217,7 +135,7 @@ const enhancePinScreen = withObservables([], ({}) => ({
   labels: database.collections.get('labels').query().observe(),
   notes: database.collections
     .get('notes')
-    .query(Q.where('label_id', ''), Q.where('is_archived', Q.notEq(true)))
+    .query(Q.where('is_archived', Q.notEq(true)), Q.where('is_pinned', true))
     .observe(),
 }));
 const EnhancedPinScreen = enhancePinScreen(PinScreen);

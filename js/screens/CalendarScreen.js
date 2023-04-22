@@ -348,7 +348,7 @@ const enhanceCalendarScreen = withObservables(
           Q.where('is_marked_deleted', Q.eq(null)),
           Q.where('is_marked_deleted', Q.eq(false)),
         ),
-        Q.where('is_archived', Q.notEq(true)),
+        Task.unarchived(),
         Q.or(
           Q.where(
             'created_at',

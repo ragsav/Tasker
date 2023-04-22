@@ -13,7 +13,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Provider as StoreProvider} from 'react-redux';
 import Router from './js/components/Router';
 import {configureStore} from './js/redux/store';
-
+import {MD3DarkTheme, MD3LightTheme} from 'react-native-paper';
 const store = configureStore();
 
 const App = () => {
@@ -24,7 +24,7 @@ const App = () => {
     <StoreProvider store={store}>
       <GestureHandlerRootView style={{flex: 1}}>
         <SafeAreaProvider>
-          <Router></Router>
+          <Router theme={MD3DarkTheme}></Router>
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </StoreProvider>

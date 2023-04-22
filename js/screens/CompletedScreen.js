@@ -140,16 +140,9 @@ const enhanceCompletedScreen = withObservables(
           Q.where('is_marked_deleted', Q.eq(null)),
           Q.where('is_marked_deleted', Q.eq(false)),
         ),
-        Q.where('is_archived', Q.notEq(true)),
         Q.where('is_done', true),
-        Q.sortBy(
-          String(taskSortProperty).trim() === ''
-            ? CONSTANTS.TASK_SORT.DUE_DATE.code
-            : String(taskSortProperty).trim(),
-          String(taskSortOrder) === Q.asc || String(taskSortOrder) === Q.desc
-            ? taskSortOrder
-            : Q.asc,
-        ),
+        Task.unarchived(),
+        Task.sortQuery(taskSortProperty, taskSortOrder),
       ),
   }),
 );

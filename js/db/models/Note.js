@@ -1,4 +1,4 @@
-import {Model} from '@nozbe/watermelondb';
+import {Model, Q} from '@nozbe/watermelondb';
 import {
   field,
   text,
@@ -44,5 +44,21 @@ export default class Note extends Model {
   };
   static _jsonDataForBackup = raw => {
     return {...raw, _changed: null, _status: null};
+  };
+
+  static noteSortQuery = (noteSortProperty, noteSortOrder) => {
+    return Q.sortBy(
+      !noteSortProperty ||
+        String(noteSortProperty).trim() === '' ||
+        noteSortProperty === undefined
+        ? CONSTANTS.NOTE_SORT.CREATED_AT.code
+        : String(noteSortProperty).trim(),
+      !noteSortOrder ||
+        noteSortOrder === undefined ||
+        String(noteSortOrder) === Q.asc ||
+        String(noteSortOrder) === Q.desc
+        ? noteSortOrder
+        : Q.asc,
+    );
   };
 }

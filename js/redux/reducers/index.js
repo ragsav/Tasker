@@ -7,6 +7,7 @@ import timeFrame from './timeFrame';
 import settings from './settings';
 import taskSort from './taskSort';
 import backup from './backup';
+import noteSort from './noteSort';
 
 export default combineReducers({
   permission,
@@ -17,4 +18,5 @@ export default combineReducers({
   settings,
   taskSort,
   backup,
+  noteSort,
 });

@@ -9,6 +9,8 @@ import EnhancedNoteItem from '../components/NoteItem';
 import {database} from '../db/db';
 import Note from '../db/models/Note';
 import {resetEditNoteState} from '../redux/actions';
+import MasonryList from '@react-native-seoul/masonry-list';
+import {EmptyTasks} from '../components/EmptyTasks';
 
 /**
  *
@@ -26,6 +28,7 @@ const ArchivedNotesScreen = ({
 
   // variables
   const theme = useTheme();
+  const [listViewMode, setListViewMode] = useState('grid');
 
   // states
 
@@ -57,6 +60,13 @@ const ArchivedNotesScreen = ({
   };
 
   // handle functions
+  const _handleListViewMode = () => {
+    if (listViewMode === 'grid') {
+      setListViewMode('list');
+    } else {
+      setListViewMode('grid');
+    }
+  };
 
   // navigation functions
   const _navigateBack = () => {
@@ -82,13 +92,26 @@ const ArchivedNotesScreen = ({
           title={'#Archived notes'}
           titleStyle={{fontWeight: '700'}}
         />
+        <Appbar.Action
+          icon={listViewMode === 'grid' ? 'view-grid' : 'view-list'}
+          onPress={_handleListViewMode}
+        />
       </Appbar.Header>
 
-      <FlatList
-        contentContainerStyle={{padding: 12}}
+      <MasonryList
+        style={{alignSelf: 'stretch', marginTop: 10, height: '100%'}}
+        contentContainerStyle={{
+          paddingHorizontal: 8,
+          alignSelf: 'stretch',
+        }}
+        numColumns={listViewMode === 'grid' ? 2 : 1}
         data={notes}
-        keyExtractor={item => item.id}
-        renderItem={_renderNoteItem}
+        renderItem={({item}) => (
+          <EnhancedNoteItem key={`notes-${item.id}`} note={item} />
+        )}
+        ListEmptyComponent={() => (
+          <EmptyTasks message={'Try adding your first task'} />
+        )}
       />
     </SafeAreaView>
   );

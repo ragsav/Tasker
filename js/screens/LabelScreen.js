@@ -1,6 +1,6 @@
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
-import {useFocusEffect} from '@react-navigation/native';
+import {DrawerActions, useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import DraggableFlatList, {
@@ -20,6 +20,7 @@ import Note from '../db/models/Note';
 import Task from '../db/models/Task';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
+  deleteLabel,
   deleteNote,
   duplicateNote,
   editNoteIsArchived,
@@ -32,6 +33,7 @@ import Animated, {SlideInRight} from 'react-native-reanimated';
 import Label from '../db/models/Label';
 import EnhancedNoteItem from '../components/NoteItem';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import NoteSortBottomSheet from '../components/NoteSortBottomSheet';
 const BOTTOM_APPBAR_HEIGHT = 64;
 /**
  *
@@ -70,33 +72,13 @@ const LabelScreen = ({
     }, []),
   );
 
-  //   useEffect(() => {
-  //     if (deleteNoteSuccess) {
-  //       _navigateBack();
-  //     }
-  //   }, [deleteNoteSuccess]);
+  useEffect(() => {
+    if (deleteNoteSuccess) {
+      _navigateBack();
+    }
+  }, [deleteNoteSuccess]);
 
   // callbacks
-
-  // render functions
-  /**
-   *
-   * @param {object} param0
-   * @param {Task} param0.item
-   * @returns
-   */
-  const _renderTaskItem = ({item, drag, isActive}) => {
-    return (
-      <ScaleDecorator>
-        <TaskItem
-          task={item}
-          disabled={isActive}
-          onLongPress={drag}
-          noteColor={note.colorString}
-        />
-      </ScaleDecorator>
-    );
-  };
 
   // render functions
   /**
@@ -110,25 +92,17 @@ const LabelScreen = ({
   };
 
   // handle functions
-  const _handleOpenDeleteNoteDialog = () => {
+  const _handleToggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const _handleOpenDeleteLabelDialog = () => {
     setIsMenuOpen(false);
     setIsDeleteDialogOpen(true);
   };
-  const _handleArchiveNote = () => {
-    setIsMenuOpen(false);
-    dispatch(editNoteIsArchived({id: note.id, isArchived: true}));
-    navigation?.pop();
-  };
-  const _handleUnarchiveNote = () => {
-    setIsMenuOpen(false);
-    dispatch(editNoteIsArchived({id: note.id, isArchived: false}));
-  };
-  const _handleCloseDeleteNoteDialog = () => {
+  const _handleCloseDeleteLabelDialog = () => {
     setIsDeleteDialogOpen(false);
   };
-  const _handleToggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const _handleDeleteNote = () => {
-    dispatch(deleteNote({id: note.id}));
+
+  const _handleDeleteLabel = () => {
+    dispatch(deleteLabel({id: label.id}));
     setIsMenuOpen(false);
     setIsDeleteDialogOpen(false);
   };
@@ -166,17 +140,19 @@ const LabelScreen = ({
   const _navigateBack = () => {
     navigation?.pop();
   };
-  const _navigateToEditLabelScreen = () => {
-    setIsMenuOpen(false);
-    navigation?.navigate(CONSTANTS.ROUTES.EDIT_NOTE, {
-      p_id: note.id,
-      p_title: note.title,
-      p_colorString: note.colorString,
-      p_labelID: note.labelID,
+  const _navigateToCreateNoteScreen = () => {
+    navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE, {
+      p_labelID: label.id,
     });
   };
-  const _navigateToCreateNoteScreen = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE);
+  const _navigateToEditLabelScreen = () => {
+    setIsMenuOpen(false);
+    navigation?.navigate(CONSTANTS.ROUTES.EDIT_LABEL, {
+      p_id: label.id,
+      p_title: label.title,
+      p_iconString: label.iconString,
+    });
+    // navigation?.navigate(CONSTANTS.ROUTES.ADD_LABEL);
   };
 
   // misc functions
@@ -195,14 +171,18 @@ const LabelScreen = ({
         ...StyleSheet.absoluteFillObject,
         backgroundColor: theme?.colors.surface,
       }}>
-      {/* <DeleteConfirmationDialog
+      <DeleteConfirmationDialog
         visible={isDeleteDialogOpen}
         message="note"
-        handleCancel={_handleCloseDeleteNoteDialog}
-        handleDelete={_handleDeleteNote}
-      /> */}
+        handleCancel={_handleCloseDeleteLabelDialog}
+        handleDelete={_handleDeleteLabel}
+      />
       <Appbar.Header>
-        <Appbar.BackAction onPress={_navigateBack} />
+        {/* <Appbar.BackAction onPress={_navigateBack} /> */}
+        <Appbar.Action
+          icon="menu"
+          onPress={() => navigation?.dispatch(DrawerActions.toggleDrawer())}
+        />
 
         <Appbar.Content
           title={
@@ -234,12 +214,6 @@ const LabelScreen = ({
             title="Edit"
             leadingIcon={'pencil'}
           />
-
-          {/* <Menu.Item
-            onPress={note.isPinned ? _handleUnpinNote : _handlePinNote}
-            title={note.isPinned ? 'Unpin note' : 'Pin note'}
-            leadingIcon={note.isPinned ? 'pin-off' : 'pin'}
-          />
           <Menu.Item
             onPress={_handleOpenSortTaskBottomSheet}
             title="Sort by"
@@ -247,37 +221,12 @@ const LabelScreen = ({
           />
 
           <Menu.Item
-            onPress={_handleDuplicateNote}
-            title="Duplicate note"
-            leadingIcon={'content-duplicate'}
-          />
-          <Menu.Item
-            onPress={
-              note.isArchived ? _handleUnarchiveNote : _handleArchiveNote
-            }
-            title={note.isArchived ? 'Unarchive' : 'Archive'}
-            leadingIcon={note.isArchived ? 'package-up' : 'package-down'}
-          />
-          <Menu.Item
-            onPress={_handleOpenDeleteNoteDialog}
-            title="Delete note"
+            onPress={_handleOpenDeleteLabelDialog}
+            title="Delete label"
             leadingIcon={'delete'}
-          /> */}
+          />
         </Menu>
       </Appbar.Header>
-
-      {/* <DraggableFlatList
-        contentContainerStyle={{padding: 12}}
-        data={tasks}
-        onDragEnd={value =>
-          Logger.pageLogger('LabelScreen.js:DraggableFlatList:onDragEnd')
-        }
-        keyExtractor={item => item.id}
-        renderItem={_renderTaskItem}
-        ListEmptyComponent={() => (
-          <EmptyTasks message={'Try adding your first task'} />
-        )}
-      /> */}
       <MasonryList
         style={{alignSelf: 'stretch', marginTop: 10, height: '100%'}}
         contentContainerStyle={{
@@ -293,7 +242,11 @@ const LabelScreen = ({
             note={item}
           />
         )}
+        ListEmptyComponent={() => (
+          <EmptyTasks message={'Try adding your first task'} />
+        )}
       />
+
       <Appbar
         style={{
           height: BOTTOM_APPBAR_HEIGHT + bottom,
@@ -308,12 +261,6 @@ const LabelScreen = ({
             justifyContent: 'flex-end',
             alignItems: 'center',
           }}>
-          {/* <Appbar.Action
-            isLeading={false}
-            icon="pin"
-            iconColor={theme?.colors.onPrimary}
-            onPress={_navigateToPinScreen}
-          /> */}
           <Appbar.Action
             isLeading={false}
             icon="note-plus"
@@ -322,59 +269,38 @@ const LabelScreen = ({
           />
         </View>
       </Appbar>
-      {/* {notes?.map(note => {
-        return <Text key={note.id}>{note.id}</Text>;
-      })} */}
 
-      {/* <FAB
-        icon="plus"
-        style={{
-          position: 'absolute',
-          margin: 16,
-          right: 0,
-          bottom: 0,
-          // backgroundColor: theme?.colors.surface,
-          backgroundColor:
-            note && note.colorString ? note.colorString : theme?.colors.error,
-        }}
-        color={theme?.colors.surface}
-        onPress={_handleOpenTaskInput}
-      /> */}
-      {/* <TaskInput
-        visible={isTaskInputOpen}
-        setVisible={setIsTaskInputOpen}
-        noteID={note.id}
-      /> */}
-
-      {/* <TaskSortBottomSheet
+      <NoteSortBottomSheet
         visible={isSortBottomSheetVisible}
         setVisible={setIsSortBottomSheetVisible}
-      /> */}
+      />
     </SafeAreaView>
   );
 };
 
 const enhanceLabelScreen = withObservables(
   ['route', 'noteSortProperty', 'noteSortOrder'],
-  ({route, noteSortProperty, noteSortOrder}) => ({
-    label: database.collections.get('labels').findAndObserve(route.params.p_id),
-    notes: database.collections.get('notes').query(
-      Q.or(
-        Q.where('is_marked_deleted', Q.eq(null)),
-        Q.where('is_marked_deleted', Q.eq(false)),
-      ),
-      Q.where('is_archived', Q.notEq(true)),
-      Q.where('label_id', route.params.p_id),
-      // Q.sortBy(
-      //   String(noteSortProperty).trim() === ''
-      //     ? CONSTANTS.TASK_SORT.DUE_DATE.code
-      //     : String(noteSortProperty).trim(),
-      //   String(noteSortOrder) === Q.asc || String(noteSortOrder) === Q.desc
-      //     ? noteSortOrder
-      //     : Q.asc,
-      // ),
-    ),
-  }),
+  ({route, noteSortProperty, noteSortOrder}) => {
+    console.log({noteSortProperty});
+    return {
+      label: database.collections
+        .get('labels')
+        .findAndObserve(route.params.p_id),
+      notes: database.collections
+        .get('notes')
+        .query(
+          Q.or(
+            Q.where('is_marked_deleted', Q.eq(null)),
+            Q.where('is_marked_deleted', Q.eq(false)),
+          ),
+          Q.where('is_archived', Q.notEq(true)),
+          Q.where('label_id', route.params.p_id),
+
+          Note.noteSortQuery(noteSortProperty, noteSortOrder),
+        )
+        .observe(),
+    };
+  },
 );
 // LabelScreen.sharedElements = route => {
 //   const {p_id} = route.params;
@@ -393,8 +319,8 @@ const mapStateToProps = state => {
     isDeletingNote: state.note.isDeletingNote,
     deleteNoteSuccess: state.note.deleteNoteSuccess,
     deleteNoteFailure: state.note.deleteNoteFailure,
-    taskSortProperty: state.taskSort.taskSortProperty,
-    taskSortOrder: state.taskSort.taskSortOrder,
+    noteSortProperty: state.noteSort.noteSortProperty,
+    noteSortOrder: state.noteSort.noteSortOrder,
   };
 };
 

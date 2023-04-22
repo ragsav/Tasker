@@ -144,16 +144,9 @@ const enhanceDayScreen = withObservables(
           Q.where('is_marked_deleted', Q.eq(null)),
           Q.where('is_marked_deleted', Q.eq(false)),
         ),
-        Q.where('is_archived', Q.notEq(true)),
+        Task.unarchived(),
+        Task.sortQuery(taskSortProperty, taskSortOrder),
         Q.where('end_timestamp', Q.between(s.getTime(), e.getTime())),
-        Q.sortBy(
-          String(taskSortProperty).trim() === ''
-            ? CONSTANTS.TASK_SORT.DUE_DATE.code
-            : String(taskSortProperty).trim(),
-          String(taskSortOrder) === Q.asc || String(taskSortOrder) === Q.desc
-            ? taskSortOrder
-            : Q.asc,
-        ),
       ),
   }),
 );

@@ -115,14 +115,7 @@ const enhanceDeletedTasksScreen = withObservables(
       .get('tasks')
       .query(
         Q.where('is_marked_deleted', Q.eq(true)),
-        Q.sortBy(
-          String(taskSortProperty).trim() === ''
-            ? CONSTANTS.TASK_SORT.DUE_DATE.code
-            : String(taskSortProperty).trim(),
-          String(taskSortOrder) === Q.asc || String(taskSortOrder) === Q.desc
-            ? taskSortOrder
-            : Q.asc,
-        ),
+        Task.sortQuery(taskSortProperty, taskSortOrder),
       ),
   }),
 );

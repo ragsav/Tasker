@@ -105,12 +105,7 @@ export const getTasks = () => async dispatch => {
   }
 };
 
-/**
- *
- * @param {string} id
- * @returns {Promise<Task>}
- */
-export const getTaskByID = async id => {
+export const getTaskByID = async ({id}) => {
   try {
     const task = await database.get('tasks').find(id);
     Logger.pageLogger('task.js:getTaskByID:task', {task});
@@ -135,7 +130,6 @@ export const getTaskByQuery = async query => {
           Q.where('is_marked_deleted', Q.eq(null)),
           Q.where('is_marked_deleted', Q.eq(false)),
         ),
-        Q.where('is_archived', Q.notEq(true)),
         Q.where('title', Q.like(`%${Q.sanitizeLikeString(query)}%`)),
       )
       .fetch();

@@ -33,12 +33,14 @@ export const resetEditNoteState = () => {
     state: {loading: false, success: false, error: null},
   };
 };
+
 export const deleteNoteState = ({loading, success, error}) => {
   return {
     type: DELETE_NOTE_STATE,
     state: {loading, success, error},
   };
 };
+
 export const resetDeleteNoteState = () => {
   return {
     type: DELETE_NOTE_STATE,
@@ -46,12 +48,7 @@ export const resetDeleteNoteState = () => {
   };
 };
 
-/**
- *
- * @param {string} id
- * @returns {Promise<Note>}
- */
-export const getNoteByID = async id => {
+export const getNoteByID = async ({id}) => {
   try {
     const note = await database.get('notes').find(id);
     Logger.pageLogger('note.js:getNoteByID:note', {note});
@@ -180,8 +177,9 @@ export const duplicateNote =
       dispatch(createNoteState({loading: false, success: true, error}));
     }
   };
+
 export const editNoteIsArchived =
-  ({id, isArchived, unarchiveAll}) =>
+  ({id, isArchived}) =>
   async dispatch => {
     dispatch(editNoteState({loading: true, success: false, error: null}));
     try {
@@ -190,36 +188,7 @@ export const editNoteIsArchived =
         noteToBeUpdated,
       });
 
-      const tasksToBeArchived = await database
-        .get('tasks')
-        .query(
-          Q.where('note_id', noteToBeUpdated.id),
-          Q.or(
-            Q.where('is_marked_deleted', Q.eq(null)),
-            Q.where('is_marked_deleted', Q.eq(false)),
-          ),
-          Q.where('is_archived', Q.notEq(!noteToBeUpdated.isArchived)),
-        )
-        .fetch();
-      Logger.pageLogger('note.js:editNoteIsArchived:tasksToBeArchived', {
-        tasksToBeArchived,
-      });
-
-      const archivedTasks = tasksToBeArchived.map(task =>
-        task.prepareUpdate(t => {
-          {
-            t.isArchived = isArchived;
-            if (isArchived) {
-              t.archiveTimestamp = Date.now();
-            }
-          }
-        }),
-      );
-
       await database.write(async () => {
-        if (isArchived || unarchiveAll) {
-          await database.batch(...archivedTasks);
-        }
         await noteToBeUpdated.update(note => {
           note.isArchived = isArchived;
           if (isArchived) {
@@ -237,6 +206,7 @@ export const editNoteIsArchived =
       dispatch(editNoteState({loading: false, success: true, error}));
     }
   };
+
 export const editNoteIsPinned =
   ({id, isPinned}) =>
   async dispatch => {
@@ -262,6 +232,7 @@ export const editNoteIsPinned =
       dispatch(editNoteState({loading: false, success: true, error}));
     }
   };
+
 export const deleteNote =
   ({id}) =>
   async dispatch => {
@@ -284,7 +255,7 @@ export const deleteNote =
         .query(Q.where('note_id', noteToBeDeleted.id))
         .fetch();
       Logger.pageLogger('note.js:deleteNote:tasksToBeDeleted', {
-        tasksToBeDeleted,
+        tasksToBeDeleted: tasksToBeDeleted?.length,
       });
 
       const deletedTasks = tasksToBeDeleted.map(task =>

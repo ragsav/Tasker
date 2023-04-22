@@ -1,4 +1,4 @@
-import {useFocusEffect} from '@react-navigation/native';
+import {StackActions, useFocusEffect} from '@react-navigation/native';
 import moment from 'moment';
 import React, {useCallback} from 'react';
 import {useState} from 'react';
@@ -72,7 +72,9 @@ const Settings = ({
       defaultHomeScreen === CONSTANTS.ROUTES.PINNED_NOTES
     ) {
       dispatch(
-        setDefaultHomeScreen({defaultHomeScreen: CONSTANTS.ROUTES.HOME}),
+        setDefaultHomeScreen({
+          defaultHomeScreen: CONSTANTS.ROUTES.LABEL_DRAWER,
+        }),
       );
     } else {
       dispatch(
@@ -223,25 +225,7 @@ const Settings = ({
             />
           )}
         />
-        <Divider />
-        <List.Item
-          onPress={_navigateToArchivedTasks}
-          title={'#Archived tasks'}
-          left={props => (
-            <List.Icon
-              {...props}
-              icon="package-down"
-              color={theme.colors.onSurface}
-            />
-          )}
-          right={props => (
-            <List.Icon
-              {...props}
-              icon="chevron-right"
-              color={theme.colors.onSurface}
-            />
-          )}
-        />
+
         <Divider />
         <List.Item
           onPress={_navigateToDeletedTasks}
@@ -288,20 +272,7 @@ const Settings = ({
             <Switch value={theme.dark} onValueChange={_handleToggleTheme} />
           )}
         />
-        <Divider />
-        <List.Item
-          title={'Set pinned screen as default home screen'}
-          titleNumberOfLines={2}
-          left={props => (
-            <List.Icon {...props} icon="pin" color={theme.colors.onSurface} />
-          )}
-          right={props => (
-            <Switch
-              value={CONSTANTS.ROUTES.PINNED_NOTES === defaultHomeScreen}
-              onValueChange={_handleToggleDefaultHomeScreen}
-            />
-          )}
-        />
+
         <Divider />
         <List.Section>
           <List.Subheader>Quick lists</List.Subheader>

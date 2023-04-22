@@ -6,6 +6,8 @@ import {
   setDailyReminderSetting,
   setLastBackupTime,
   setLastRestoreTime,
+  setNoteSortOrder,
+  setNoteSortProperty,
   setQuickListSettings,
   setRenderURLInTaskSettings,
   setTaskSortOrder,
@@ -27,11 +29,11 @@ export const configureStore = persistedState => {
   store.dispatch(handleStorageWritePermissionUsingLibrary());
   Storage.getData(CONSTANTS.LOCAL_STORAGE_KEYS.LOCAL_THEME).then(theme => {
     Logger.pageLogger('Storage.getData:LOCAL_THEME', {theme});
-    if (theme === 'dark') {
-      store.dispatch(setTheme({theme: _customDarkTheme}));
-    } else {
-      store.dispatch(setTheme({theme: _customLightTheme}));
-    }
+    // if (theme === 'dark') {
+    //   store.dispatch(setTheme({theme: _customDarkTheme}));
+    // } else {
+    //   store.dispatch(setTheme({theme: _customLightTheme}));
+    // }
   });
   Storage.getData(CONSTANTS.LOCAL_STORAGE_KEYS.QUICK_LIST_SETTING).then(
     quickListSettings => {
@@ -71,6 +73,33 @@ export const configureStore = persistedState => {
           taskSortOrder: taskSortOrder
             ? taskSortOrder
             : CONSTANTS.TASK_SORT_ORDER.ASC.code,
+        }),
+      );
+    },
+  );
+
+  Storage.getData(CONSTANTS.LOCAL_STORAGE_KEYS.NOTE_SORT_PROPERTY).then(
+    noteSortProperty => {
+      Logger.pageLogger('Storage.getData:NOTE_SORT_PROPERTY', {
+        noteSortProperty,
+      });
+      store.dispatch(
+        setNoteSortProperty({
+          noteSortProperty: noteSortProperty
+            ? noteSortProperty
+            : CONSTANTS.NOTE_SORT.DUE_DATE.code,
+        }),
+      );
+    },
+  );
+  Storage.getData(CONSTANTS.LOCAL_STORAGE_KEYS.NOTE_SORT_ORDER).then(
+    noteSortOrder => {
+      Logger.pageLogger('Storage.getData:NOTE_SORT_ORDER', {noteSortOrder});
+      store.dispatch(
+        setNoteSortOrder({
+          noteSortOrder: noteSortOrder
+            ? noteSortOrder
+            : CONSTANTS.NOTE_SORT_ORDER.ASC.code,
         }),
       );
     },

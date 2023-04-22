@@ -6,3 +6,4 @@ export * from './task';
 export * from './settings';
 export * from './taskSort';
 export * from './backup';
+export * from './noteSort';

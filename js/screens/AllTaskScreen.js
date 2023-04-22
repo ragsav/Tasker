@@ -131,25 +131,20 @@ const AllTaskScreen = ({navigation, tasks, deleteNoteSuccess, dispatch}) => {
 
 const enhanceAllTaskScreen = withObservables(
   ['taskSortProperty', 'taskSortOrder'],
-  ({taskSortProperty, taskSortOrder}) => ({
-    tasks: database.collections
-      .get('tasks')
-      .query(
+  ({taskSortProperty, taskSortOrder}) => {
+    return {
+      tasks: database.collections.get('tasks').query(
+        // Q.on('notes', 'is_archived', false),
+
         Q.or(
           Q.where('is_marked_deleted', Q.eq(null)),
           Q.where('is_marked_deleted', Q.eq(false)),
         ),
-        Q.where('is_archived', Q.notEq(true)),
-        Q.sortBy(
-          String(taskSortProperty).trim() === ''
-            ? CONSTANTS.TASK_SORT.DUE_DATE.code
-            : String(taskSortProperty).trim(),
-          String(taskSortOrder) === Q.asc || String(taskSortOrder) === Q.desc
-            ? taskSortOrder
-            : Q.asc,
-        ),
+        Task.unarchived(),
+        Task.sortQuery(taskSortProperty, taskSortOrder),
       ),
-  }),
+    };
+  },
 );
 const EnhancedAllTaskScreen = enhanceAllTaskScreen(AllTaskScreen);
 

@@ -84,7 +84,7 @@ const NoteItem = ({note, tasks, tasksCount, handleDeleteNote, dispatch}) => {
           marginBottom: 10,
           flex: 1,
         }}
-        onPress={note.isArchived ? null : _navigateToNoteScreen}>
+        onPress={_navigateToNoteScreen}>
         <View
           style={{
             flexDirection: 'column',
@@ -142,7 +142,6 @@ const enhanceNoteItem = withObservables(['note'], ({note}) => ({
         Q.where('is_marked_deleted', Q.eq(null)),
         Q.where('is_marked_deleted', Q.eq(false)),
       ),
-      Q.where('is_archived', Q.notEq(!note.isArchived)),
       Q.where('note_id', note.id),
     )
     .observe(),
@@ -153,7 +152,6 @@ const enhanceNoteItem = withObservables(['note'], ({note}) => ({
         Q.where('is_marked_deleted', Q.eq(null)),
         Q.where('is_marked_deleted', Q.eq(false)),
       ),
-      Q.where('is_archived', Q.notEq(!note.isArchived)),
       Q.where('note_id', note.id),
     )
     .observeCount(),

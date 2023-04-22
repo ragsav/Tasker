@@ -67,6 +67,7 @@ export const setDefaultHomeScreen =
 export const setQuickListSettings =
   ({quickListSettings}) =>
   async dispatch => {
+    console.log(quickListSettings);
     Storage.storeData(
       CONSTANTS.LOCAL_STORAGE_KEYS.QUICK_LIST_SETTING,
       quickListSettings,

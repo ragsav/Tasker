@@ -18,9 +18,9 @@ export const LinkPreview = ({text, requestTimeout = 2000}) => {
     };
   }, [text]);
 
-  useEffect(() => {
-    Logger.pageLogger('URLPreview.js:useEffect', {data});
-  }, [data]);
+  // useEffect(() => {
+  //   Logger.pageLogger('URLPreview.js:useEffect', {data});
+  // }, [data]);
 
   const handlePress = () => data?.link && Linking.openURL(data.link);
 

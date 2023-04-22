@@ -20,7 +20,7 @@ export default (
     },
     renderURLInTask: true,
     dailyReminderTimestamp: 0,
-    defaultHomeScreen: CONSTANTS.ROUTES.HOME,
+    defaultHomeScreen: CONSTANTS.ROUTES.LABEL_DRAWER,
   },
   action,
 ) => {
@@ -35,7 +35,7 @@ export default (
         ...state,
         defaultHomeScreen: action.defaultHomeScreen
           ? action.defaultHomeScreen
-          : CONSTANTS.ROUTES.HOME,
+          : CONSTANTS.ROUTES.LABEL_DRAWER,
       };
     case CHANGE_QUICK_LIST_SETTINGS:
       return {
