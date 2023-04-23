@@ -2,9 +2,17 @@ import {database} from '../../db/db';
 import Label from '../../db/models/Label';
 import {Logger} from '../../utils/logger';
 import {Q} from '@nozbe/watermelondb';
+export const SETUP_LABEL_IN_DB = 'SETUP_LABEL_IN_DB';
 export const CREATE_LABEL_STATE = 'CREATE_LABEL_STATE';
 export const EDIT_LABEL_STATE = 'EDIT_LABEL_STATE';
 export const DELETE_LABEL_STATE = 'DELETE_LABEL_STATE';
+
+export const setupLabelState = ({loading, success, error}) => {
+  return {
+    type: SETUP_LABEL_IN_DB,
+    state: {loading, success, error},
+  };
+};
 
 export const createLabelState = ({loading, success, error}) => {
   return {
@@ -48,11 +56,27 @@ export const resetDeleteLabelState = () => {
   };
 };
 
-/**
- *
- * @param {string} id
- * @returns {Promise<Label>}
- */
+export const setupLabelInDB = () => async dispatch => {
+  try {
+    dispatch(setupLabelInDB({loading: true, success: false, error: null}));
+    const labels = [];
+    if (!labels || labels.length === 0) {
+      database.write(async () => {
+        await database.get('labels').create(label => {
+          label.title = 'My Notes';
+          label.iconString = 'label';
+        });
+      });
+    }
+    dispatch(setupLabelInDB({loading: false, success: true, error: null}));
+
+    return labels;
+  } catch (error) {
+    dispatch(setupLabelInDB({loading: false, success: false, error: error}));
+    Logger.pageLogger('label.js:setupLabelInDB:catch', {error});
+    return null;
+  }
+};
 export const getLabelByID = async ({id}) => {
   try {
     const label = await database.get('labels').find(id);

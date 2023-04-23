@@ -5,33 +5,24 @@ import {DrawerActions, useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, StyleSheet, Text} from 'react-native';
 import {Appbar, FAB, Menu, useTheme} from 'react-native-paper';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
-import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
 import {EmptyTasks} from '../components/EmptyTasks';
 import EnhancedNoteItem from '../components/NoteItem';
 import NoteSortBottomSheet from '../components/NoteSortBottomSheet';
 import {database} from '../db/db';
-import Label from '../db/models/Label';
 import Note from '../db/models/Note';
-import {
-  deleteLabel,
-  duplicateNote,
-  editNoteIsPinned,
-  resetDeleteNoteState,
-} from '../redux/actions';
+import {resetDeleteNoteState} from '../redux/actions';
 const BOTTOM_APPBAR_HEIGHT = 64;
 /**
  *
  * @param {object} param0
- * @param {Label} param0.label
  * @param {Array<Note>} param0.notes
  * @returns
  */
-const LabelScreen = ({
+const UnlabeledNotesScreen = ({
   navigation,
-  label,
+  route,
   notes,
   deleteNoteSuccess,
   dispatch,
@@ -44,8 +35,6 @@ const LabelScreen = ({
   // states
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [listViewMode, setListViewMode] = useState('grid');
-  const [isTaskInputOpen, setIsTaskInputOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSortBottomSheetVisible, setIsSortBottomSheetVisible] =
     useState(false);
 
@@ -73,23 +62,11 @@ const LabelScreen = ({
    * @returns
    */
   const _renderNoteItem = ({item}) => (
-    <EnhancedNoteItem key={`notes-${item.id}`} label={label} note={item} />
+    <EnhancedNoteItem key={`notes-${item.id}`} note={item} />
   );
-
   // handle functions
   const _handleToggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const _handleOpenDeleteLabelDialog = () => {
-    setIsMenuOpen(false);
-    setIsDeleteDialogOpen(true);
-  };
-  const _handleCloseDeleteLabelDialog = () => {
-    setIsDeleteDialogOpen(false);
-  };
-  const _handleDeleteLabel = () => {
-    dispatch(deleteLabel({id: label.id}));
-    setIsMenuOpen(false);
-    setIsDeleteDialogOpen(false);
-  };
+
   const _handleOpenSortNotesBottomSheet = () => {
     setIsMenuOpen(false);
     setIsSortBottomSheetVisible(true);
@@ -107,18 +84,7 @@ const LabelScreen = ({
     navigation?.pop();
   };
   const _navigateToCreateNoteScreen = () => {
-    navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE, {
-      p_labelID: label.id,
-    });
-  };
-  const _navigateToEditLabelScreen = () => {
-    setIsMenuOpen(false);
-    navigation?.navigate(CONSTANTS.ROUTES.EDIT_LABEL, {
-      p_id: label.id,
-      p_title: label.title,
-      p_iconString: label.iconString,
-    });
-    // navigation?.navigate(CONSTANTS.ROUTES.ADD_LABEL);
+    navigation?.navigate(CONSTANTS.ROUTES.ADD_NOTE);
   };
 
   // misc functions
@@ -137,12 +103,6 @@ const LabelScreen = ({
         ...StyleSheet.absoluteFillObject,
         backgroundColor: theme?.colors.surface,
       }}>
-      <DeleteConfirmationDialog
-        visible={isDeleteDialogOpen}
-        message="note"
-        handleCancel={_handleCloseDeleteLabelDialog}
-        handleDelete={_handleDeleteLabel}
-      />
       <Appbar.Header>
         {/* <Appbar.BackAction onPress={_navigateBack} /> */}
         <Appbar.Action
@@ -159,7 +119,7 @@ const LabelScreen = ({
                 fontWeight: '700',
                 color: theme?.colors.onSurface,
               }}>
-              {label ? `${label.title}` : '#Label'}
+              {'#Unlabel'}
             </Text>
             // </SharedElement>
           }
@@ -176,20 +136,9 @@ const LabelScreen = ({
             <Appbar.Action icon={'dots-vertical'} onPress={_handleToggleMenu} />
           }>
           <Menu.Item
-            onPress={_navigateToEditLabelScreen}
-            title="Edit"
-            leadingIcon={'pencil'}
-          />
-          <Menu.Item
             onPress={_handleOpenSortNotesBottomSheet}
             title="Sort by"
             leadingIcon={'sort'}
-          />
-
-          <Menu.Item
-            onPress={_handleOpenDeleteLabelDialog}
-            title="Delete label"
-            leadingIcon={'delete'}
           />
         </Menu>
       </Appbar.Header>
@@ -229,14 +178,10 @@ const LabelScreen = ({
   );
 };
 
-const enhanceLabelScreen = withObservables(
-  ['route', 'noteSortProperty', 'noteSortOrder'],
-  ({route, noteSortProperty, noteSortOrder}) => {
-    console.log({noteSortProperty});
+const enhanceUnlabeledNotesScreen = withObservables(
+  ['noteSortProperty', 'noteSortOrder'],
+  ({noteSortProperty, noteSortOrder}) => {
     return {
-      label: database.collections
-        .get('labels')
-        .findAndObserve(route.params.p_id),
       notes: database.collections
         .get('notes')
         .query(
@@ -245,25 +190,16 @@ const enhanceLabelScreen = withObservables(
             Q.where('is_marked_deleted', Q.eq(false)),
           ),
           Q.where('is_archived', Q.notEq(true)),
-          Q.where('label_id', route.params.p_id),
-
+          Q.where('label_id', ''),
           Note.noteSortQuery(noteSortProperty, noteSortOrder),
         )
         .observe(),
     };
   },
 );
-// LabelScreen.sharedElements = route => {
-//   const {p_id} = route.params;
-//   return [
-//     {
-//       id: `note.${p_id}.hero`,
-//       animation: 'move',
-//       resize: 'clip',
-//     },
-//   ];
-// };
-const EnhancedLabelScreen = enhanceLabelScreen(LabelScreen);
+
+const EnhancedUnlabeledNotesScreen =
+  enhanceUnlabeledNotesScreen(UnlabeledNotesScreen);
 
 const mapStateToProps = state => {
   return {
@@ -275,4 +211,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps)(EnhancedLabelScreen);
+export default connect(mapStateToProps)(EnhancedUnlabeledNotesScreen);

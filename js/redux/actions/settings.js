@@ -3,6 +3,7 @@ import NotificationService from '../../services/notifications';
 import {Storage} from '../../utils/asyncStorage';
 
 export const CHANGE_THEME = 'CHANGE_THEME';
+export const CHANGE_TASK_LIST_DEFAULT_VIEW = 'CHANGE_TASK_LIST_DEFAULT_VIEW';
 export const CHANGE_QUICK_LIST_SETTINGS = 'CHANGE_QUICK_LIST_SETTINGS';
 export const CHANGE_DAILY_REMINDER_SETTINGS = 'CHANGE_DAILY_REMINDER_SETTINGS';
 export const CHANGE_RENDER_URL_IN_TASK_SETTINGS =
@@ -14,6 +15,13 @@ export const setThemeState = ({theme}) => {
   return {
     type: CHANGE_THEME,
     theme,
+  };
+};
+
+export const setTaskListDetailViewState = ({isTaskListDetailView}) => {
+  return {
+    type: CHANGE_TASK_LIST_DEFAULT_VIEW,
+    isTaskListDetailView,
   };
 };
 
@@ -54,6 +62,15 @@ export const setTheme =
       Storage.storeData(CONSTANTS.LOCAL_STORAGE_KEYS.LOCAL_THEME, 'light');
     }
     dispatch(setThemeState({theme}));
+  };
+export const setTaskListDetailView =
+  ({isTaskListDetailView}) =>
+  async dispatch => {
+    Storage.storeData(
+      CONSTANTS.LOCAL_STORAGE_KEYS.TASK_LIST_DETAILED_VIEW,
+      isTaskListDetailView,
+    );
+    dispatch(setTaskListDetailViewState({isTaskListDetailView}));
   };
 export const setDefaultHomeScreen =
   ({defaultHomeScreen}) =>

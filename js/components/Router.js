@@ -32,6 +32,7 @@ import Settings from '../screens/Settings';
 import TaskScreen from '../screens/TaskScreen';
 import EnhancedDrawerBasedNavigation from './DrawerBasedNavigator';
 import PermissionsProvider from './PermissionsProvider';
+import UnlabeledNotesScreen from '../screens/UnlabeledNotesScreen';
 // const Stack = createStackNavigator();
 const Stack = createSharedElementStackNavigator();
 const opacityTransition = {
@@ -79,7 +80,7 @@ const Router = ({theme, defaultHomeScreen, dispatch}) => {
     <PermissionsProvider>
       <PaperProvider theme={theme}>
         <StatusBar
-          barStyle={theme?.statusBarStyle}
+          barStyle="light-content"
           backgroundColor={theme?.colors.surface}
           // translucent
         />
@@ -103,13 +104,6 @@ const Router = ({theme, defaultHomeScreen, dispatch}) => {
             <Stack.Screen
               name={CONSTANTS.ROUTES.LABEL}
               component={LabelScreen}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name={CONSTANTS.ROUTES.PINNED_NOTES}
-              component={PinScreen}
               options={{
                 headerShown: false,
               }}
@@ -186,11 +180,6 @@ const Router = ({theme, defaultHomeScreen, dispatch}) => {
             <Stack.Screen
               name={CONSTANTS.ROUTES.DELETED_TASKS}
               component={DeletedTasksScreen}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name={CONSTANTS.ROUTES.ARCHIVED_NOTES}
-              component={ArchivedNotesScreen}
               options={{headerShown: false}}
             />
             <Stack.Screen

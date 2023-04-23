@@ -6,6 +6,7 @@ import {
   CHANGE_QUICK_LIST_SETTINGS,
   CHANGE_RENDER_URL_IN_TASK_SETTINGS,
   CHANGE_THEME,
+  CHANGE_TASK_LIST_DEFAULT_VIEW,
 } from '../actions';
 
 export default (
@@ -21,6 +22,7 @@ export default (
     renderURLInTask: true,
     dailyReminderTimestamp: 0,
     defaultHomeScreen: CONSTANTS.ROUTES.LABEL_DRAWER,
+    isTaskListDetailView: false,
   },
   action,
 ) => {
@@ -51,6 +53,12 @@ export default (
       return {
         ...state,
         dailyReminderTimestamp: action.dailyReminderTimestamp,
+      };
+    }
+    case CHANGE_TASK_LIST_DEFAULT_VIEW: {
+      return {
+        ...state,
+        isTaskListDetailView: action.isTaskListDetailView,
       };
     }
 

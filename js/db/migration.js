@@ -64,5 +64,14 @@ export const xpenseDBMigration = schemaMigrations({
       toVersion: 20,
       steps: [],
     },
+    {
+      toVersion: 21,
+      steps: [
+        addColumns({
+          table: 'notes',
+          columns: [{name: 'password_hash', type: 'string', isOptional: true}],
+        }),
+      ],
+    },
   ],
 });

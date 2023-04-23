@@ -2,7 +2,7 @@ import withObservables from '@nozbe/with-observables';
 import {useNavigation} from '@react-navigation/native';
 import moment from 'moment';
 import React from 'react';
-import {View} from 'react-native';
+import {Image, View} from 'react-native';
 import {
   IconButton,
   Paragraph,
@@ -24,8 +24,51 @@ import {
   editTaskIsBookmark,
   editTaskIsDone,
   restoreTask,
+  setTaskListDetailView,
 } from '../redux/actions';
 import {Logger} from '../utils/logger';
+import extractUrls from 'extract-urls';
+import {LinkPreview} from './URLPreview';
+
+const ImageDisplayItem = ({URIs}) => {
+  const uriArray = JSON.parse(URIs);
+  return (
+    uriArray &&
+    Array.isArray(uriArray) &&
+    uriArray.map((uri, index) => {
+      return (
+        <Image
+          source={{uri}}
+          key={`task-images-${index}`}
+          style={{
+            height: 120,
+            width: '100%',
+            resizeMode: 'cover',
+            borderBottomRightRadius: index === uriArray.length - 1 ? 4 : 0,
+          }}
+        />
+      );
+    })
+  );
+};
+
+const URLPreviewMini = ({title, description}) => {
+  const extractedURLs = extractUrls(`${title}   ${description}`);
+  return extractedURLs?.map((url, index) => {
+    return (
+      <LinkPreview
+        text={url}
+        key={index}
+        style={{
+          margin: 0,
+          borderRadius: 0,
+          borderBottomRightRadius: index === extractUrls.length - 1 ? 4 : 0,
+        }}
+        imageStyle={{borderRadius: 0}}
+      />
+    );
+  });
+};
 /**
  *
  * @param {object} param0
@@ -39,6 +82,8 @@ const TaskItem = ({
   noteColor,
   isActive,
   dispatch,
+  detailedView,
+  renderURLInTask,
   note,
 }) => {
   // ref
@@ -54,23 +99,7 @@ const TaskItem = ({
   // callbacks
 
   // render functions
-  const _renderArchiveTime = () => {
-    return task.isArchived ? (
-      <Paragraph
-        style={{
-          fontWeight: '400',
-          color: theme.colors.onSurface,
-          fontSize: 12,
-          flexWrap: 'wrap',
-          flex: 1,
-          paddingHorizontal: 12,
-        }}
-        numberOfLines={2}
-        ellipsizeMode="tail">{`Archived ${moment(task.archiveTimestamp)
-        .calendar()
-        .toLowerCase()}`}</Paragraph>
-    ) : null;
-  };
+
   const _renderDeletionTime = () => {
     return task.isMarkedDeleted ? (
       <Paragraph
@@ -279,15 +308,22 @@ const TaskItem = ({
                 flexWrap: 'wrap',
                 flex: 1,
                 paddingHorizontal: 12,
+                paddingBottom: 6,
               }}>
               {task.description}
             </Paragraph>
           )}
-          {note && _renderNoteDetails(task.isArchived || task.isMarkedDeleted)}
-          {_renderArchiveTime()}
+          {note && _renderNoteDetails(task.isMarkedDeleted)}
           {_renderDeletionTime()}
-          {_renderDoneTime(!task.isArchived && !task.isMarkedDeleted)}
-          {_renderDueDate(!task.isArchived && !task.isMarkedDeleted)}
+          {detailedView &&
+            _renderDoneTime(!task.isArchived && !task.isMarkedDeleted)}
+          {detailedView &&
+            _renderDueDate(!task.isArchived && !task.isMarkedDeleted)}
+
+          {detailedView && <ImageDisplayItem URIs={task.imageURIs} />}
+          {detailedView && renderURLInTask && (
+            <URLPreviewMini title={task.title} description={task.description} />
+          )}
         </View>
       </TouchableRipple>
     </Animated.View>
@@ -305,6 +341,7 @@ const mapStateToProps = state => {
     isDeletingNote: state.note.isDeletingNote,
     deleteNoteSuccess: state.note.deleteNoteSuccess,
     deleteNoteFailure: state.note.deleteNoteFailure,
+    renderURLInTask: state.settings.renderURLInTask,
   };
 };
 

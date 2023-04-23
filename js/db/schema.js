@@ -47,6 +47,7 @@ export const taskerSchema = appSchema({
       columns: [
         {name: 'title', type: 'string'},
         {name: 'description', type: 'string', isOptional: true},
+        {name: 'password_hash', type: 'string', isOptional: true},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
         {name: 'color_string', type: 'string', isOptional: true},

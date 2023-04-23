@@ -93,7 +93,6 @@ export const DescriptionBottomSheet = ({
         {...props}
         appearsOnIndex={0}
         disappearsOnIndex={-1}
-        opacity={1}
       />
     ),
     [],
@@ -107,8 +106,9 @@ export const DescriptionBottomSheet = ({
       snapPoints={snapPoints}
       enablePanDownToClose={false}
       handleStyle={{display: 'none'}}
+      onClose={_onDestroy}
+      backgroundStyle={{backgroundColor: theme?.colors.surface}}
       backdropComponent={_renderBackdrop}
-      onClose={() => setVisible(false)}
       onChange={_handleSheetChange}>
       <Appbar.Header>
         <Appbar.Action icon={'close'} onPress={_handleCloseFilterSheet} />
@@ -130,6 +130,7 @@ export const DescriptionBottomSheet = ({
         }}
         onChangeText={_handleChangeLocalDescription}
         value={localDescription}
+        multiline={true}
       />
     </BottomSheet>
   );

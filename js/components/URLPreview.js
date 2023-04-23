@@ -4,7 +4,12 @@ import {Image, Linking, View} from 'react-native';
 import {Surface, Text} from 'react-native-paper';
 import {Logger} from '../utils/logger';
 
-export const LinkPreview = ({text, requestTimeout = 2000}) => {
+export const LinkPreview = ({
+  text,
+  style,
+  imageStyle,
+  requestTimeout = 2000,
+}) => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -26,11 +31,17 @@ export const LinkPreview = ({text, requestTimeout = 2000}) => {
 
   return data ? (
     <Surface
-      style={{flexDirection: 'row', margin: 12, borderRadius: 4}}
+      style={{flexDirection: 'row', margin: 12, borderRadius: 4, ...style}}
       mode="outlined">
       {data?.images && Array.isArray(data.images) && (
         <Image
-          style={{flex: 1, height: 100, width: 100, borderRadius: 4}}
+          style={{
+            flex: 1,
+            height: 100,
+            width: 100,
+            borderRadius: 4,
+            ...imageStyle,
+          }}
           resizeMode="cover"
           source={{uri: data.images[0]}}
         />

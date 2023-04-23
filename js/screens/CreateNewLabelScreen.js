@@ -81,7 +81,7 @@ const CreateNewLabelScreen = ({
   };
   // navigation functions
   const _navigateBack = () => {
-    navigation?.pop();
+    navigation.dispatch(StackActions.replace(CONSTANTS.ROUTES.LABEL_DRAWER));
   };
 
   // misc functions

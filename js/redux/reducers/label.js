@@ -1,4 +1,5 @@
 import {
+  SETUP_LABEL_IN_DB,
   CREATE_LABEL_STATE,
   EDIT_LABEL_STATE,
   DELETE_LABEL_STATE,
@@ -6,6 +7,10 @@ import {
 
 export default (
   state = {
+    isSettingLabelInDB: false,
+    setupLabelInDBSuccess: false,
+    setupLabelInDBFailure: null,
+
     isCreatingLabel: false,
     createLabelSuccess: false,
     createLabelFailure: null,
@@ -21,6 +26,13 @@ export default (
   action,
 ) => {
   switch (action.type) {
+    case SETUP_LABEL_IN_DB:
+      return {
+        ...state,
+        isSettingLabelInDB: action.state.loading,
+        setupLabelInDBSuccess: action.state.success,
+        setupLabelInDBFailure: action.state.error,
+      };
     case CREATE_LABEL_STATE:
       return {
         ...state,

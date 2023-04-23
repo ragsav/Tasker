@@ -14,6 +14,10 @@ import {Divider, useTheme} from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CONSTANTS} from '../../constants';
 import {connect} from 'react-redux';
+import CreateNewLabelScreen from '../screens/CreateNewLabelScreen';
+import UnlabeledNotesScreen from '../screens/UnlabeledNotesScreen';
+import ArchivedNotesScreen from '../screens/ArchivedNotesScreen';
+import PinScreen from '../screens/PinScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -94,49 +98,6 @@ export const CustomDrawer = props => {
             )}
           />
         )}
-
-        {props?.quickListSettings?.myDay && (
-          <DrawerItem
-            label="Pinned Notes"
-            style={{borderRadius: 25, paddingHorizontal: 0}}
-            labelStyle={{
-              fontSize: 15,
-              borderRadius: 20,
-              marginLeft: -25,
-              color: theme?.colors.secondary,
-            }}
-            onPress={() => {
-              props.navigation.navigate(CONSTANTS.ROUTES.PINNED_NOTES);
-            }}
-            icon={() => (
-              <MaterialCommunityIcons
-                name={'pin'}
-                size={22}
-                color={theme?.colors.primary}
-              />
-            )}
-          />
-        )}
-        <DrawerItem
-          label="Archived Notes"
-          style={{borderRadius: 25, paddingHorizontal: 0}}
-          labelStyle={{
-            fontSize: 15,
-            borderRadius: 20,
-            marginLeft: -25,
-            color: theme?.colors.secondary,
-          }}
-          onPress={() => {
-            props.navigation.navigate(CONSTANTS.ROUTES.ARCHIVED_NOTES);
-          }}
-          icon={() => (
-            <MaterialCommunityIcons
-              name={'package-down'}
-              size={22}
-              color={theme?.colors.primary}
-            />
-          )}
-        />
 
         {props?.quickListSettings?.all && (
           <DrawerItem
@@ -227,26 +188,6 @@ export const CustomDrawer = props => {
           />
         )}
 
-        <DrawerItem
-          style={{borderRadius: 25, paddingHorizontal: 0}}
-          labelStyle={{
-            fontSize: 15,
-            borderRadius: 20,
-            marginLeft: -25,
-            color: theme?.colors.secondary,
-          }}
-          label="Add label"
-          onPress={() => {
-            props.navigation.navigate(CONSTANTS.ROUTES.ADD_LABEL);
-          }}
-          icon={() => (
-            <MaterialCommunityIcons
-              name={'plus'}
-              size={22}
-              color={theme?.colors.primary}
-            />
-          )}
-        />
         <Divider />
 
         <DrawerItem
@@ -274,7 +215,12 @@ export const CustomDrawer = props => {
   );
 };
 
-const DrawerBasedNavigation = ({labels, quickListSettings}) => {
+const DrawerBasedNavigation = ({
+  labels,
+  quickListSettings,
+  isSettingLabelInDB,
+  setupLabelInDBSuccess,
+}) => {
   const theme = useTheme();
 
   return (
@@ -302,10 +248,18 @@ const DrawerBasedNavigation = ({labels, quickListSettings}) => {
         },
       }}
       drawerContent={props => (
-        <CustomDrawer {...{...props, quickListSettings}} />
+        <CustomDrawer
+          {...{
+            ...props,
+            quickListSettings,
+            isSettingLabelInDB,
+            setupLabelInDBSuccess,
+          }}
+        />
       )}>
       {labels &&
         Array.isArray(labels) &&
+        labels.length > 0 &&
         labels.map((label, index) => {
           return (
             <Drawer.Screen
@@ -326,6 +280,67 @@ const DrawerBasedNavigation = ({labels, quickListSettings}) => {
             />
           );
         })}
+
+      <Drawer.Screen
+        key={`labels-drawer-${CONSTANTS.ROUTES.ADD_LABEL}`}
+        options={{
+          drawerLabel: 'Add label',
+          drawerIcon: ({color}) => (
+            <MaterialCommunityIcons
+              name={'plus'}
+              size={22}
+              color={theme?.colors.primary}
+            />
+          ),
+        }}
+        name={`${CONSTANTS.ROUTES.ADD_LABEL}`}
+        component={CreateNewLabelScreen}
+      />
+      <Drawer.Screen
+        key={`labels-drawer-${CONSTANTS.ROUTES.UNLABELED_NOTES}`}
+        options={{
+          drawerLabel: 'Unlabeled notes',
+          drawerIcon: ({color}) => (
+            <MaterialCommunityIcons
+              name={'label-off'}
+              size={22}
+              color={theme?.colors.primary}
+            />
+          ),
+        }}
+        name={`${CONSTANTS.ROUTES.UNLABELED_NOTES}`}
+        component={UnlabeledNotesScreen}
+      />
+      <Drawer.Screen
+        key={`labels-drawer-${CONSTANTS.ROUTES.PINNED_NOTES}`}
+        options={{
+          drawerLabel: 'Pinned notes',
+          drawerIcon: ({color}) => (
+            <MaterialCommunityIcons
+              name={'pin'}
+              size={22}
+              color={theme?.colors.primary}
+            />
+          ),
+        }}
+        name={`${CONSTANTS.ROUTES.PINNED_NOTES}`}
+        component={PinScreen}
+      />
+      <Drawer.Screen
+        key={`labels-drawer-${CONSTANTS.ROUTES.ARCHIVED_NOTES}`}
+        options={{
+          drawerLabel: 'Archived notes',
+          drawerIcon: ({color}) => (
+            <MaterialCommunityIcons
+              name={'package-down'}
+              size={22}
+              color={theme?.colors.primary}
+            />
+          ),
+        }}
+        name={`${CONSTANTS.ROUTES.ARCHIVED_NOTES}`}
+        component={ArchivedNotesScreen}
+      />
     </Drawer.Navigator>
   );
 };
@@ -340,6 +355,8 @@ const EnhancedDrawerBasedNavigation = enhanceDrawerBasedNavigation(
 const mapStateToProps = state => {
   return {
     quickListSettings: state.settings.quickListSettings,
+    isSettingLabelInDB: state.label.isSettingLabelInDB,
+    setupLabelInDBSuccess: state.label.setupLabelInDBSuccess,
   };
 };
 

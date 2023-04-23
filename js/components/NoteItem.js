@@ -10,6 +10,7 @@ import withObservables from '@nozbe/with-observables';
 import {useNavigation} from '@react-navigation/native';
 import React from 'react';
 import {View} from 'react-native';
+// import ImageView from 'react-native-image-viewing';
 import {
   Button,
   Divider,
@@ -96,7 +97,7 @@ const NoteItem = ({note, tasks, tasksCount, handleDeleteNote, dispatch}) => {
               flexDirection: 'row',
               justifyContent: 'flex-start',
               alignItems: 'flex-start',
-              flex: 4,
+              flex: 1,
             }}>
             <Text
               style={{fontSize: 18, fontWeight: '700'}}
@@ -112,15 +113,33 @@ const NoteItem = ({note, tasks, tasksCount, handleDeleteNote, dispatch}) => {
               return <Text key={`note-tasks-${task.id}`}>{task.title}</Text>;
             })}
 
-          <Text
+          <View
             style={{
-              textAlign: 'right',
-              flex: 1,
-              fontSize: 12,
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
               marginTop: 10,
             }}>
-            {String(tasksCount) + '  tasks'}
-          </Text>
+            <Text
+              style={{
+                textAlign: 'left',
+                flex: 1,
+                fontSize: 12,
+
+                textAlignVertical: 'center',
+              }}>
+              {String(tasksCount) + '  tasks'}
+            </Text>
+            {Boolean(note.isPinned) && (
+              <MaterialCommunityIcons
+                name={'pin'}
+                size={14}
+                color={theme?.colors.primary}
+              />
+            )}
+          </View>
         </View>
       </TouchableRipple>
     </View>

@@ -13,6 +13,7 @@ import {
   setTaskSortOrder,
   setTaskSortProperty,
   setTheme,
+  setupLabelInDB,
 } from './actions';
 
 import rootReducer from './reducers';
@@ -27,6 +28,7 @@ export const configureStore = persistedState => {
   const store = createStore(rootReducer, persistedState, compose(...enhancers));
   store.dispatch(handleCalendarPermissionUsingLibrary());
   store.dispatch(handleStorageWritePermissionUsingLibrary());
+  // store.dispatch(setupLabelInDB());
   Storage.getData(CONSTANTS.LOCAL_STORAGE_KEYS.LOCAL_THEME).then(theme => {
     Logger.pageLogger('Storage.getData:LOCAL_THEME', {theme});
     // if (theme === 'dark') {

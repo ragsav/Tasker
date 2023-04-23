@@ -20,6 +20,7 @@ export const ImageAttachmentGallery = ({
       <Pressable
         style={{position: 'relative', marginRight: 12}}
         onPress={() =>
+          setImageToView &&
           setImageToView({
             images: URIs?.map(uri => {
               return {uri};

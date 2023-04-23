@@ -1,6 +1,10 @@
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
-import {useFocusEffect, useTheme} from '@react-navigation/native';
+import {
+  DrawerActions,
+  useFocusEffect,
+  useTheme,
+} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {FlatList, SafeAreaView, StyleSheet} from 'react-native';
 import {Appbar, Menu} from 'react-native-paper';
@@ -87,7 +91,10 @@ const ArchivedNotesScreen = ({
         backgroundColor: theme?.colors.surface,
       }}>
       <Appbar.Header>
-        <Appbar.BackAction onPress={_navigateBack} />
+        <Appbar.Action
+          icon="menu"
+          onPress={() => navigation?.dispatch(DrawerActions.toggleDrawer())}
+        />
         <Appbar.Content
           title={'#Archived notes'}
           titleStyle={{fontWeight: '700'}}

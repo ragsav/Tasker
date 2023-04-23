@@ -8,7 +8,7 @@
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import MasonryList from '@react-native-seoul/masonry-list';
-import {useFocusEffect} from '@react-navigation/native';
+import {DrawerActions, useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import {Appbar, useTheme} from 'react-native-paper';
@@ -92,7 +92,10 @@ const PinScreen = ({
         backgroundColor: theme?.colors.surface,
       }}>
       <Appbar.Header>
-        <Appbar.BackAction onPress={_navigateBack} />
+        <Appbar.Action
+          icon="menu"
+          onPress={() => navigation?.dispatch(DrawerActions.toggleDrawer())}
+        />
         <Appbar.Content
           title="#Pinned notes"
           titleStyle={{fontWeight: '700', color: theme?.colors.primary}}

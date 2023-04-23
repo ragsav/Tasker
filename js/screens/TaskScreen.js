@@ -2,20 +2,30 @@ import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import extractUrls from 'extract-urls';
 import moment from 'moment';
-import React, {useCallback, useEffect, useState} from 'react';
-import {Pressable, SafeAreaView, StyleSheet} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {
+  Pressable,
+  SafeAreaView,
+  Share,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
   Appbar,
+  Button,
   Divider,
   HelperText,
+  IconButton,
   List,
+  Menu,
   Surface,
   Text,
-  TextInput,
   useTheme,
 } from 'react-native-paper';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {connect} from 'react-redux';
 import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
@@ -33,7 +43,6 @@ import {
   editTaskAddReminder,
   editTaskDescription,
   editTaskEndTimestamp,
-  editTaskIsArchived,
   editTaskIsBookmark,
   editTaskIsDone,
   editTaskRemoveDueDate,
@@ -43,9 +52,7 @@ import {
   resetDeleteTaskState,
   resetEditTaskState,
 } from '../redux/actions';
-import {DescriptionBottomSheet} from '../components/DescriptionBottomSheet';
 
-const BOTTOM_APPBAR_HEIGHT = 64;
 /**
  *
  * @param {object} param0
@@ -69,12 +76,12 @@ const TaskScreen = ({
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [appBarTitleOpacity, setAppbarTitleOpacity] = useState(0);
+  const titleRef = useRef();
+  const descriptionRef = useRef();
   const [error, setError] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [dueDateString, setDueDateString] = useState('date');
-  const [isDescriptionBottomSheetVisible, setIsDescriptionBottomSheetVisible] =
-    useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDueDateTimePickerVisible, setIsDueDateTimePickerVisible] =
     useState(false);
 
@@ -143,6 +150,18 @@ const TaskScreen = ({
     }
   }, [renderURLInTask, task]);
 
+  useEffect(() => {
+    if (descriptionRef) {
+      descriptionRef.current = description;
+    }
+  }, [description, descriptionRef, descriptionRef.current]);
+
+  useEffect(() => {
+    if (titleRef) {
+      titleRef.current = title;
+    }
+  }, [title, titleRef, titleRef.current]);
+
   // callbacks
 
   // render functions
@@ -152,35 +171,25 @@ const TaskScreen = ({
     setTitle(title);
   };
 
-  const _handleOnTitleBlur = () => {
-    if (task && String(title).trim() === '') {
-      setError('Title cannot be empty');
-    } else {
-      setError(null);
-      dispatch(editTaskTitle({id: task.id, title}));
-    }
-  };
-  const _handleOpenDescriptionBottomSheet = () => {
-    setIsDescriptionBottomSheetVisible(true);
-  };
-  const _handleDescriptionChange = description => {
-    dispatch(editTaskDescription({id: task.id, description}));
+  const _handleOnTitleSave = () => {
+    dispatch(editTaskTitle({id: task.id, title: titleRef.current}));
   };
 
-  const _handleToggleArchive = () => {
+  const _handleDescriptionChange = description => {
+    setDescription(description);
+  };
+
+  const _handleDescriptionSave = () => {
+    console.log(descriptionRef.current);
     dispatch(
-      editTaskIsArchived({
-        id: task.id,
-        isArchived: !task.isArchived,
-        unarchiveNoteIfRequired: true,
-      }),
+      editTaskDescription({id: task.id, description: descriptionRef.current}),
     );
-    _navigateBack();
   };
 
   const _handleOpenDeleteTaskDialog = () => {
     setIsDeleteDialogOpen(true);
   };
+
   const _handleCloseDeleteTaskDialog = () => {
     setIsDeleteDialogOpen(false);
   };
@@ -193,6 +202,7 @@ const TaskScreen = ({
   const _handleMarkIsDone = () => {
     dispatch(editTaskIsDone({id: task.id, isDone: !task.isDone}));
   };
+
   const _handleBookmark = () => {
     dispatch(
       editTaskIsBookmark({id: task.id, isBookmarked: !task.isBookmarked}),
@@ -202,11 +212,13 @@ const TaskScreen = ({
   const _handleOpenDueDateTimePicker = () => {
     setIsDueDateTimePickerVisible(true);
   };
+
   const _handleOnDueDateTimeChange = date => {
     dispatch(editTaskEndTimestamp({id: task.id, endTimestamp: new Date(date)}));
     setDueDateString(moment(date).calendar());
     setIsDueDateTimePickerVisible(false);
   };
+
   const _handleCloseDueDateTimePicker = () => {
     setIsDueDateTimePickerVisible(false);
   };
@@ -214,12 +226,15 @@ const TaskScreen = ({
   const _handleOpenReminderDateTimePicker = () => {
     setIsReminderDateTimePickerVisible(true);
   };
+
   const _handleRemoveReminder = () => {
     dispatch(editTaskRemoveReminder({id: task.id}));
   };
+
   const _handleRemoveDueDate = () => {
     dispatch(editTaskRemoveDueDate({id: task.id}));
   };
+
   const _handleOnReminderDateTimeChange = date => {
     dispatch(
       editTaskAddReminder({
@@ -229,6 +244,7 @@ const TaskScreen = ({
     );
     setIsReminderDateTimePickerVisible(false);
   };
+
   const _handleCloseReminderDateTimePicker = () => {
     setIsReminderDateTimePickerVisible(false);
   };
@@ -240,8 +256,32 @@ const TaskScreen = ({
   const _handleAddImageURI = URI => {
     dispatch(editTaskAddImageURI({id: task.id, URI}));
   };
+
   const _handleRemoveImageURI = URI => {
     dispatch(editTaskRemoveImageURI({id: task.id, URI}));
+  };
+
+  const _handleToggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const _handleShareTask = async () => {
+    try {
+      const result = await Share.share({
+        title: title,
+        message: description,
+      });
+      console.log({result});
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // shared with activity type of result.activityType
+        } else {
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // dismissed
+      }
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   // navigation functions
@@ -252,6 +292,8 @@ const TaskScreen = ({
   // misc functions
   const _init = () => {};
   const _onDestroy = () => {
+    _handleDescriptionSave();
+    _handleOnTitleSave();
     dispatch(resetDeleteTaskState());
     dispatch(resetEditTaskState());
   };
@@ -295,45 +337,42 @@ const TaskScreen = ({
           backgroundColor: theme?.colors.surface,
         }}>
         <Appbar.BackAction onPress={_navigateBack} />
-        <Appbar.Content
-          title={<Text ellipsizeMode="tail">{`#${task.title}`}</Text>}
-          titleStyle={{
-            opacity: appBarTitleOpacity,
-            fontWeight: '700',
-            flexWrap: 'wrap',
-          }}
-        />
+        <Appbar.Content />
         <Appbar.Action
           isLeading={false}
           icon={task.isBookmarked ? 'bookmark' : 'bookmark-outline'}
           // iconColor={theme?.colors.onPrimary}
           onPress={_handleBookmark}
         />
-        <Appbar.Action
-          isLeading={false}
-          icon={task.isArchived ? 'package-up' : 'package-down'}
-          // iconColor={theme?.colors.onPrimary}
-          onPress={_handleToggleArchive}
-        />
-        <Appbar.Action
-          isLeading={false}
-          icon={'delete'}
-          // iconColor={theme?.colors.onPrimary}
-          onPress={_handleOpenDeleteTaskDialog}
-        />
+        <Menu
+          visible={isMenuOpen}
+          onDismiss={_handleToggleMenu}
+          anchor={
+            <Appbar.Action icon={'dots-vertical'} onPress={_handleToggleMenu} />
+          }>
+          <Menu.Item
+            onPress={_handleShareTask}
+            title="Share"
+            leadingIcon={'share-variant'}
+          />
+          <Menu.Item
+            onPress={_handleOpenDeleteTaskDialog}
+            title="Delete"
+            leadingIcon={'delete'}
+          />
+        </Menu>
       </Appbar.Header>
       <KeyboardAwareScrollView
-        keyboardShouldPersistTaps="never"
-        onScroll={event => {
-          setAppbarTitleOpacity(event.nativeEvent.contentOffset.y / 90);
-        }}
-        contentContainerStyle={{paddingBottom: BOTTOM_APPBAR_HEIGHT + 20}}>
-        <Surface
+        keyboardShouldPersistTaps="always"
+        contentContainerStyle={{flexGrow: 1}}>
+        <View
           style={{
             // padding: 12,
             padding: 6,
+            paddingTop: 0,
             justifyContent: 'center',
             backgroundColor: theme?.colors.surface,
+            marginBottom: 8,
           }}>
           <TextInput
             value={title}
@@ -342,15 +381,20 @@ const TaskScreen = ({
             // underlineColor="transparent"
             activeOutlineColor="transparent"
             onChangeText={_handleTitleChange}
-            onBlur={_handleOnTitleBlur}
+            onBlur={_handleOnTitleSave}
+            placeholder="Title here..."
+            placeholderTextColor={theme?.colors.onSurfaceDisabled}
             style={[
               {
                 borderWidth: 0,
                 fontSize: 22,
                 borderRadius: 0,
-                backgroundColor: 'transparent',
+                backgroundColor: theme?.colors.surface,
+                margin: 0,
+                paddingHorizontal: 12,
 
-                paddingHorizontal: 0,
+                color: theme?.colors.onSurface,
+                fontWeight: '700',
               },
             ]}
             mode="outlined"
@@ -359,16 +403,16 @@ const TaskScreen = ({
           {error && <HelperText type="error">{error}</HelperText>}
           <Text
             variant="bodySmall"
-            style={{paddingHorizontal: 14}}>{`Created ${moment(task.createdAt)
+            style={{paddingHorizontal: 12}}>{`Created ${moment(task.createdAt)
             .calendar()
             .toLowerCase()}`}</Text>
-        </Surface>
+        </View>
         <Divider />
 
         <List.Item
           title={
             task.isDone
-              ? `Marked done ${moment(task.doneTimestamp)
+              ? `Marked completed ${moment(task.doneTimestamp)
                   .calendar()
                   .toLowerCase()}`
               : 'Mark as done'
@@ -376,8 +420,11 @@ const TaskScreen = ({
           titleStyle={{fontSize: 14}}
           onPress={_handleMarkIsDone}
           style={{
+            paddingVertical: 3,
             backgroundColor: _isDue()
-              ? theme?.colors.errorContainer
+              ? theme?.colors.tertiaryContainer
+              : task.isDone
+              ? '#507f4a'
               : theme?.colors.surface,
           }}
           left={props => (
@@ -392,6 +439,7 @@ const TaskScreen = ({
         <List.Item
           title={dueDateString}
           titleStyle={{fontSize: 14}}
+          style={{paddingVertical: 3}}
           onPress={_handleOpenDueDateTimePicker}
           left={props => (
             <List.Icon
@@ -417,6 +465,7 @@ const TaskScreen = ({
         <List.Item
           title={reminderDateString}
           titleStyle={{fontSize: 14}}
+          style={{paddingVertical: 3}}
           onPress={_handleOpenReminderDateTimePicker}
           left={props => (
             <List.Icon
@@ -441,7 +490,6 @@ const TaskScreen = ({
               : null
           }
         />
-
         <List.Item
           title={'Add image'}
           titleStyle={{fontSize: 14}}
@@ -453,40 +501,41 @@ const TaskScreen = ({
               color={theme.colors.onSurface}
             />
           )}
+          style={{paddingVertical: 3}}
         />
-        <ImageAttachmentGallery
-          URIs={JSON.parse(task.imageURIs)}
-          removeURI={_handleRemoveImageURI}
-          imageToView={imageToView}
-          setImageToView={setImageToView}
-        />
+        {!task.imageURIs ||
+          String(task.imageURIs).trim() === '' ||
+          (JSON.parse(task.imageURIs) && (
+            <ImageAttachmentGallery
+              URIs={JSON.parse(task.imageURIs)}
+              removeURI={_handleRemoveImageURI}
+              imageToView={imageToView}
+              setImageToView={setImageToView}
+            />
+          ))}
 
-        <Text
+        <TextInput
           style={{
-            margin: 12,
-            padding: 8,
-            borderRadius: 4,
-            borderColor: theme?.colors.onSurface,
-            borderWidth: StyleSheet.hairlineWidth,
-            height: 100,
+            backgroundColor: theme?.colors.surface,
+            color: theme?.colors.onSurface,
+            textAlignVertical: 'top',
+            padding: 12,
+            paddingHorizontal: 18,
           }}
-          onPress={_handleOpenDescriptionBottomSheet}>
-          {!task.description || String(task.description) === ''
-            ? 'Add description'
-            : task.description}
-        </Text>
+          onBlur={_handleDescriptionSave}
+          onChangeText={_handleDescriptionChange}
+          placeholder="Add some here..."
+          placeholderTextColor={theme?.colors.onSurfaceDisabled}
+          value={description}
+          multiline={true}
+        />
 
         {renderURLInTask &&
           urls?.map((url, index) => {
             return <LinkPreview text={url} key={index} />;
           })}
       </KeyboardAwareScrollView>
-      <DescriptionBottomSheet
-        visible={isDescriptionBottomSheetVisible}
-        setVisible={setIsDescriptionBottomSheetVisible}
-        description={task.description}
-        setDescription={_handleDescriptionChange}
-      />
+
       <ImagePickerBottomSheet
         visible={isImagePickerOpen}
         setVisible={setIsImagePickerOpen}

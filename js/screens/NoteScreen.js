@@ -2,7 +2,7 @@ import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet, Text} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import DraggableFlatList, {
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
@@ -24,8 +24,10 @@ import {
   editNoteIsArchived,
   editNoteIsPinned,
   resetDeleteNoteState,
+  setTaskListDetailView,
 } from '../redux/actions';
 import {Logger} from '../utils/logger';
+import moment from 'moment';
 
 /**
  *
@@ -38,6 +40,7 @@ const NoteScreen = ({
   route,
   note,
   tasks,
+  isTaskListDetailView,
   deleteNoteSuccess,
   dispatch,
 }) => {
@@ -84,6 +87,7 @@ const NoteScreen = ({
           disabled={isActive}
           onLongPress={drag}
           noteColor={note.colorString}
+          detailedView={isTaskListDetailView}
         />
       </ScaleDecorator>
     );
@@ -133,6 +137,12 @@ const NoteScreen = ({
   const _handleOpenSortTaskBottomSheet = () => {
     setIsMenuOpen(false);
     setIsSortBottomSheetVisible(true);
+  };
+  const _handleChangeTaskDetailedView = () => {
+    dispatch(
+      setTaskListDetailView({isTaskListDetailView: !isTaskListDetailView}),
+    );
+    setIsMenuOpen(false);
   };
 
   // navigation functions
@@ -185,6 +195,7 @@ const NoteScreen = ({
               }}>
               {note ? `${note.title}` : '#Note'}
             </Text>
+
             // </SharedElement>
           }
         />
@@ -203,6 +214,11 @@ const NoteScreen = ({
             onPress={_navigateToEditNoteScreen}
             title="Edit"
             leadingIcon={'pencil'}
+          />
+          <Menu.Item
+            onPress={_handleChangeTaskDetailedView}
+            title={isTaskListDetailView ? 'Compressed' : 'Detailed View'}
+            leadingIcon={isTaskListDetailView ? 'blur' : 'details'}
           />
           <Menu.Item
             onPress={note.isPinned ? _handleUnpinNote : _handlePinNote}
@@ -236,7 +252,7 @@ const NoteScreen = ({
       </Appbar.Header>
 
       <DraggableFlatList
-        contentContainerStyle={{padding: 12}}
+        contentContainerStyle={{padding: 12, paddingBottom: 144}}
         data={tasks}
         onDragEnd={value =>
           Logger.pageLogger('NoteScreen.js:DraggableFlatList:onDragEnd')
@@ -255,6 +271,7 @@ const NoteScreen = ({
           margin: 16,
           right: 0,
           bottom: 0,
+          elevation: 0,
           // backgroundColor: theme?.colors.surface,
           backgroundColor:
             note && note.colorString ? note.colorString : theme?.colors.error,
@@ -302,6 +319,7 @@ const mapStateToProps = state => {
     deleteNoteFailure: state.note.deleteNoteFailure,
     taskSortProperty: state.taskSort.taskSortProperty,
     taskSortOrder: state.taskSort.taskSortOrder,
+    isTaskListDetailView: state.settings.isTaskListDetailView,
   };
 };
 
