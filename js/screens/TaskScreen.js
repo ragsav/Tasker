@@ -28,7 +28,7 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {connect} from 'react-redux';
-import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
+import {ConfirmationDialog} from '../components/ConfirmationDialog';
 import {ImageAttachmentGallery} from '../components/ImageAttachmentsGallery';
 import {ImagePickerBottomSheet} from '../components/ImagePickerBottomSheet';
 import {LinkPreview} from '../components/URLPreview';
@@ -52,6 +52,9 @@ import {
   resetDeleteTaskState,
   resetEditTaskState,
 } from '../redux/actions';
+import {CONSTANTS} from '../../constants';
+import {NotePasswordInputScreen} from './NotePasswordInputScreen';
+import {Q} from '@nozbe/watermelondb';
 
 /**
  *
@@ -65,6 +68,8 @@ const TaskScreen = ({
   deleteTaskSuccess,
   renderURLInTask,
   dispatch,
+  note,
+  route,
 }) => {
   // ref
 
@@ -73,7 +78,12 @@ const TaskScreen = ({
   const {bottom} = useSafeAreaInsets();
 
   // states
-
+  const [passwordScreenState, setPasswordScreenState] = useState({
+    isLoading: true,
+    showPasswordScreen: false,
+    showContent: false,
+    error: null,
+  });
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const titleRef = useRef();
@@ -104,6 +114,10 @@ const TaskScreen = ({
       return _onDestroy;
     }, []),
   );
+
+  useEffect(() => {
+    _handleCheckIfPasswordRequired();
+  }, [navigation, task]);
 
   useEffect(() => {
     if (deleteTaskSuccess) {
@@ -167,6 +181,65 @@ const TaskScreen = ({
   // render functions
 
   // handle functions
+
+  const _handleCheckIfPasswordRequired = async () => {
+    if (task && navigation) {
+      try {
+        const routes = navigation.getState()?.routes;
+        const prevRoute = routes[routes.length - 2];
+        const storedPasswordHash = await task.password();
+
+        if (prevRoute && prevRoute.name === CONSTANTS.ROUTES.NOTE) {
+          setPasswordScreenState({
+            isLoading: false,
+            showPasswordScreen: false,
+            showContent: true,
+            error: null,
+          });
+        } else {
+          if (storedPasswordHash === '' || !Boolean(storedPasswordHash)) {
+            setPasswordScreenState({
+              isLoading: false,
+              showContent: true,
+              showPasswordScreen: false,
+              error: null,
+            });
+          } else {
+            setPasswordScreenState({
+              isLoading: false,
+              showContent: false,
+              showPasswordScreen: true,
+              error: null,
+            });
+          }
+        }
+      } catch (error) {
+        console.log({error});
+      }
+    }
+  };
+
+  const _handleCheckPassword = async ({password}) => {
+    if (task) {
+      const passwordMatch = await task.checkPassword({password});
+      if (passwordMatch) {
+        setPasswordScreenState({
+          isLoading: false,
+          showContent: true,
+          showPasswordScreen: false,
+          error: null,
+        });
+      } else {
+        setPasswordScreenState({
+          isLoading: false,
+          showContent: false,
+          showPasswordScreen: true,
+          error: 'Password incorrect',
+        });
+      }
+    }
+  };
+
   const _handleTitleChange = title => {
     setTitle(title);
   };
@@ -180,7 +253,6 @@ const TaskScreen = ({
   };
 
   const _handleDescriptionSave = () => {
-    console.log(descriptionRef.current);
     dispatch(
       editTaskDescription({id: task.id, description: descriptionRef.current}),
     );
@@ -269,7 +341,6 @@ const TaskScreen = ({
         title: title,
         message: description,
       });
-      console.log({result});
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
           // shared with activity type of result.activityType
@@ -291,12 +362,14 @@ const TaskScreen = ({
 
   // misc functions
   const _init = () => {};
+
   const _onDestroy = () => {
     _handleDescriptionSave();
     _handleOnTitleSave();
     dispatch(resetDeleteTaskState());
     dispatch(resetEditTaskState());
   };
+
   const _isDue = () => {
     const _v =
       task.endTimestamp &&
@@ -306,17 +379,18 @@ const TaskScreen = ({
   };
 
   // return
-  return (
+  return passwordScreenState?.showContent ? (
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
         backgroundColor: theme?.colors.surface,
       }}>
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         visible={isDeleteDialogOpen}
-        message="Task"
+        title="Delete this task?"
+        message="Are you sure you want to delete this task? You can find deleted tasks in trash"
         handleCancel={_handleCloseDeleteTaskDialog}
-        handleDelete={_handleDeleteTask}
+        handleOk={_handleDeleteTask}
       />
       <DatePicker
         modal
@@ -550,12 +624,28 @@ const TaskScreen = ({
         onRequestClose={() => setImageToView({...imageToView, visible: false})}
       />
     </SafeAreaView>
+  ) : (
+    <NotePasswordInputScreen
+      passwordScreenState={passwordScreenState}
+      handleCheckPassword={_handleCheckPassword}
+    />
   );
 };
 
-const enhanceTaskScreen = withObservables(['route'], ({route}) => ({
-  task: database.collections.get('tasks').findAndObserve(route.params.p_id),
-}));
+const enhanceTaskScreen = withObservables(['route'], ({route}) => {
+  const task = database.collections
+    .get('tasks')
+    .findAndObserve(route.params.p_id);
+  const rawTask = database.collections
+    .get('tasks')
+    .query(Q.where('id', route.params.p_id))
+    .fetch();
+  return {
+    task,
+
+    // note: rawTask.note,
+  };
+});
 const EnhancedTaskScreen = enhanceTaskScreen(TaskScreen);
 
 const mapStateToProps = state => {

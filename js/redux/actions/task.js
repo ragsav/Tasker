@@ -309,7 +309,6 @@ export const editTaskTitle =
 export const editTaskDescription =
   ({id, description}) =>
   async dispatch => {
-    console.log({description});
     dispatch(editTaskState({loading: true, success: false, error: null}));
     try {
       const taskToBeUpdated = await database.get('tasks').find(id);

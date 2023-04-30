@@ -8,10 +8,12 @@ import {
   date,
   readonly,
   lazy,
+  reader,
 } from '@nozbe/watermelondb/decorators';
 import {sanitizedRaw} from '@nozbe/watermelondb/RawRecord';
 import {CONSTANTS} from '../../../constants';
 import {database} from '../db';
+import {getHash} from '../../utils/encryption';
 export default class Note extends Model {
   static table = 'notes';
   static associations = {
@@ -21,8 +23,9 @@ export default class Note extends Model {
 
   @text('title') title;
   @text('description') description;
-
-  @text('color_string') colorString;
+  @text('password_hash') passwordHash;
+  @text('color_string')
+  colorString;
   @text('label_id') labelID;
   @field('is_archived') isArchived;
   @field('is_pinned') isPinned;
@@ -33,6 +36,18 @@ export default class Note extends Model {
   @readonly @date('updated_at') updatedAt;
 
   @children('tasks') tasks;
+
+  @reader async checkPassword({password}) {
+    try {
+      const generatedHash = await getHash({text: password});
+      if (String(this.passwordHash) === '' || !Boolean(this.passwordHash)) {
+        return true;
+      }
+      return generatedHash === this.passwordHash;
+    } catch (error) {
+      console.log({error});
+    }
+  }
 
   static _backupToPrepareCreate = raw => {
     const collection = database.collections.get(CONSTANTS.TABLE_NAMES.NOTES);

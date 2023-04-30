@@ -1,7 +1,7 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 export const taskerSchema = appSchema({
-  version: 20,
+  version: 2,
   tables: [
     tableSchema({
       name: 'labels',

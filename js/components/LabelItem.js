@@ -25,7 +25,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {CONSTANTS} from '../../constants';
 import {database} from '../db/db';
 import Label from '../db/models/Label';
-import {DeleteConfirmationDialog} from './DeleteConfirmationDialog';
+import {ConfirmationDialog} from './ConfirmationDialog';
 import EnhancedNoteItem from './NoteItem';
 import Animated, {
   FadeIn,
@@ -116,11 +116,12 @@ const LabelItem = ({label, handleDeleteLabel, handleUnGroupLabel}) => {
           justifyContent: 'flex-start',
           alignItems: 'stretch',
         }}>
-        <DeleteConfirmationDialog
+        <ConfirmationDialog
           visible={isDeleteDialogOpen}
-          message="label"
+          title="Delete this label?"
+          message="Are you sure you want to delete this label? This action is irreversible "
           handleCancel={_handleCloseDeleteLabelDialog}
-          handleDelete={_handleDeleteLabel}
+          handleOk={_handleDeleteLabel}
         />
         <View
           style={{

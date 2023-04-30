@@ -1,6 +1,6 @@
 import {Database} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
-import {xpenseDBMigration} from './migration';
+import {taskerDBMigrations} from './migration';
 
 import {taskerSchema} from './schema';
 import Task from './models/Task';
@@ -10,7 +10,7 @@ const adapter = new SQLiteAdapter({
   schema: taskerSchema,
 
   dbName: 'taskerDB', // optional database name or file system path
-  // migrations, // optional migrations
+  // migrations: taskerDBMigrations, // optional migrations
   jsi: false,
 });
 

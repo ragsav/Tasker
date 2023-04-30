@@ -2,6 +2,7 @@ import {Q} from '@nozbe/watermelondb';
 import {database} from '../../db/db';
 import Note from '../../db/models/Note';
 import {Logger} from '../../utils/logger';
+import {getHash} from '../../utils/encryption';
 export const CREATE_NOTE_STATE = 'CREATE_NOTE_STATE';
 export const EDIT_NOTE_STATE = 'EDIT_NOTE_STATE';
 export const DELETE_NOTE_STATE = 'DELETE_NOTE_STATE';
@@ -124,6 +125,41 @@ export const editNote =
       Logger.pageLogger('note.js:editNote:success');
     } catch (error) {
       Logger.pageLogger('note.js:editNote:catch', {error});
+      dispatch(editNoteState({loading: false, success: true, error}));
+    }
+  };
+
+export const changeNotePassword =
+  ({id, password}) =>
+  async dispatch => {
+    dispatch(
+      editNoteState({
+        loading: true,
+        success: false,
+        error: null,
+      }),
+    );
+    try {
+      Logger.pageLogger('note.js:changeNotePassword:start');
+      const noteToBeUpdated = await database.get('notes').find(id);
+      const passwordHash = await getHash({text: password});
+      console.log({passwordHash});
+      database.write(async () => {
+        await noteToBeUpdated.update(note => {
+          note.passwordHash = passwordHash;
+        });
+      });
+
+      dispatch(
+        editNoteState({
+          loading: false,
+          success: true,
+          error: null,
+        }),
+      );
+      Logger.pageLogger('note.js:changeNotePassword:success');
+    } catch (error) {
+      Logger.pageLogger('note.js:changeNotePassword:catch', {error});
       dispatch(editNoteState({loading: false, success: true, error}));
     }
   };

@@ -10,7 +10,7 @@ import DraggableFlatList, {
 import {Appbar, FAB, Menu, useTheme} from 'react-native-paper';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
-import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
+import {ConfirmationDialog} from '../components/ConfirmationDialog';
 import {EmptyTasks} from '../components/EmptyTasks';
 import TaskInput from '../components/TaskInput';
 import TaskItem from '../components/TaskItem';
@@ -19,6 +19,7 @@ import {database} from '../db/db';
 import Note from '../db/models/Note';
 import Task from '../db/models/Task';
 import {
+  changeNotePassword,
   deleteNote,
   duplicateNote,
   editNoteIsArchived,
@@ -28,6 +29,9 @@ import {
 } from '../redux/actions';
 import {Logger} from '../utils/logger';
 import moment from 'moment';
+import {InputDialog} from '../components/InputDialog';
+import {NotePasswordInputScreen} from './NotePasswordInputScreen';
+import {useRef} from 'react';
 
 /**
  *
@@ -53,8 +57,15 @@ const NoteScreen = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isTaskInputOpen, setIsTaskInputOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isSortBottomSheetVisible, setIsSortBottomSheetVisible] =
     useState(false);
+  const [passwordScreenState, setPasswordScreenState] = useState({
+    isLoading: true,
+    showPasswordScreen: false,
+    showContent: false,
+    error: null,
+  });
 
   // effects
   useFocusEffect(
@@ -64,6 +75,9 @@ const NoteScreen = ({
     }, []),
   );
 
+  useEffect(() => {
+    _handleCheckIfPasswordRequired();
+  }, [note]);
   useEffect(() => {
     if (deleteNoteSuccess) {
       _navigateBack();
@@ -94,10 +108,63 @@ const NoteScreen = ({
   };
 
   // handle functions
+
+  const _handleCheckIfPasswordRequired = () => {
+    if (note) {
+      try {
+        const storedPasswordHash = note.passwordHash;
+        if (storedPasswordHash === '' || !Boolean(storedPasswordHash)) {
+          setPasswordScreenState({
+            isLoading: false,
+            showContent: true,
+            showPasswordScreen: false,
+            error: null,
+          });
+        } else {
+          setPasswordScreenState({
+            isLoading: false,
+            showContent: false,
+            showPasswordScreen: true,
+            error: null,
+          });
+        }
+      } catch (error) {
+        console.log({error});
+      }
+    }
+  };
+
+  const _handleCheckPassword = async ({password}) => {
+    if (note) {
+      const passwordMatch = await note.checkPassword({password});
+      if (passwordMatch) {
+        setPasswordScreenState({
+          isLoading: false,
+          showContent: true,
+          showPasswordScreen: false,
+          error: null,
+        });
+      } else {
+        setPasswordScreenState({
+          isLoading: false,
+          showContent: false,
+          showPasswordScreen: true,
+          error: 'Password incorrect',
+        });
+      }
+    }
+  };
+
   const _handleOpenDeleteNoteDialog = () => {
     setIsMenuOpen(false);
     setIsDeleteDialogOpen(true);
   };
+
+  const _handleOpenPasswordDialog = () => {
+    setIsMenuOpen(false);
+    setIsPasswordDialogOpen(true);
+  };
+
   const _handleArchiveNote = () => {
     setIsMenuOpen(false);
     dispatch(editNoteIsArchived({id: note.id, isArchived: true}));
@@ -110,12 +177,23 @@ const NoteScreen = ({
   const _handleCloseDeleteNoteDialog = () => {
     setIsDeleteDialogOpen(false);
   };
+  const _handleClosePasswordDialog = () => {
+    setIsPasswordDialogOpen(false);
+  };
   const _handleToggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
   const _handleDeleteNote = () => {
     dispatch(deleteNote({id: note.id}));
     setIsMenuOpen(false);
     setIsDeleteDialogOpen(false);
   };
+
+  const _handleSetNotePassword = password => {
+    dispatch(changeNotePassword({id: note.id, password: password}));
+    setIsMenuOpen(false);
+    setIsPasswordDialogOpen(false);
+  };
+
   const _handleDuplicateNote = () => {
     dispatch(duplicateNote({id: note.id}));
     setIsMenuOpen(false);
@@ -168,18 +246,25 @@ const NoteScreen = ({
   };
 
   // return
-  return (
-    // <SharedElement id={`note.${note.id}.hero`}>
+  return passwordScreenState?.showContent ? (
     <SafeAreaView
       style={{
         ...StyleSheet.absoluteFillObject,
         backgroundColor: theme?.colors.surface,
       }}>
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         visible={isDeleteDialogOpen}
-        message="note"
+        title="Delete this note?"
+        message="Are you sure you want to delete this note? This action is irreversible "
         handleCancel={_handleCloseDeleteNoteDialog}
-        handleDelete={_handleDeleteNote}
+        handleOk={_handleDeleteNote}
+      />
+      <InputDialog
+        visible={isPasswordDialogOpen}
+        handleOk={_handleSetNotePassword}
+        handleCancel={_handleClosePasswordDialog}
+        title="Password"
+        message="Add password protection to note"
       />
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />
@@ -224,6 +309,11 @@ const NoteScreen = ({
             onPress={note.isPinned ? _handleUnpinNote : _handlePinNote}
             title={note.isPinned ? 'Unpin note' : 'Pin note'}
             leadingIcon={note.isPinned ? 'pin-off' : 'pin'}
+          />
+          <Menu.Item
+            onPress={_handleOpenPasswordDialog}
+            title="Password protection"
+            leadingIcon={'shield-lock'}
           />
           <Menu.Item
             onPress={_handleOpenSortTaskBottomSheet}
@@ -290,6 +380,11 @@ const NoteScreen = ({
         setVisible={setIsSortBottomSheetVisible}
       />
     </SafeAreaView>
+  ) : (
+    <NotePasswordInputScreen
+      handleCheckPassword={_handleCheckPassword}
+      passwordScreenState={passwordScreenState}
+    />
   );
 };
 

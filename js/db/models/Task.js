@@ -13,6 +13,7 @@ import {
 import {sanitizedRaw} from '@nozbe/watermelondb/RawRecord';
 import {CONSTANTS} from '../../../constants';
 import {database} from '../db';
+import {getHash} from '../../utils/encryption';
 export default class Task extends Model {
   static table = 'tasks';
   static associations = {
@@ -45,6 +46,26 @@ export default class Task extends Model {
   @readonly @date('updated_at') updatedAt;
 
   @relation('notes', 'note_id') note;
+
+  @reader async password() {
+    const fetchedNote = await this.note.fetch();
+    return fetchedNote.passwordHash;
+  }
+
+  @reader async checkPassword({password}) {
+    try {
+      const fetchedNote = await this.note.fetch();
+      const fetchedPasswordHash = fetchedNote.passwordHash;
+      if (String(fetchedPasswordHash) === '' || !Boolean(fetchedPasswordHash)) {
+        return true;
+      } else {
+        const generatedHash = await getHash({text: password});
+        return generatedHash === fetchedPasswordHash;
+      }
+    } catch (error) {
+      console.log({error});
+    }
+  }
 
   static _backupToPrepareCreate = raw => {
     const collection = database.collections.get(CONSTANTS.TABLE_NAMES.TASKS);

@@ -8,7 +8,7 @@ import {Appbar, FAB, Menu, useTheme} from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {connect} from 'react-redux';
 import {CONSTANTS} from '../../constants';
-import {DeleteConfirmationDialog} from '../components/DeleteConfirmationDialog';
+import {ConfirmationDialog} from '../components/ConfirmationDialog';
 import {EmptyTasks} from '../components/EmptyTasks';
 import EnhancedNoteItem from '../components/NoteItem';
 import NoteSortBottomSheet from '../components/NoteSortBottomSheet';
@@ -137,11 +137,12 @@ const LabelScreen = ({
         ...StyleSheet.absoluteFillObject,
         backgroundColor: theme?.colors.surface,
       }}>
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         visible={isDeleteDialogOpen}
-        message="note"
+        title="Delete this label?"
+        message="Are you sure you want to delete this label? This action is irreversible "
         handleCancel={_handleCloseDeleteLabelDialog}
-        handleDelete={_handleDeleteLabel}
+        handleOk={_handleDeleteLabel}
       />
       <Appbar.Header>
         {/* <Appbar.BackAction onPress={_navigateBack} /> */}
