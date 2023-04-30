@@ -55,6 +55,7 @@ import {
 import {CONSTANTS} from '../../constants';
 import {NotePasswordInputScreen} from './NotePasswordInputScreen';
 import {Q} from '@nozbe/watermelondb';
+import {useUndo} from '../hooks/useUndo';
 
 /**
  *
@@ -72,6 +73,8 @@ const TaskScreen = ({
   route,
 }) => {
   // ref
+  const titleRef = useRef();
+  const descriptionRef = useRef();
 
   // variables
   const theme = useTheme();
@@ -85,21 +88,29 @@ const TaskScreen = ({
     error: null,
   });
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const titleRef = useRef();
-  const descriptionRef = useRef();
+
+  const [
+    descriptionUndoRedoState,
+    {
+      set: setDescription,
+      reset: resetDescription,
+      undo: undoDescription,
+      redo: redoDescription,
+      canUndo,
+      canRedo,
+    },
+  ] = useUndo('');
+  const {present: presentDescription} = descriptionUndoRedoState;
   const [error, setError] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [dueDateString, setDueDateString] = useState('date');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDueDateTimePickerVisible, setIsDueDateTimePickerVisible] =
     useState(false);
-
   const [reminderDateString, setReminderDateString] = useState('time');
   const [isReminderDateTimePickerVisible, setIsReminderDateTimePickerVisible] =
     useState(false);
   const [urls, setURLs] = useState([]);
-
   const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
   const [imageToView, setImageToView] = useState({
     images: [],
@@ -166,9 +177,9 @@ const TaskScreen = ({
 
   useEffect(() => {
     if (descriptionRef) {
-      descriptionRef.current = description;
+      descriptionRef.current = presentDescription;
     }
-  }, [description, descriptionRef, descriptionRef.current]);
+  }, [presentDescription, descriptionRef, descriptionRef.current]);
 
   useEffect(() => {
     if (titleRef) {
@@ -339,7 +350,7 @@ const TaskScreen = ({
     try {
       const result = await Share.share({
         title: title,
-        message: description,
+        message: presentDescription,
       });
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
@@ -595,12 +606,13 @@ const TaskScreen = ({
             textAlignVertical: 'top',
             padding: 12,
             paddingHorizontal: 18,
+            paddingBottom: 30,
           }}
           onBlur={_handleDescriptionSave}
           onChangeText={_handleDescriptionChange}
           placeholder="Add some here..."
           placeholderTextColor={theme?.colors.onSurfaceDisabled}
-          value={description}
+          value={presentDescription}
           multiline={true}
         />
 
@@ -623,6 +635,32 @@ const TaskScreen = ({
         presentationStyle="fullScreen"
         onRequestClose={() => setImageToView({...imageToView, visible: false})}
       />
+      <Appbar.Header
+        style={{
+          backgroundColor: theme?.colors.surface,
+        }}>
+        <Appbar.Content />
+        <Appbar.Action
+          isLeading={false}
+          icon={'undo-variant'}
+          disabled={!canUndo}
+          // iconColor={theme?.colors.onPrimary}
+          onPress={undoDescription}
+        />
+        <Appbar.Action
+          isLeading={false}
+          icon={'redo-variant'}
+          disabled={!canRedo}
+          // iconColor={theme?.colors.onPrimary}
+          onPress={redoDescription}
+        />
+        <Appbar.Action
+          isLeading={false}
+          icon={'restore'}
+          // iconColor={theme?.colors.onPrimary}
+          onPress={resetDescription}
+        />
+      </Appbar.Header>
     </SafeAreaView>
   ) : (
     <NotePasswordInputScreen
