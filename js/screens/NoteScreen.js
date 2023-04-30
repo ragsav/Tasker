@@ -264,7 +264,7 @@ const NoteScreen = ({
         handleOk={_handleSetNotePassword}
         handleCancel={_handleClosePasswordDialog}
         title="Password"
-        message="Add password protection to note"
+        message="Add password protection to note. To remove password, leave the field blank and press Ok"
       />
       <Appbar.Header>
         <Appbar.BackAction onPress={_navigateBack} />

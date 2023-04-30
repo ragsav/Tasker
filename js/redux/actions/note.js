@@ -142,8 +142,10 @@ export const changeNotePassword =
     try {
       Logger.pageLogger('note.js:changeNotePassword:start');
       const noteToBeUpdated = await database.get('notes').find(id);
-      const passwordHash = await getHash({text: password});
-      console.log({passwordHash});
+      const passwordHash =
+        String(password) === '' || !Boolean(password)
+          ? ''
+          : await getHash({text: password});
       database.write(async () => {
         await noteToBeUpdated.update(note => {
           note.passwordHash = passwordHash;
